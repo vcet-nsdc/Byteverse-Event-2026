@@ -1,0 +1,337 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  PARTICIPANT
+  ORGANIZER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum TeamStatus {
+  PENDING
+  ACTIVE
+  LOCKED
+  DISQUALIFIED
+}
+
+enum RoundType {
+  CODE_LOGIC
+  AI_REPAIR
+  TRADITIONAL
+  TYPE_TRANSFORM
+  HUMAN_VS_MACHINE
+}
+
+enum RoundStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum SubmissionStatus {
+  QUEUED
+  RUNNING
+  ACCEPTED
+  WRONG_ANSWER
+  TIME_LIMIT_EXCEEDED
+  MEMORY_LIMIT_EXCEEDED
+  COMPILATION_ERROR
+  RUNTIME_ERROR
+  SYSTEM_ERROR
+}
+
+enum AIType {
+  EXPLAIN
+  CODE
+}
+
+enum MissingMemberPolicy {
+  TREAT_AS_ZERO
+  MARK_INCOMPLETE
+  TEAM_INELIGIBLE
+  REQUIRE_BOTH
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  college       String?   @default("NSDC College")
+  passwordHash  String?
+  role          Role      @default(PARTICIPANT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  teamMember       TeamMember?
+  submissions      Submission[]
+  aiUsages         AIUsage[]
+  roundScores      RoundScore[]
+  disqualification Disqualification?
+  auditLogs        AuditLog[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Team {
+  id         String     @id @default(cuid())
+  name       String     @unique
+  inviteCode String     @unique @default(cuid())
+  status     TeamStatus @default(PENDING)
+  isLocked   Boolean    @default(false)
+  eventId    String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  event            Event              @relation(fields: [eventId], references: [id])
+  members          TeamMember[]
+  teamScores       TeamScore[]
+  disqualification Disqualification?
+
+  @@index([inviteCode])
+  @@index([eventId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  teamId    String
+  userId    String   @unique
+  isLeader  Boolean  @default(false)
+  joinedAt  DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([teamId])
+  @@map("team_members")
+}
+
+model Event {
+  id                   String              @id @default(cuid())
+  name                 String
+  description          String?
+  startsAt             DateTime?
+  endsAt               DateTime?
+  registrationOpen     Boolean             @default(true)
+  teamRegistrationOpen Boolean             @default(true)
+  isActive             Boolean             @default(false)
+  missingMemberPolicy  MissingMemberPolicy @default(TREAT_AS_ZERO)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  rounds        Round[]
+  teams         Team[]
+  announcements Announcement[]
+
+  @@map("events")
+}
+
+model Round {
+  id               String      @id @default(cuid())
+  eventId          String
+  name             String
+  type             RoundType
+  status           RoundStatus @default(DRAFT)
+  sequence         Int
+  durationMin      Int         @default(60)
+  startsAt         DateTime?
+  endsAt           DateTime?
+  maxScore         Int         @default(100)
+  aiExplainPenalty Int         @default(75)
+  aiCodePenalty    Int         @default(50)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  event       Event        @relation(fields: [eventId], references: [id])
+  problems    Problem[]
+  roundScores RoundScore[]
+  teamScores  TeamScore[]
+
+  @@unique([eventId, sequence])
+  @@index([eventId])
+  @@map("rounds")
+}
+
+model Problem {
+  id                 String   @id @default(cuid())
+  roundId            String
+  title              String
+  statement          String
+  inputFormat        String?
+  outputFormat       String?
+  constraints        String?
+  sampleInput        String?
+  sampleOutput       String?
+  difficulty         String?
+  timeLimitMs        Int      @default(2000)
+  memoryLimitMb      Int      @default(256)
+  allowedLangs       String[] @default(["cpp", "c", "java", "python"])
+  isPublished        Boolean  @default(false)
+  set                String   @default("A")
+  starterCodes       Json?
+  options            Json?
+  correctOption      String?
+  sequence           Int      @default(1)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  round       Round        @relation(fields: [roundId], references: [id])
+  testCases   TestCase[]
+  submissions Submission[]
+
+  @@index([roundId])
+  @@map("problems")
+}
+
+model TestCase {
+  id        String   @id @default(cuid())
+  problemId String
+  input     String
+  expected  String
+  isHidden  Boolean  @default(false)
+  score     Int      @default(0)
+  sequence  Int      @default(1)
+  createdAt DateTime @default(now())
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([problemId])
+  @@map("test_cases")
+}
+
+model Submission {
+  id              String           @id @default(cuid())
+  userId          String
+  problemId       String
+  roundId         String
+  language        String
+  sourceCode      String
+  status          SubmissionStatus @default(QUEUED)
+  rawScore        Float            @default(0)
+  finalScore      Float            @default(0)
+  aiScoreCap      Int              @default(100)
+  executionTimeMs Int?
+  memoryUsedMb    Float?
+  judgeToken      String?
+  idempotencyKey  String           @unique
+  submittedAt     DateTime         @default(now())
+  judgedAt        DateTime?
+
+  user    User    @relation(fields: [userId], references: [id])
+  problem Problem @relation(fields: [problemId], references: [id])
+
+  @@index([userId, roundId])
+  @@index([problemId])
+  @@index([roundId])
+  @@index([judgeToken])
+  @@map("submissions")
+}
+
+model AIUsage {
+  id         String   @id @default(cuid())
+  userId     String
+  roundId    String
+  type       AIType
+  prompt     String
+  response   String?
+  tokensUsed Int?
+  usedAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, roundId])
+  @@index([userId, type])
+  @@map("ai_usages")
+}
+
+model RoundScore {
+  id          String    @id @default(cuid())
+  userId      String
+  roundId     String
+  rawScore    Float     @default(0)
+  finalScore  Float     @default(0)
+  aiScoreCap  Int       @default(100)
+  explainUsed Boolean   @default(false)
+  codeUsed    Boolean   @default(false)
+  completedAt DateTime?
+  updatedAt   DateTime  @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  round Round @relation(fields: [roundId], references: [id])
+
+  @@unique([userId, roundId])
+  @@index([roundId])
+  @@index([userId])
+  @@map("round_scores")
+}
+
+model TeamScore {
+  id           String   @id @default(cuid())
+  teamId       String
+  roundId      String
+  member1Score Float    @default(0)
+  member2Score Float?
+  avgScore     Float    @default(0)
+  updatedAt    DateTime @updatedAt
+
+  team  Team  @relation(fields: [teamId], references: [id])
+  round Round @relation(fields: [roundId], references: [id])
+
+  @@unique([teamId, roundId])
+  @@index([teamId])
+  @@map("team_scores")
+}
+
+model Disqualification {
+  id             String   @id @default(cuid())
+  userId         String?  @unique
+  teamId         String?  @unique
+  reason         String
+  disqualifiedBy String
+  disqualifiedAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+  team Team? @relation(fields: [teamId], references: [id])
+
+  @@map("disqualifications")
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  eventId   String
+  title     String
+  body      String
+  isPinned  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@index([eventId])
+  @@map("announcements")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  target    String?
+  metadata  Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

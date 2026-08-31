@@ -1,0 +1,114 @@
+.button {
+  position: relative;
+  min-width: 12rem;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: 9999px;
+  padding: 0.85rem 1.75rem;
+  text-align: center;
+  font-family: var(--font-display, 'Syne', sans-serif);
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background-color: rgba(204, 255, 0, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(204, 255, 0, 0.35);
+  box-shadow: 0 0 20px rgba(204, 255, 0, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.initialText {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transform: translateX(0.25rem);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.button:hover .initialText {
+  transform: translateX(3rem);
+  opacity: 0;
+}
+
+.hoverContent {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  transform: translateX(3rem);
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #090a0f;
+  font-weight: 800;
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.button:hover .hoverContent {
+  transform: translateX(-0.25rem);
+  opacity: 1;
+}
+
+.backgroundElement {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%) scale(1);
+  height: 0.55rem;
+  width: 0.55rem;
+  border-radius: 9999px;
+  background-color: #ccff00;
+  box-shadow: 0 0 10px rgba(204, 255, 0, 0.8);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.button:hover .backgroundElement {
+  left: 0%;
+  top: 0%;
+  height: 100%;
+  width: 100%;
+  transform: scale(2.2) translateY(0);
+  border-radius: 0;
+  background-color: #ccff00;
+}
+
+.button:hover {
+  box-shadow: 0 0 35px rgba(204, 255, 0, 0.45);
+  border-color: #ccff00;
+}
+
+/* Destructive Variant for Disband / Delete */
+.destructive {
+  color: #ffb4be;
+  background-color: rgba(255, 51, 75, 0.08);
+  border: 1px solid rgba(255, 51, 75, 0.35);
+  box-shadow: 0 0 20px rgba(255, 51, 75, 0.12);
+}
+
+.destructive .backgroundElement {
+  background-color: #ff334b;
+  box-shadow: 0 0 10px rgba(255, 51, 75, 0.8);
+}
+
+.destructive .hoverContent {
+  color: #ffffff;
+}
+
+.destructive:hover .backgroundElement {
+  background-color: #ff334b;
+}
+
+.destructive:hover {
+  box-shadow: 0 0 35px rgba(255, 51, 75, 0.45);
+  border-color: #ff334b;
+}
