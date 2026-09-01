@@ -17,11 +17,8 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  const isDev = process.env.NODE_ENV !== "production";
-  if (!isDev) {
-    if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   let body: unknown;
@@ -56,11 +53,8 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const session = await auth();
-  const isDev = process.env.NODE_ENV !== "production";
-  if (!isDev) {
-    if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const eventId = req.nextUrl.searchParams.get("eventId") || process.env.NEXT_PUBLIC_EVENT_ID || "byteverse-2026";

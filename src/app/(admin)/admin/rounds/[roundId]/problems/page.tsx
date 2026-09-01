@@ -10,11 +10,8 @@ export default async function AdminRoundProblemsPage({
   params: Promise<{ roundId: string }>;
 }) {
   const session = await auth();
-  const isDev = process.env.NODE_ENV !== "production";
-  if (!isDev) {
-    if (!session?.user?.id) redirect("/login?callbackUrl=/admin/rounds");
-    if (!session.user.role || !requireRole("ORGANIZER", session.user.role)) redirect("/team");
-  }
+  if (!session?.user?.id) redirect("/login?callbackUrl=/admin/rounds");
+  if (!session.user.role || !requireRole("ORGANIZER", session.user.role)) redirect("/team");
 
   const { roundId } = await params;
   return <ProblemCreatorClient roundId={roundId} />;

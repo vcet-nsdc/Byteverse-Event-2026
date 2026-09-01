@@ -6,10 +6,7 @@ import AdminDashboardClient from "@/features/admin/AdminDashboardClient";
 
 export default async function AdminPage() {
   const session = await auth();
-  const isDev = process.env.NODE_ENV !== "production";
-  if (!isDev) {
-    if (!session?.user?.id) redirect("/login?callbackUrl=/admin");
-    if (!session.user.role || !requireRole("ORGANIZER", session.user.role)) redirect("/team");
-  }
+  if (!session?.user?.id) redirect("/login?callbackUrl=/admin");
+  if (!session.user.role || !requireRole("ORGANIZER", session.user.role)) redirect("/team");
   return <AdminDashboardClient />;
 }

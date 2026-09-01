@@ -6,10 +6,7 @@ import AdminAnnouncementsClient from "@/features/admin/AdminAnnouncementsClient"
 
 export default async function AdminAnnouncementsPage() {
   const session = await auth();
-  const isDev = process.env.NODE_ENV !== "production";
-  if (!isDev) {
-    if (!session?.user?.id) redirect("/login?callbackUrl=/admin/announcements");
-    if (!session.user.role || !requireRole("ORGANIZER", session.user.role)) redirect("/team");
-  }
+  if (!session?.user?.id) redirect("/login?callbackUrl=/admin/announcements");
+  if (!session.user.role || !requireRole("ORGANIZER", session.user.role)) redirect("/team");
   return <AdminAnnouncementsClient />;
 }

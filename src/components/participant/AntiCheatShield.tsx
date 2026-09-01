@@ -403,7 +403,7 @@ export default function AntiCheatShield({
           </div>
           <div className="text-[#6E6E6E]">• Please remain at your workstation.</div>
           <div className="text-[#6E6E6E]">• Raise your hand for an NSDC event proctor.</div>
-          <div className="text-[#6E6E6E]">• The proctor will enter the Master PIN (123456 or 2026) to resume your session.</div>
+          <div className="text-[#6E6E6E]">• The proctor will enter the Master PIN to resume your session.</div>
         </div>
 
         {/* Non-form container to prevent browser password managers from intercepting & popping up save dialogs */}
