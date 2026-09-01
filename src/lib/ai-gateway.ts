@@ -10,16 +10,14 @@
  */
 
 import OpenAI from "openai";
+import fs from "fs";
+import path from "path";
 import { db } from "./db";
 
 // ─── Key Pool Extraction & State Tracking ────────────────────────────────────
 function getRawKeys(): string[] {
   let raw = process.env.AI_API_KEYS ?? process.env.AI_API_KEY ?? "";
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const fs = require("fs");
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const path = require("path");
     const envPath = path.resolve(process.cwd(), ".env");
     if (fs.existsSync(envPath)) {
       const content = fs.readFileSync(envPath, "utf-8");
