@@ -28,7 +28,8 @@ import {
   CheckCircle,
   XCircle,
   HelpCircle,
-  Copy
+  Copy,
+  Flag
 } from "lucide-react";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
@@ -142,6 +143,8 @@ export default function RoundWorkspacePage() {
   const [breakTimeLeft, setBreakTimeLeft] = useState<number>(300); // 5 min break timer
   const [isReadinessPassed, setIsReadinessPassed] = useState(false);
   const [hasEnteredArena, setHasEnteredArena] = useState(false);
+  const [hasUserEndedRound, setHasUserEndedRound] = useState(false);
+  const [showEndRoundModal, setShowEndRoundModal] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
 
   // Ensure System Readiness & Agreement is always presented fresh
@@ -152,6 +155,10 @@ export default function RoundWorkspacePage() {
       if (entered === "true") {
         setHasEnteredArena(true);
         setIsReadinessPassed(true);
+      }
+      const ended = sessionStorage.getItem(`byteverse_round_ended_${roundId}`);
+      if (ended === "true") {
+        setHasUserEndedRound(true);
       }
     } catch {
       // ignore
@@ -375,8 +382,8 @@ export default function RoundWorkspacePage() {
     return () => clearInterval(timer);
   }, [roundState.phase, hasEnteredArena]);
 
-  // 5-Minute Break Countdown Timer
-  const isRoundFinished = (timeLeft !== null && timeLeft <= 0) || roundState.phase === "BREAK" || roundState.phase === "ENDED";
+  // 5-Minute Break Countdown Timer & User Early Round Finalization
+  const isRoundFinished = (timeLeft !== null && timeLeft <= 0) || roundState.phase === "BREAK" || roundState.phase === "ENDED" || hasUserEndedRound;
   useEffect(() => {
     if (!isRoundFinished) return;
 
@@ -386,6 +393,17 @@ export default function RoundWorkspacePage() {
 
     return () => clearInterval(breakTimer);
   }, [isRoundFinished]);
+
+  // Handle Participant Early Round End
+  const handleConfirmEndRound = () => {
+    setHasUserEndedRound(true);
+    setShowEndRoundModal(false);
+    try {
+      sessionStorage.setItem(`byteverse_round_ended_${roundId}`, "true");
+    } catch {
+      // ignore
+    }
+  };
 
   // Handle MCQ Option Selection with auto-save (Round 1)
   const handleSelectOption = async (option: "A" | "B" | "C" | "D") => {
@@ -642,6 +660,16 @@ export default function RoundWorkspacePage() {
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
             <span>AI Assistant</span>
+          </button>
+
+          {/* Finish Round Early Button */}
+          <button
+            onClick={() => setShowEndRoundModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-destructive/10 hover:bg-destructive text-destructive hover:text-white text-xs font-mono font-black border-2 border-destructive shadow-[2px_2px_0px_0px_#EF4444] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#EF4444] transition-all cursor-pointer uppercase"
+            title="Conclude your attempt for this round early"
+          >
+            <Flag className="w-3.5 h-3.5" />
+            <span>Finish Round</span>
           </button>
 
           {/* Language Selector Dropdown */}
@@ -1159,6 +1187,63 @@ export default function RoundWorkspacePage() {
         isOpen={isAIOpen}
         onClose={() => setIsAIOpen(false)}
       />
+
+      {/* ── End Round Early Confirmation Modal ── */}
+      {showEndRoundModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in zoom-in-95">
+          <div className="max-w-md w-full bg-white border-2 border-[#1E1B4B] rounded-3xl p-6 sm:p-8 shadow-[8px_8px_0px_0px_#1E1B4B] space-y-5 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-destructive/10 border-2 border-destructive mx-auto flex items-center justify-center text-destructive shadow-[3px_3px_0px_0px_#EF4444]">
+              <Flag className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-destructive/10 text-destructive border border-destructive text-[11px] font-mono font-black uppercase tracking-wider">
+                <AlertCircle className="w-3.5 h-3.5" /> Early Finalization
+              </div>
+              <h3 className="font-display font-black text-2xl text-[#0F172A] tracking-tight uppercase">
+                Finish Round {currentRoundSequence}?
+              </h3>
+              <p className="text-xs text-[#6E6E6E] font-medium leading-relaxed">
+                Are you sure you want to conclude your attempt for this round? All your current answers and code submissions will be scored, and you will enter the intermission period.
+              </p>
+            </div>
+
+            <div className="bg-[#F8F9FD] border-2 border-[#1E1B4B] rounded-2xl p-4 text-left text-xs font-mono space-y-1.5 shadow-[2px_2px_0px_0px_#1E1B4B]">
+              <div className="font-extrabold text-[#0F172A] flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-[#7F45DB]" /> Round Summary:
+              </div>
+              {isMCQ ? (
+                <div className="text-[#6E6E6E]">
+                  • Questions Answered: <strong className="text-[#7F45DB]">{Object.keys(answersMap).length} of {problems.length}</strong>
+                </div>
+              ) : (
+                <div className="text-[#6E6E6E]">
+                  • Challenge Problems in Arena: <strong className="text-[#7F45DB]">{problems.length}</strong>
+                </div>
+              )}
+              <div className="text-[#6E6E6E]">• You will transition into the 5-minute break period before the next round.</div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowEndRoundModal(false)}
+                className="w-full py-3.5 rounded-xl bg-white hover:bg-[#F0F2F8] text-[#0F172A] font-mono font-bold text-xs border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] cursor-pointer transition-all uppercase"
+              >
+                Keep Working
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmEndRound}
+                className="w-full py-3.5 rounded-xl bg-destructive hover:bg-destructive/90 text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] cursor-pointer transition-all flex items-center justify-center gap-1.5"
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span>Yes, Finish Round</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
