@@ -31,7 +31,22 @@ export async function GET(req: NextRequest) {
           team: { select: { id: true, name: true, status: true } },
         },
       },
-      roundScores: { select: { finalScore: true } },
+      roundScores: {
+        select: {
+          roundId: true,
+          finalScore: true,
+          durationSeconds: true,
+          completedAt: true,
+          round: {
+            select: {
+              sequence: true,
+              name: true,
+              durationMin: true,
+            },
+          },
+        },
+        orderBy: { round: { sequence: "asc" } },
+      },
       aiUsages: { select: { type: true } },
       auditLogs: {
         where: { action: "INTEGRITY_VIOLATION" },
@@ -61,6 +76,17 @@ export async function GET(req: NextRequest) {
     const violationCount = p.auditLogs.length;
     const hasCheated = violationCount > 0;
 
+    const completedRounds = p.roundScores.filter((rs) => rs.completedAt || rs.durationSeconds !== null);
+    const timeTakenList = completedRounds.map((rs) => {
+      const secs = rs.durationSeconds ?? (rs.round.durationMin * 60);
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `R${rs.round.sequence}: ${m}m${s > 0 ? ` ${s}s` : ""}`;
+    });
+
+    const timeTaken = timeTakenList.length > 0 ? timeTakenList.join(" · ") : "In Progress";
+    const totalSecondsTaken = completedRounds.reduce((acc, rs) => acc + (rs.durationSeconds ?? (rs.round.durationMin * 60)), 0);
+
     return {
       id: p.id,
       name: p.name ?? "Unnamed Participant",
@@ -78,6 +104,9 @@ export async function GET(req: NextRequest) {
       hasCheated,
       violationCount,
       violationReasons: violations,
+      timeTaken,
+      totalSecondsTaken,
+      completedRoundsCount: completedRounds.length,
     };
   });
 

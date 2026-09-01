@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, MessageSquare, Terminal, Users, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { Search, MessageSquare, Terminal, Users, ShieldAlert, CheckCircle2, Clock } from "lucide-react";
 
 interface ParticipantItem {
   id: string;
@@ -20,6 +20,8 @@ interface ParticipantItem {
   hasCheated: boolean;
   violationCount: number;
   violationReasons: string[];
+  timeTaken?: string;
+  totalSecondsTaken?: number;
 }
 
 export default function AdminParticipantsClient() {
@@ -79,6 +81,7 @@ export default function AdminParticipantsClient() {
                 <th className="p-4 pl-6">Participant Name</th>
                 <th className="p-4">Team Name</th>
                 <th className="p-4 text-center">Cheat Detected</th>
+                <th className="p-4 text-center">Time Taken</th>
                 <th className="p-4 text-center">
                   AI Chat Req<br />
                   <span className="text-[10px] text-[#6E6E6E] font-normal">Max: 15</span>
@@ -93,13 +96,13 @@ export default function AdminParticipantsClient() {
             <tbody className="divide-y divide-[#E2E8F0] font-mono">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="p-12 text-center text-[#6E6E6E] font-mono">
+                  <td colSpan={7} className="p-12 text-center text-[#6E6E6E] font-mono">
                     Loading participants info...
                   </td>
                 </tr>
               ) : participants.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-12 text-center text-[#6E6E6E] font-mono">
+                  <td colSpan={7} className="p-12 text-center text-[#6E6E6E] font-mono">
                     No participants found matching &quot;{search}&quot;.
                   </td>
                 </tr>
@@ -162,6 +165,14 @@ export default function AdminParticipantsClient() {
                             <CheckCircle2 className="w-3 h-3" /> Clean
                           </span>
                         )}
+                      </td>
+
+                      {/* Time Taken Column */}
+                      <td className="p-4 text-center">
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 font-bold">
+                          <Clock className="w-3.5 h-3.5 text-[#7F45DB] shrink-0" />
+                          <span>{p.timeTaken || "In Progress"}</span>
+                        </div>
                       </td>
 
                       {/* AI Chat Req */}

@@ -395,13 +395,26 @@ export default function RoundWorkspacePage() {
   }, [isRoundFinished]);
 
   // Handle Participant Early Round End
-  const handleConfirmEndRound = () => {
+  const handleConfirmEndRound = async () => {
     setHasUserEndedRound(true);
     setShowEndRoundModal(false);
     try {
       sessionStorage.setItem(`byteverse_round_ended_${roundId}`, "true");
     } catch {
       // ignore
+    }
+
+    // Call finish API to persist exact time taken into database
+    try {
+      const initialSeconds = (roundState.durationMin || 60) * 60;
+      const timeSpentSeconds = timeLeft !== null ? Math.max(0, initialSeconds - timeLeft) : 0;
+      await fetch(`/api/rounds/${roundId}/finish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ timeSpentSeconds }),
+      });
+    } catch (err) {
+      console.error("Failed to record round finish timestamp:", err);
     }
   };
 
@@ -819,14 +832,23 @@ export default function RoundWorkspacePage() {
                   Question {currentProblemIdx + 1} of {problems.length}
                 </div>
 
-                <button
-                  onClick={() => setCurrentProblemIdx((prev) => Math.min(problems.length - 1, prev + 1))}
-                  disabled={currentProblemIdx === problems.length - 1}
-                  className="px-6 py-2.5 rounded-xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-2 cursor-pointer transition-all"
-                >
-                  <span>Next Question</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+                {currentProblemIdx === problems.length - 1 ? (
+                  <button
+                    onClick={() => setShowEndRoundModal(true)}
+                    className="px-6 py-2.5 rounded-xl bg-destructive hover:bg-destructive/90 text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] flex items-center gap-2 cursor-pointer transition-all"
+                  >
+                    <Flag className="w-4 h-4" />
+                    <span>Submit & Finish Round</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setCurrentProblemIdx((prev) => Math.min(problems.length - 1, prev + 1))}
+                    className="px-6 py-2.5 rounded-xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] flex items-center gap-2 cursor-pointer transition-all"
+                  >
+                    <span>Next Question</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           ) : (
