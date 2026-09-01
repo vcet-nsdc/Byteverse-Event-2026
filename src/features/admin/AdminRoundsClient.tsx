@@ -40,6 +40,17 @@ export default function AdminRoundsClient() {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
   const [workingId, setWorkingId] = useState<string | null>(null);
+  const [alertMessage, setAlertMessage] = useState<{ text: string; type: "success" | "warning" } | null>(null);
+
+  // Confirmation Modal State
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText: string;
+    confirmStyle: string;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
 
   const fetchRounds = async () => {
     try {
@@ -60,18 +71,73 @@ export default function AdminRoundsClient() {
     return () => clearInterval(interval);
   }, []);
 
-  const setStatus = async (id: string, status: string) => {
+  const setStatus = async (id: string, status: string, roundSeq?: number, roundName?: string) => {
     setWorkingId(id);
     try {
-      await fetch(`/api/admin/rounds/${id}/status`, {
+      const res = await fetch(`/api/admin/rounds/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
+      if (res.ok) {
+        const actionVerb = status === "ACTIVE" ? "started" : status === "PAUSED" ? "paused" : status === "ENDED" ? "ended" : "updated";
+        setAlertMessage({
+          text: `Round ${roundSeq ?? ""} (${roundName ?? ""}) successfully ${actionVerb}!`,
+          type: "success",
+        });
+        setTimeout(() => setAlertMessage(null), 5000);
+      }
       await fetchRounds();
+    } catch {
+      setAlertMessage({ text: "Failed to update round status. Please retry.", type: "warning" });
     } finally {
       setWorkingId(null);
+      setConfirmDialog(null);
     }
+  };
+
+  const requestStart = (round: Round) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: `🚀 Start Round ${round.sequence}: ${round.name}`,
+      message: `Are you sure you want to START Round ${round.sequence}? All connected participant workspaces will unlock, and their countdown timers will synchronize to ${round.durationMin} minutes.`,
+      confirmText: "Start Round Now",
+      confirmStyle: "bg-[#7F45DB] hover:bg-[#6D35C7] text-white",
+      onConfirm: async () => setStatus(round.id, "ACTIVE", round.sequence, round.name),
+    });
+  };
+
+  const requestPause = (round: Round) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: `⏸️ Pause Round ${round.sequence}: ${round.name}`,
+      message: `Are you sure you want to PAUSE Round ${round.sequence}? All participant workspaces will freeze immediately, and remaining timers will be preserved until you resume.`,
+      confirmText: "Pause Round",
+      confirmStyle: "bg-amber-500 hover:bg-amber-600 text-black",
+      onConfirm: async () => setStatus(round.id, "PAUSED", round.sequence, round.name),
+    });
+  };
+
+  const requestResume = (round: Round) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: `▶️ Resume Round ${round.sequence}: ${round.name}`,
+      message: `Are you sure you want to RESUME Round ${round.sequence}? All participant timers will continue counting down from their exact remaining time.`,
+      confirmText: "Resume Round",
+      confirmStyle: "bg-[#7F45DB] hover:bg-[#6D35C7] text-white",
+      onConfirm: async () => setStatus(round.id, "ACTIVE", round.sequence, round.name),
+    });
+  };
+
+  const requestEnd = (round: Round) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: `⏹️ End Round ${round.sequence}: ${round.name}`,
+      message: `⚠️ CAUTION: Are you sure you want to END Round ${round.sequence}? Submissions will close immediately, scores will finalize, and participants will transition to the 5-minute break screen.`,
+      confirmText: "End Round Now",
+      confirmStyle: "bg-rose-600 hover:bg-rose-700 text-white",
+      onConfirm: async () => setStatus(round.id, "ENDED", round.sequence, round.name),
+    });
   };
 
   if (loading) {
@@ -84,6 +150,21 @@ export default function AdminRoundsClient() {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 font-sans">
+      {/* Alert Notification Toast */}
+      {alertMessage && (
+        <div className={`p-4 rounded-2xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] flex items-center justify-between font-mono text-xs font-bold animate-in fade-in slide-in-from-top-2 ${
+          alertMessage.type === "success" ? "bg-emerald-100 text-emerald-950" : "bg-amber-100 text-amber-950"
+        }`}>
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <span>{alertMessage.text}</span>
+          </div>
+          <button onClick={() => setAlertMessage(null)} className="text-[#0F172A] hover:underline cursor-pointer">
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -186,7 +267,7 @@ export default function AdminRoundsClient() {
                   {/* START ROUND BUTTON */}
                   {isDraft && (
                     <button
-                      onClick={() => setStatus(round.id, "ACTIVE")}
+                      onClick={() => requestStart(round)}
                       disabled={isWorking}
                       className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white font-mono font-black text-xs border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all disabled:opacity-50 cursor-pointer"
                     >
@@ -199,7 +280,7 @@ export default function AdminRoundsClient() {
                   {isActive && (
                     <>
                       <button
-                        onClick={() => setStatus(round.id, "PAUSED")}
+                        onClick={() => requestPause(round)}
                         disabled={isWorking}
                         className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-black font-mono font-black text-xs border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all disabled:opacity-50 cursor-pointer"
                       >
@@ -207,11 +288,7 @@ export default function AdminRoundsClient() {
                         <span>Pause Round</span>
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm(`Are you sure you want to END Round ${round.sequence}? Participants will no longer be able to submit.`)) {
-                            setStatus(round.id, "ENDED");
-                          }
-                        }}
+                        onClick={() => requestEnd(round)}
                         disabled={isWorking}
                         className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border-2 border-destructive bg-destructive/10 text-destructive hover:bg-destructive/20 font-mono font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
                       >
@@ -225,7 +302,7 @@ export default function AdminRoundsClient() {
                   {isPaused && (
                     <>
                       <button
-                        onClick={() => setStatus(round.id, "ACTIVE")}
+                        onClick={() => requestResume(round)}
                         disabled={isWorking}
                         className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white font-mono font-black text-xs border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all disabled:opacity-50 cursor-pointer"
                       >
@@ -233,11 +310,7 @@ export default function AdminRoundsClient() {
                         <span>Resume Round</span>
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm(`Are you sure you want to END Round ${round.sequence}?`)) {
-                            setStatus(round.id, "ENDED");
-                          }
-                        }}
+                        onClick={() => requestEnd(round)}
                         disabled={isWorking}
                         className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border-2 border-destructive bg-destructive/10 text-destructive hover:bg-destructive/20 font-mono font-bold text-xs transition-all disabled:opacity-50 cursor-pointer"
                       >
@@ -255,9 +328,14 @@ export default function AdminRoundsClient() {
                       </span>
                       <button
                         onClick={() => {
-                          if (confirm(`Reopen Round ${round.sequence} to ACTIVE state?`)) {
-                            setStatus(round.id, "ACTIVE");
-                          }
+                          setConfirmDialog({
+                            isOpen: true,
+                            title: `Restart Round ${round.sequence}`,
+                            message: `Are you sure you want to RESTART Round ${round.sequence}?`,
+                            confirmText: "Restart Round",
+                            confirmStyle: "bg-[#7F45DB] text-white",
+                            onConfirm: async () => setStatus(round.id, "ACTIVE", round.sequence, round.name),
+                          });
                         }}
                         className="text-xs text-[#7F45DB] hover:underline font-mono ml-1 cursor-pointer"
                       >
@@ -280,6 +358,37 @@ export default function AdminRoundsClient() {
           );
         })}
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmDialog && confirmDialog.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white border-3 border-[#1E1B4B] rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-[8px_8px_0px_0px_#1E1B4B] space-y-6 animate-in zoom-in-95">
+            <div className="space-y-2">
+              <h3 className="font-display font-black text-2xl text-[#0F172A] uppercase">
+                {confirmDialog.title}
+              </h3>
+              <p className="text-xs sm:text-sm font-mono text-[#6E6E6E] leading-relaxed">
+                {confirmDialog.message}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="px-5 py-2.5 rounded-xl border-2 border-[#1E1B4B] bg-[#F0F2F8] hover:bg-[#E2E8F0] font-mono font-bold text-xs text-[#0F172A] transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDialog.onConfirm}
+                className={`px-6 py-2.5 rounded-xl border-2 border-[#1E1B4B] font-mono font-black text-xs shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer ${confirmDialog.confirmStyle}`}
+              >
+                {confirmDialog.confirmText}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

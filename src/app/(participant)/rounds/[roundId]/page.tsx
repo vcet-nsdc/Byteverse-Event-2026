@@ -147,23 +147,15 @@ export default function RoundWorkspacePage() {
   const [showEndRoundModal, setShowEndRoundModal] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
 
-  // Ensure System Readiness & Agreement is always presented fresh
-  useEffect(() => {
-    try {
-      localStorage.removeItem(`byteverse_readiness_${roundId}`);
-      const entered = sessionStorage.getItem(`byteverse_arena_entered_${roundId}`);
-      if (entered === "true") {
-        setHasEnteredArena(true);
-        setIsReadinessPassed(true);
-      }
-      const ended = sessionStorage.getItem(`byteverse_round_ended_${roundId}`);
-      if (ended === "true") {
-        setHasUserEndedRound(true);
-      }
-    } catch {
-      // ignore
-    }
-  }, [roundId]);
+  // Instant Score & Next Round Telemetry
+  const [myScore, setMyScore] = useState<{
+    finalScore: number;
+    rawScore: number;
+    solvedCount: number;
+    totalProblemsCount: number;
+    durationSeconds: number;
+  } | null>(null);
+  const [nextRoundState, setNextRoundState] = useState<RoundState | null>(null);
 
   // Fetch all rounds in tournament
   useEffect(() => {
@@ -182,6 +174,31 @@ export default function RoundWorkspacePage() {
     }
     loadAllRounds();
   }, []);
+
+  const round = roundState.round ?? allRounds.find((r) => r.id === roundId);
+  const team = roundState.team;
+  const currentRoundSequence = round?.sequence ?? 1;
+  const nextRound = allRounds.find((r) => r.sequence === currentRoundSequence + 1);
+
+  // Bypass System Readiness & Agreement if already agreed on Round 1 or if proceeding to later rounds
+  useEffect(() => {
+    try {
+      const tournamentAgreed = localStorage.getItem("byteverse_tournament_agreed");
+      const entered = sessionStorage.getItem(`byteverse_arena_entered_${roundId}`);
+      if (tournamentAgreed === "true" || (round && round.sequence > 1)) {
+        setIsReadinessPassed(true);
+      }
+      if (entered === "true") {
+        setHasEnteredArena(true);
+      }
+      const ended = sessionStorage.getItem(`byteverse_round_ended_${roundId}`);
+      if (ended === "true") {
+        setHasUserEndedRound(true);
+      }
+    } catch {
+      // ignore
+    }
+  }, [roundId, round]);
 
   // Fetch problems for this round
   const fetchProblems = useCallback(async () => {
@@ -353,7 +370,7 @@ export default function RoundWorkspacePage() {
     }
 
     pollState();
-    const fallbackPoll = setInterval(pollState, 6000);
+    const fallbackPoll = setInterval(pollState, 2000);
 
     try {
       es = new EventSource(`/api/rounds/${roundId}/stream`);
@@ -394,6 +411,49 @@ export default function RoundWorkspacePage() {
     return () => clearInterval(breakTimer);
   }, [isRoundFinished]);
 
+  // Fetch Participant Score when round ends
+  useEffect(() => {
+    if (!isRoundFinished) return;
+
+    async function fetchFinalScore() {
+      try {
+        const res = await fetch(`/api/rounds/${roundId}/my-score`);
+        if (res.ok) {
+          const data = await res.json();
+          setMyScore(data);
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    fetchFinalScore();
+    const scoreInterval = setInterval(fetchFinalScore, 3000);
+    return () => clearInterval(scoreInterval);
+  }, [isRoundFinished, roundId]);
+
+  // Poll Next Round State on Break Screen
+  useEffect(() => {
+    const nextId = nextRound?.id;
+    if (!isRoundFinished || !nextId) return;
+
+    async function pollNextRound() {
+      try {
+        const res = await fetch(`/api/rounds/${nextId}/state`);
+        if (res.ok) {
+          const data = await res.json();
+          setNextRoundState(data);
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    pollNextRound();
+    const nextInterval = setInterval(pollNextRound, 2000);
+    return () => clearInterval(nextInterval);
+  }, [isRoundFinished, nextRound?.id]);
+
   // Handle Participant Early Round End
   const handleConfirmEndRound = async () => {
     setHasUserEndedRound(true);
@@ -408,15 +468,26 @@ export default function RoundWorkspacePage() {
     try {
       const initialSeconds = (roundState.durationMin || 60) * 60;
       const timeSpentSeconds = timeLeft !== null ? Math.max(0, initialSeconds - timeLeft) : 0;
-      await fetch(`/api/rounds/${roundId}/finish`, {
+      const res = await fetch(`/api/rounds/${roundId}/finish`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ timeSpentSeconds }),
       });
+      if (res.ok) {
+        const data = await res.json();
+        setMyScore(data);
+      }
     } catch (err) {
       console.error("Failed to record round finish timestamp:", err);
     }
   };
+
+  // Auto-end round when timer reaches 0
+  useEffect(() => {
+    if (timeLeft === 0 && roundState.phase === "ACTIVE" && !hasUserEndedRound) {
+      handleConfirmEndRound();
+    }
+  }, [timeLeft, roundState.phase, hasUserEndedRound]);
 
   // Handle MCQ Option Selection with auto-save (Round 1)
   const handleSelectOption = async (option: "A" | "B" | "C" | "D") => {
@@ -463,15 +534,9 @@ export default function RoundWorkspacePage() {
     }
   };
 
-  const round = roundState.round ?? allRounds.find((r) => r.id === roundId);
-  const team = roundState.team;
   const currentProblem = problems[currentProblemIdx] ?? null;
   const activeRoundType = round?.type ?? allRounds.find((r) => r.id === roundId)?.type;
   const isMCQ = activeRoundType === "CODE_LOGIC" || (currentProblem?.options !== undefined && currentProblem?.options !== null);
-
-  // Determine next round info
-  const currentRoundSequence = round?.sequence ?? 1;
-  const nextRound = allRounds.find((r) => r.sequence === currentRoundSequence + 1);
 
   // ── GATE 1: Pre-Round Readiness Check & Agreement Gate ──
   if (!isReadinessPassed && roundState.phase !== "GATE_TEAM") {
@@ -481,14 +546,18 @@ export default function RoundWorkspacePage() {
         sequence={currentRoundSequence}
         durationMin={round?.durationMin ?? 20}
         onComplete={() => {
+          localStorage.setItem("byteverse_tournament_agreed", "true");
           setIsReadinessPassed(true);
+          setHasEnteredArena(true);
         }}
       />
     );
   }
 
-  // ── CONSTANT SCREEN: 5-Minute Break & Round Concluded Screen ──
+  // ── CONSTANT SCREEN: 5-Minute Break & Round Concluded Screen with Score Display ──
   if (isRoundFinished) {
+    const isNextRoundLive = nextRoundState?.phase === "ACTIVE";
+
     return (
       <div className="min-h-screen bg-[#F8F9FD] flex items-center justify-center p-6 font-sans relative">
         <AntiCheatShield
@@ -505,18 +574,51 @@ export default function RoundWorkspacePage() {
               <div className="space-y-1.5">
                 <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-400 text-xs font-mono font-black uppercase tracking-wider">
                   <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse" />
-                  Round {currentRoundSequence} Finished · Break Period
+                  Round {currentRoundSequence} Concluded · Break Period
                 </div>
                 <h1 className="font-display font-black text-3xl sm:text-4xl text-[#0F172A] tracking-tight uppercase">
-                  Round {currentRoundSequence} Has Concluded!
+                  Round {currentRoundSequence} Finished!
                 </h1>
                 <p className="text-xs text-[#6E6E6E] font-medium leading-relaxed">
-                  Great effort! Take a quick 5-minute break to stretch, hydrate, and prepare for the next challenge.
+                  Great effort! Review your round performance below while waiting for the next challenge.
                 </p>
               </div>
 
+              {/* Instant Performance Score Card */}
+              <div className="bg-[#F0F2F8] p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] space-y-3 text-left">
+                <div className="text-xs font-mono font-black uppercase tracking-wider text-[#0F172A] flex items-center justify-between border-b border-[#1E1B4B]/10 pb-2">
+                  <span className="flex items-center gap-1.5">
+                    <Trophy className="w-4 h-4 text-[#7F45DB]" /> Your Round {currentRoundSequence} Score
+                  </span>
+                  <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
+                    Recorded
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center pt-1">
+                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
+                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Points</div>
+                    <div className="text-xl sm:text-2xl font-mono font-black text-[#7F45DB]">
+                      {myScore?.finalScore ?? 0}
+                    </div>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
+                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Solved</div>
+                    <div className="text-xl sm:text-2xl font-mono font-black text-[#0F172A]">
+                      {myScore?.solvedCount ?? Object.keys(answersMap).length}/{myScore?.totalProblemsCount ?? problems.length}
+                    </div>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
+                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Time</div>
+                    <div className="text-xl sm:text-2xl font-mono font-black text-[#0F172A]">
+                      {formatTime(myScore?.durationSeconds ?? 0)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Live 5-Minute Break Countdown Card */}
-              <div className="p-6 bg-[#F8F9FD] rounded-2xl border-2 border-[#1E1B4B] text-center space-y-2 shadow-[3px_3px_0px_0px_#1E1B4B]">
+              <div className="p-5 bg-[#F8F9FD] rounded-2xl border-2 border-[#1E1B4B] text-center space-y-2 shadow-[3px_3px_0px_0px_#1E1B4B]">
                 <div className="text-xs font-mono text-[#6E6E6E] uppercase font-bold flex items-center justify-center gap-1.5">
                   <Timer className="w-4 h-4 text-[#7F45DB]" /> Break Time Remaining
                 </div>
@@ -528,13 +630,21 @@ export default function RoundWorkspacePage() {
                 </div>
               </div>
 
-              <button
-                onClick={() => router.push(`/rounds/${nextRound.id}`)}
-                className="w-full py-4 rounded-2xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white font-mono font-black text-sm uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#1E1B4B] transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>Proceed to Round {nextRound.sequence} Arena</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+              {/* Start Next Round Button (Locked until Host starts next round) */}
+              {isNextRoundLive ? (
+                <button
+                  onClick={() => router.push(`/rounds/${nextRound.id}`)}
+                  className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-black text-sm uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#1E1B4B] transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse"
+                >
+                  <Rocket className="w-5 h-5 text-white" />
+                  <span>Host Started Round {nextRound.sequence} · Enter Arena Now →</span>
+                </button>
+              ) : (
+                <div className="w-full py-4 px-4 rounded-2xl bg-[#F0F2F8] border-2 border-[#1E1B4B] text-[#6E6E6E] font-mono font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[3px_3px_0px_0px_#1E1B4B]">
+                  <Clock className="w-4 h-4 text-[#7F45DB] animate-spin" />
+                  <span>Round {nextRound.sequence} Locked — Host Will Launch Soon</span>
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -549,6 +659,40 @@ export default function RoundWorkspacePage() {
                   All tournament rounds are complete. Head over to the Grand Leaderboard to view final team standings and rankings!
                 </p>
               </div>
+
+              {/* Instant Performance Score Card */}
+              <div className="bg-[#F0F2F8] p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] space-y-3 text-left">
+                <div className="text-xs font-mono font-black uppercase tracking-wider text-[#0F172A] flex items-center justify-between border-b border-[#1E1B4B]/10 pb-2">
+                  <span className="flex items-center gap-1.5">
+                    <Trophy className="w-4 h-4 text-[#7F45DB]" /> Grand Finale Score
+                  </span>
+                  <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
+                    Recorded
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center pt-1">
+                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
+                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Points</div>
+                    <div className="text-xl sm:text-2xl font-mono font-black text-[#7F45DB]">
+                      {myScore?.finalScore ?? 0}
+                    </div>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
+                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Solved</div>
+                    <div className="text-xl sm:text-2xl font-mono font-black text-[#0F172A]">
+                      {myScore?.solvedCount ?? Object.keys(answersMap).length}/{myScore?.totalProblemsCount ?? problems.length}
+                    </div>
+                  </div>
+                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
+                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Time</div>
+                    <div className="text-xl sm:text-2xl font-mono font-black text-[#0F172A]">
+                      {formatTime(myScore?.durationSeconds ?? 0)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <button
                 onClick={() => router.push("/leaderboard")}
                 className="w-full py-4 rounded-2xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white font-mono font-black text-sm uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] transition-all flex items-center justify-center gap-2 cursor-pointer"
@@ -638,10 +782,18 @@ export default function RoundWorkspacePage() {
         isActive={!isRoundFinished}
       />
 
+      {/* Paused Notification Banner Overlay */}
+      {roundState.phase === "PAUSED" && (
+        <div className="bg-amber-400 text-amber-950 px-4 py-2.5 font-mono text-xs font-black uppercase tracking-wider border-b-2 border-[#1E1B4B] shadow-md flex items-center justify-center gap-3 sticky top-0 z-50 animate-pulse">
+          <Clock className="w-4 h-4 text-amber-950 animate-spin" />
+          <span>⏸️ ROUND PAUSED BY TOURNAMENT HOST — Workspace & Countdown Timer are temporarily frozen. Please wait for resume.</span>
+        </div>
+      )}
+
       {/* Top Header Bar */}
-      <header className="border-b-2 border-[#1E1B4B]/10 px-4 py-2.5 flex items-center justify-between flex-wrap gap-4 bg-white shadow-sm sticky top-0 z-40">
+      <header className="border-b-2 border-[#1E1B4B]/10 px-4 py-3 flex items-center justify-between flex-wrap gap-4 bg-white shadow-sm sticky top-0 z-40">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-mono font-black text-white px-2.5 py-1 rounded-lg bg-[#7F45DB] border border-[#1E1B4B]">
+          <span className="text-xs font-mono font-black text-white px-3 py-1.5 rounded-xl bg-[#7F45DB] border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B]">
             Round {currentRoundSequence}
           </span>
           <span className="font-extrabold text-[#0F172A] text-sm sm:text-base font-display">
@@ -650,48 +802,31 @@ export default function RoundWorkspacePage() {
         </div>
 
         {/* Center Timer */}
-        <div className="flex items-center gap-3 bg-[#F0F2F8] px-3.5 py-1.5 rounded-xl border border-[#E2E8F0]">
-          <span className="text-[11px] text-[#6E6E6E] font-mono uppercase font-bold">Time Remaining:</span>
-          <span className={`font-mono text-base font-black tabular-nums ${timeLeft !== null && timeLeft < 300 ? "text-destructive" : "text-[#7F45DB]"}`}>
-            {timeLeft !== null ? formatTime(timeLeft) : "--:--"}
+        <div className="flex items-center gap-3 bg-[#F0F2F8] px-4 py-2 rounded-xl border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B]">
+          <span className="text-xs text-[#6E6E6E] font-mono uppercase font-black">Time Remaining:</span>
+          <span className={`font-mono text-base sm:text-lg font-black tabular-nums ${
+            roundState.phase === "PAUSED" ? "text-amber-600" : timeLeft !== null && timeLeft < 300 ? "text-destructive animate-pulse" : "text-[#7F45DB]"
+          }`}>
+            {roundState.phase === "PAUSED" ? "⏸️ PAUSED" : timeLeft !== null ? formatTime(timeLeft) : "--:--"}
           </span>
         </div>
 
-        {/* Right Corner Controls */}
-        <div className="flex items-center gap-3">
+        {/* Right Corner Controls: Enlarged, Bold & Highlighted */}
+        <div className="flex items-center gap-3 flex-wrap">
           {team && (
-            <span className="text-xs text-[#0F172A] font-mono bg-[#F0F2F8] px-3 py-1 rounded-lg border border-[#E2E8F0] font-semibold hidden sm:inline">
+            <span className="text-xs text-[#0F172A] font-mono bg-[#F0F2F8] px-3 py-1.5 rounded-xl border border-[#E2E8F0] font-bold hidden md:inline">
               Team: {team.name}
             </span>
           )}
 
-          {/* AI Assistant Toggle Button */}
-          <button
-            onClick={() => setIsAIOpen((prev) => !prev)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white text-xs font-mono font-bold border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all cursor-pointer"
-            title="Open AI Tutor & Code Advisor"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-            <span>AI Assistant</span>
-          </button>
-
-          {/* Finish Round Early Button */}
-          <button
-            onClick={() => setShowEndRoundModal(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-destructive/10 hover:bg-destructive text-destructive hover:text-white text-xs font-mono font-black border-2 border-destructive shadow-[2px_2px_0px_0px_#EF4444] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#EF4444] transition-all cursor-pointer uppercase"
-            title="Conclude your attempt for this round early"
-          >
-            <Flag className="w-3.5 h-3.5" />
-            <span>Finish Round</span>
-          </button>
-
-          {/* Language Selector Dropdown */}
-          <div className="flex items-center gap-1.5 bg-[#F0F2F8] px-3 py-1 rounded-xl border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B]">
-            <span className="text-[11px] font-mono text-[#6E6E6E] uppercase font-bold">Language:</span>
+          {/* Language Selector Dropdown (Enlarged & Highlighted) */}
+          <div className="flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-xl border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B]">
+            <Code2 className="w-4 h-4 text-[#7F45DB]" />
+            <span className="text-xs font-mono text-[#6E6E6E] uppercase font-bold">Lang:</span>
             <select
               value={lang}
               onChange={(e) => setLang(e.target.value as "cpp" | "c" | "java" | "python")}
-              className="bg-transparent text-[#7F45DB] font-mono font-black text-xs focus:outline-none cursor-pointer uppercase"
+              className="bg-transparent text-[#7F45DB] font-mono font-black text-xs sm:text-sm focus:outline-none cursor-pointer uppercase"
             >
               <option value="c" className="bg-white text-[#0F172A]">C</option>
               <option value="cpp" className="bg-white text-[#0F172A]">C++</option>
@@ -699,6 +834,26 @@ export default function RoundWorkspacePage() {
               <option value="python" className="bg-white text-[#0F172A]">Python</option>
             </select>
           </div>
+
+          {/* AI Assistant Toggle Button (Enlarged & Highlighted) */}
+          <button
+            onClick={() => setIsAIOpen((prev) => !prev)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white text-xs sm:text-sm font-mono font-black border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all cursor-pointer"
+            title="Open AI Tutor & Code Advisor"
+          >
+            <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
+            <span>AI Assistant</span>
+          </button>
+
+          {/* Finish Round Early Button (Enlarged & Highlighted) */}
+          <button
+            onClick={() => setShowEndRoundModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs sm:text-sm font-mono font-black border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all cursor-pointer uppercase"
+            title="Conclude your attempt for this round early"
+          >
+            <Flag className="w-4 h-4" />
+            <span>Finish Round</span>
+          </button>
         </div>
       </header>
 

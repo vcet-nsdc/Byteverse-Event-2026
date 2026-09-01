@@ -14,7 +14,25 @@ import { db } from "./db";
 
 // ─── Key Pool Extraction & State Tracking ────────────────────────────────────
 function getRawKeys(): string[] {
-  return (process.env.AI_API_KEYS ?? process.env.AI_API_KEY ?? "")
+  let raw = process.env.AI_API_KEYS ?? process.env.AI_API_KEY ?? "";
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require("fs");
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const path = require("path");
+    const envPath = path.resolve(process.cwd(), ".env");
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, "utf-8");
+      const match = content.match(/^AI_API_KEYS\s*=\s*(.+)$/m);
+      if (match && match[1]) {
+        raw = match[1].trim().replace(/^["']|["']$/g, "");
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return raw
     .split(",")
     .map((k) => k.trim())
     .filter((k) => Boolean(k) && !k.includes("your_groq_api_key"));
@@ -53,10 +71,10 @@ function getOrInitKeyTelemetry(index: number): KeyTelemetry {
   const is8b = currentModel.includes("8b");
   const dailyLimit = is8b ? 14400 : 1000;
   const tpmLimit = is8b ? 20000 : 6000;
+  const raw = rawKeys[index] ?? "";
 
   let stats = keyTelemetryMap.get(index);
   if (!stats) {
-    const raw = rawKeys[index] ?? "";
     stats = {
       index,
       maskedKey: maskApiKey(raw),
@@ -76,6 +94,7 @@ function getOrInitKeyTelemetry(index: number): KeyTelemetry {
     };
     keyTelemetryMap.set(index, stats);
   } else {
+    stats.maskedKey = maskApiKey(raw);
     stats.dailyLimit = dailyLimit;
     stats.dailyRemaining = Math.max(0, dailyLimit - stats.totalRequests);
     stats.tpmLimit = tpmLimit;
@@ -87,10 +106,20 @@ let _keyCursor = 0;
 
 export function getAIModel(): string {
   const model = process.env.AI_MODEL?.trim();
-  if (!model || model.includes("qwen") || model.includes("invalid")) {
-    return "llama-3.3-70b-versatile";
+  if (!model || model.includes("invalid")) {
+    return "qwen/qwen3.8-27b";
   }
   return model;
+}
+
+export function getFailoverAIModel(): string {
+  const failover = process.env.AI_FAILOVER_MODEL?.trim();
+  if (failover) return failover;
+  const primary = getAIModel();
+  if (primary.includes("qwen")) {
+    return "qwen/qwen3.6-27b";
+  }
+  return "llama-3.3-70b-versatile";
 }
 
 /**
@@ -315,8 +344,8 @@ export async function callAI(
     const stats = getOrInitKeyTelemetry(keyIndex);
     const startTime = Date.now();
 
-    // If initial attempt encounters contention, fail over to ultra-high capacity 8B model (20,000 TPM & 14,400 RPD)
-    const targetModel = attempt >= 2 ? "llama-3.1-8b-instant" : getAIModel();
+    // If initial attempt encounters contention, fail over to failover model
+    const targetModel = attempt >= 2 ? getFailoverAIModel() : getAIModel();
 
     try {
       const completion = await client.chat.completions.create({

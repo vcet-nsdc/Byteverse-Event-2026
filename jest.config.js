@@ -8,6 +8,7 @@ const config = {
   moduleNameMapper: { "^@/(.*)$": "<rootDir>/src/$1" },
   testMatch: ["**/tests/unit/**/*.test.ts"],
   collectCoverageFrom: ["src/lib/**/*.ts"],
+  modulePathIgnorePatterns: ["<rootDir>/.next/"],
 };
 
 module.exports = createJestConfig(config);

@@ -457,10 +457,11 @@ export default function TeamPage() {
                     <input
                       type="text"
                       required
+                      maxLength={8}
                       value={inviteCode}
-                      onChange={(e) => setInviteCode(e.target.value.trim())}
-                      placeholder="Paste 8-character invite code from your Captain"
-                      className="w-full bg-[#F8F9FD] text-[#0F172A] rounded-xl px-4 py-3 text-xs font-mono border-2 border-[#1E1B4B] focus:outline-none focus:border-[#7F45DB] transition-all tracking-wider font-black"
+                      onChange={(e) => setInviteCode(e.target.value.trim().toUpperCase())}
+                      placeholder="Enter 8-digit code (e.g. 74829103)"
+                      className="w-full bg-[#F8F9FD] text-[#0F172A] rounded-xl px-4 py-3 text-sm font-mono border-2 border-[#1E1B4B] focus:outline-none focus:border-[#7F45DB] transition-all tracking-widest font-black"
                     />
                   </div>
 

@@ -13,6 +13,15 @@ const schema = z.object({
   leaderEmail: z.string().email("Invalid email address").optional(),
 });
 
+function generate8DigitInviteCode(): string {
+  const digits = "0123456789";
+  let code = (Math.floor(Math.random() * 9) + 1).toString();
+  for (let i = 1; i < 8; i++) {
+    code += digits.charAt(Math.floor(Math.random() * digits.length));
+  }
+  return code;
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth();
 
@@ -116,9 +125,20 @@ export async function POST(req: NextRequest) {
           });
         }
 
+        // Generate a unique 8-digit invite code
+        let inviteCode = generate8DigitInviteCode();
+        let attempts = 0;
+        while (attempts < 10) {
+          const existingCode = await tx.team.findUnique({ where: { inviteCode } });
+          if (!existingCode) break;
+          inviteCode = generate8DigitInviteCode();
+          attempts++;
+        }
+
         return tx.team.create({
           data: {
             name: name.trim(),
+            inviteCode,
             eventId: eventId!,
             status: "PENDING",
             members: {

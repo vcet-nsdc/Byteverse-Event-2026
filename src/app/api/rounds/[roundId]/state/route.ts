@@ -25,6 +25,7 @@ export async function GET(
       durationMin: true,
       startsAt: true,
       endsAt: true,
+      updatedAt: true,
     },
   });
   if (!round) return NextResponse.json({ error: "Round not found" }, { status: 404 });
@@ -117,9 +118,12 @@ export async function GET(
   }
 
   if (round.status === "PAUSED") {
+    const frozenRemaining = round.endsAt
+      ? Math.max(0, Math.floor((round.endsAt.getTime() - round.updatedAt.getTime()) / 1000))
+      : round.durationMin * 60;
     return NextResponse.json({
       phase: "PAUSED",
-      timeLeftSeconds: null,
+      timeLeftSeconds: frozenRemaining,
       round: roundMetadata,
       team: teamInfo,
     });

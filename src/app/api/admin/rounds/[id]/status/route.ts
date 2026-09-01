@@ -43,19 +43,32 @@ export async function PATCH(
   }
 
   const dur = durationMin ?? existing.durationMin;
-  const startsAt = status === "ACTIVE"
-    ? now
-    : (status === "DRAFT" || status === "SCHEDULED")
-    ? null
-    : existing.startsAt;
+  let startsAt = existing.startsAt;
+  let endsAt = existing.endsAt;
 
-  const endsAt = status === "ACTIVE"
-    ? new Date(now.getTime() + dur * 60 * 1000)
-    : status === "ENDED"
-    ? now
-    : (status === "DRAFT" || status === "SCHEDULED")
-    ? null
-    : existing.endsAt;
+  if (status === "ACTIVE") {
+    if (existing.status === "PAUSED" && existing.endsAt && existing.updatedAt) {
+      // RESUMING from PAUSE: preserve exact remaining duration
+      const remainingMs = Math.max(0, existing.endsAt.getTime() - existing.updatedAt.getTime());
+      endsAt = new Date(now.getTime() + (remainingMs > 0 ? remainingMs : dur * 60 * 1000));
+      startsAt = existing.startsAt ?? now;
+    } else {
+      // Fresh Launch
+      startsAt = now;
+      endsAt = new Date(now.getTime() + dur * 60 * 1000);
+    }
+  } else if (status === "PAUSED") {
+    // FREEZE: Record remaining time at the moment of pause
+    if (existing.endsAt) {
+      const remainingMs = Math.max(0, existing.endsAt.getTime() - now.getTime());
+      endsAt = new Date(now.getTime() + remainingMs);
+    }
+  } else if (status === "ENDED") {
+    endsAt = now;
+  } else if (status === "DRAFT" || status === "SCHEDULED") {
+    startsAt = null;
+    endsAt = null;
+  }
 
   const round = await db.round.update({
     where: { id },

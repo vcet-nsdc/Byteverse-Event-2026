@@ -80,8 +80,14 @@ export async function POST(req: NextRequest) {
   try {
     const updated = await db.$transaction(
       async (tx) => {
-        const team = await tx.team.findUnique({
-          where: { inviteCode: inviteCode.trim() },
+        const trimmedCode = inviteCode.trim();
+        const team = await tx.team.findFirst({
+          where: {
+            OR: [
+              { inviteCode: trimmedCode },
+              { inviteCode: trimmedCode.toUpperCase() },
+            ],
+          },
           include: {
             members: true,
             event: { select: { teamRegistrationOpen: true } },

@@ -18,11 +18,20 @@ export async function GET(
     return NextResponse.json({ error: "Round not found" }, { status: 404 });
   }
 
+  const isAdmin = session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
+
+  // Strict Protection: No participant can fetch problems before the round is officially ACTIVE or PAUSED
+  if (!isAdmin && round.status !== "ACTIVE" && round.status !== "PAUSED") {
+    return NextResponse.json(
+      { error: "This round has not started yet. Please wait in the holding area." },
+      { status: 403 }
+    );
+  }
+
   const membership = await db.teamMember.findUnique({
     where: { userId: session.user.id },
   });
 
-  const isAdmin = session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN";
   if (!membership && !isAdmin && process.env.NODE_ENV === "production") {
     return NextResponse.json({ error: "Not a team member" }, { status: 403 });
   }
