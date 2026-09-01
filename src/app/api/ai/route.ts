@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
   const userId = session.user.id;
 
   const round = await db.round.findUnique({ where: { id: roundId } });
-  if (round?.status !== "ACTIVE" && process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Round is not active" }, { status: 403 });
+  if (round?.status === "ENDED") {
+    return NextResponse.json({ error: "Round has already ended" }, { status: 403 });
   }
 
   let result: { response: string; usage: { explainLeft: number; codeLeft: number } };

@@ -13,10 +13,12 @@ import OpenAI from "openai";
 import { db } from "./db";
 
 // ─── Key Pool Extraction & State Tracking ────────────────────────────────────
-const RAW_KEYS = (process.env.AI_API_KEYS ?? process.env.AI_API_KEY ?? "")
-  .split(",")
-  .map((k) => k.trim())
-  .filter(Boolean);
+function getRawKeys(): string[] {
+  return (process.env.AI_API_KEYS ?? process.env.AI_API_KEY ?? "")
+    .split(",")
+    .map((k) => k.trim())
+    .filter((k) => Boolean(k) && !k.includes("your_groq_api_key"));
+}
 
 export interface KeyTelemetry {
   index: number;
@@ -42,9 +44,10 @@ function maskApiKey(key: string): string {
 
 // Initialize telemetry for all keys in pool
 function getOrInitKeyTelemetry(index: number): KeyTelemetry {
+  const rawKeys = getRawKeys();
   let stats = keyTelemetryMap.get(index);
   if (!stats) {
-    const raw = RAW_KEYS[index] ?? "";
+    const raw = rawKeys[index] ?? "";
     stats = {
       index,
       maskedKey: maskApiKey(raw),
@@ -63,19 +66,29 @@ function getOrInitKeyTelemetry(index: number): KeyTelemetry {
   return stats;
 }
 
-// Ensure all keys are registered
-RAW_KEYS.forEach((_, idx) => getOrInitKeyTelemetry(idx));
-
 let _keyCursor = 0;
+
+export function getAIModel(): string {
+  const model = process.env.AI_MODEL?.trim();
+  if (!model || model.includes("qwen") || model.includes("invalid")) {
+    return "llama-3.3-70b-versatile";
+  }
+  return model;
+}
 
 /**
  * Finds the next available healthy key that is not in rate-limit cooldown
  */
 function getNextHealthyKey(): { client: OpenAI; index: number } {
-  if (RAW_KEYS.length === 0) throw new Error("No Groq AI API keys configured in AI_API_KEYS.");
+  const rawKeys = getRawKeys();
+  if (rawKeys.length === 0) {
+    throw new Error(
+      "No valid Groq AI API keys configured. Please add a valid Groq key to AI_API_KEYS in your .env file."
+    );
+  }
 
   const now = Date.now();
-  const poolSize = RAW_KEYS.length;
+  const poolSize = rawKeys.length;
 
   // Search for the first healthy key starting from current cursor
   for (let i = 0; i < poolSize; i++) {
@@ -90,7 +103,7 @@ function getNextHealthyKey(): { client: OpenAI; index: number } {
 
     if (stats.status === "HEALTHY") {
       _keyCursor = (candidateIdx + 1) % poolSize;
-      const key = RAW_KEYS[candidateIdx];
+      const key = rawKeys[candidateIdx];
       const client = new OpenAI({
         apiKey: key,
         baseURL: process.env.AI_BASE_URL ?? "https://api.groq.com/openai/v1",
@@ -111,7 +124,7 @@ function getNextHealthyKey(): { client: OpenAI; index: number } {
   }
 
   const client = new OpenAI({
-    apiKey: RAW_KEYS[earliestIdx],
+    apiKey: rawKeys[earliestIdx],
     baseURL: process.env.AI_BASE_URL ?? "https://api.groq.com/openai/v1",
   });
   return { client, index: earliestIdx };
@@ -277,7 +290,8 @@ export async function callAI(
 
   // 4. Call Groq with multi-key rotation and automatic failover
   let lastError: Error | null = null;
-  const maxAttempts = Math.min(RAW_KEYS.length, 3);
+  const rawKeys = getRawKeys();
+  const maxAttempts = Math.min(rawKeys.length, 3);
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const { client, index: keyIndex } = getNextHealthyKey();
@@ -286,7 +300,7 @@ export async function callAI(
 
     try {
       const completion = await client.chat.completions.create({
-        model: process.env.AI_MODEL ?? "qwen/qwen3.8-27b",
+        model: getAIModel(),
         max_tokens: parseInt(process.env.AI_MAX_TOKENS ?? "350"),
         temperature: 0.2,
         messages: [
@@ -371,8 +385,9 @@ export async function getAllKeysTelemetry(): Promise<{
   dbTotalTokens: number;
   dbTotalPrompts: number;
 }> {
+  const currentKeys = getRawKeys();
   // Sync all keys
-  const keys: KeyTelemetry[] = RAW_KEYS.map((_, idx) => {
+  const keys: KeyTelemetry[] = currentKeys.map((_, idx: number) => {
     const stats = getOrInitKeyTelemetry(idx);
     // Refresh status if cooldown ended
     if (stats.status === "COOLDOWN" && Date.now() >= stats.cooldownUntil) {
@@ -395,7 +410,7 @@ export async function getAllKeysTelemetry(): Promise<{
   });
 
   return {
-    totalKeys: RAW_KEYS.length,
+    totalKeys: currentKeys.length,
     healthyCount,
     cooldownCount,
     errorCount,
@@ -416,11 +431,12 @@ export async function testKeyHealth(keyIndex: number): Promise<{
   model: string;
   error?: string;
 }> {
-  if (keyIndex < 0 || keyIndex >= RAW_KEYS.length) {
+  const currentKeys = getRawKeys();
+  if (keyIndex < 0 || keyIndex >= currentKeys.length) {
     throw new Error(`Invalid key index ${keyIndex}`);
   }
 
-  const key = RAW_KEYS[keyIndex];
+  const key = currentKeys[keyIndex];
   const stats = getOrInitKeyTelemetry(keyIndex);
   const client = new OpenAI({
     apiKey: key,
@@ -428,7 +444,7 @@ export async function testKeyHealth(keyIndex: number): Promise<{
   });
 
   const startTime = Date.now();
-  const targetModel = process.env.AI_MODEL ?? "qwen/qwen3.8-27b";
+  const targetModel = getAIModel();
 
   try {
     const res = await client.chat.completions.create({
