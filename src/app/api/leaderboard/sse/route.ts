@@ -6,6 +6,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
   const eventId = req.nextUrl.searchParams.get("eventId");
   if (!eventId) return new Response("eventId required", { status: 400 });
 

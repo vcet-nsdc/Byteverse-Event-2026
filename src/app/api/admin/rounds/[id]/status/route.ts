@@ -17,12 +17,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  const isDev = process.env.NODE_ENV !== "production";
-
-  if (!isDev) {
-    if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { id } = await params;

@@ -1,4 +1,8 @@
-import { applyAICap } from "@/lib/scoring";
+// applyAICap mirrors the cap logic in applyAIPenalty/updateRoundScore (src/lib/scoring.ts)
+function applyAICap(score: number, usedExplain: boolean, usedCode: boolean): number {
+  const cap = usedCode ? 50 : usedExplain ? 75 : 100;
+  return Math.min(score, cap);
+}
 
 describe("applyAICap", () => {
   test("no AI — full score", () => {

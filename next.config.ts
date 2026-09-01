@@ -1,8 +1,15 @@
 import type { NextConfig } from "next";
 
+const securityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-XSS-Protection", value: "1; mode=block" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+];
+
 const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client"],
-  // Standalone output for Docker deployments
   output: "standalone",
   experimental: {
     workerThreads: false,
@@ -17,13 +24,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/api/:path*",
-        headers: [
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "X-Frame-Options", value: "DENY" },
-          { key: "X-XSS-Protection", value: "1; mode=block" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-        ],
+        source: "/:path*",
+        headers: securityHeaders,
       },
     ];
   },

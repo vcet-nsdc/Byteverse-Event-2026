@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { redisClient } from "@/lib/redis";
 
@@ -69,8 +70,13 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ success: true, logId: auditLog.id });
 }
 
-// Endpoint to verify Admin PIN and unlock
+// Endpoint to verify Admin PIN and unlock — requires ORGANIZER session
 export async function PUT(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -79,14 +85,12 @@ export async function PUT(req: NextRequest) {
   }
 
   const { pin } = body as { pin?: string };
-  const validPins = [
-    process.env.ADMIN_PIN,
-    "123456",
-    "2026",
-    "admin2026",
-  ].filter(Boolean);
+  const adminPin = process.env.ADMIN_PIN;
+  if (!adminPin) {
+    return NextResponse.json({ error: "Server misconfiguration: ADMIN_PIN not set" }, { status: 503 });
+  }
 
-  if (!pin || !validPins.includes(pin.trim())) {
+  if (!pin || pin.trim() !== adminPin) {
     return NextResponse.json({ error: "Invalid Admin PIN" }, { status: 403 });
   }
 
