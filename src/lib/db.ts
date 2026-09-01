@@ -6,7 +6,8 @@ import "dotenv/config";
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 // 1. Initialize a reusable Node-Postgres connection pool
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const connectionString = process.env.DATABASE_URL || "postgresql://byteverse:placeholder@localhost:5432/byteverse";
+const pool = new Pool({ connectionString });
 
 // 2. Wrap it inside the native PrismaPg adapter translator
 const adapter = new PrismaPg(pool);
