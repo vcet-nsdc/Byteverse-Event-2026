@@ -13,9 +13,9 @@
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts && tsx scripts/seed-round1-questions.ts && tsx scripts/seed-round2-questions.ts",
+    "db:seed": "tsx prisma/seed.ts && tsx scripts/seed-round1-questions.ts && tsx scripts/seed-round2-questions.ts && tsx scripts/seed-round3-questions.ts && tsx scripts/seed-round4-questions.ts",
     "db:clean": "tsx scripts/clean-test-data.ts",
-    "db:reset": "tsx prisma/seed.ts && tsx scripts/seed-round1-questions.ts && tsx scripts/seed-round2-questions.ts",
+    "db:reset": "tsx prisma/seed.ts && tsx scripts/seed-round1-questions.ts && tsx scripts/seed-round2-questions.ts && tsx scripts/seed-round3-questions.ts && tsx scripts/seed-round4-questions.ts",
     "test": "jest --runInBand",
     "test:e2e": "playwright test",
     "test:load": "k6 run tests/load/main.js"

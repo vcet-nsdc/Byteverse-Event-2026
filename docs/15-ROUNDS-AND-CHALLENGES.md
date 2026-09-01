@@ -59,8 +59,8 @@ Rounds are sequential (sequence 1→5). The UI shows the next round after the cu
 - Submission via Judge0 with test case evaluation
 - Languages: C, C++, Java, Python
 
-## Currently Seeded Problems
-
 - **Round 1:** 20 MCQ logic tracing questions (seeded via `scripts/seed-round1-questions.ts`)
 - **Round 2:** 8 AI code optimization challenges (seeded via `scripts/seed-round2-questions.ts`)
-- **Rounds 3-5:** Problems need to be seeded/created via admin interface
+- **Round 3:** 4 Debugging & Code Analysis challenges with Set A & Set B 50-pt problems (seeded via `scripts/seed-round3-questions.ts`)
+- **Round 4:** 6 Data Structures & Algorithms challenges (Choose 1 of 3 for 100 Pts: Custom Sorting, Sliding Window, Monotonic Stack) (seeded via `scripts/seed-round4-questions.ts`)
+- **Round 5:** Problems need to be seeded/created via admin interface / seed scripts
