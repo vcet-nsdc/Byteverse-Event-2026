@@ -1,6 +1,9 @@
 import Redis from "ioredis";
 
 let redis: Redis | null = null;
+let subscriber: Redis | null = null;
+
+const channelHandlers = new Map<string, Set<(msg: string) => void>>();
 
 function getRedis(): Redis {
   if (!redis) {
@@ -14,6 +17,23 @@ function getRedis(): Redis {
     });
   }
   return redis;
+}
+
+function getSubscriber(): Redis {
+  if (!subscriber) {
+    subscriber = new Redis(process.env.REDIS_URL!, {
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
+      lazyConnect: true,
+    });
+    subscriber.on("error", (err) => {
+      console.error("[Redis subscriber] error:", err.message);
+    });
+    subscriber.on("message", (channel, msg) => {
+      channelHandlers.get(channel)?.forEach((h) => h(msg));
+    });
+  }
+  return subscriber;
 }
 
 export const redisClient = {
@@ -32,11 +52,22 @@ export const redisClient = {
   publish: async (channel: string, message: string) => {
     try { await getRedis().publish(channel, message); } catch {}
   },
-  subscribe: (channel: string, handler: (msg: string) => void) => {
-    const sub = new Redis(process.env.REDIS_URL!);
-    sub.subscribe(channel);
-    sub.on("message", (_, msg) => handler(msg));
-    return () => sub.disconnect();
+  subscribe: (channel: string, handler: (msg: string) => void): (() => void) => {
+    if (!channelHandlers.has(channel)) {
+      channelHandlers.set(channel, new Set());
+      getSubscriber().subscribe(channel).catch(() => {});
+    }
+    channelHandlers.get(channel)!.add(handler);
+    return () => {
+      const handlers = channelHandlers.get(channel);
+      if (handlers) {
+        handlers.delete(handler);
+        if (handlers.size === 0) {
+          channelHandlers.delete(channel);
+          getSubscriber().unsubscribe(channel).catch(() => {});
+        }
+      }
+    };
   },
   incr: async (key: string) => {
     // Return Infinity on Redis failure so callers treat it as "limit exceeded" (deny)

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { redisClient } from "@/lib/redis";
 import axios from "axios";
 
 const MAX_RUNS_PER_PROBLEM = 10;
@@ -24,8 +25,8 @@ const runSchema = z.object({
   customInput: z.string().max(32768).optional().default(""),
 });
 
-// In-memory / cache tracker for compile counts per user per problem
-const compileTracker = new Map<string, number>();
+// Round-scoped TTL for compile counter (6 hours max)
+const COMPILE_TRACKER_TTL = 6 * 60 * 60;
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -53,10 +54,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Round is not active" }, { status: 403 });
   }
 
-  const trackingKey = `${userId}:${problemId}`;
-  const currentRuns = compileTracker.get(trackingKey) ?? 0;
+  const trackingKey = `compile:${userId}:${problemId}`;
+  const currentRuns = await redisClient.incr(trackingKey);
+  if (currentRuns === 1) await redisClient.expire(trackingKey, COMPILE_TRACKER_TTL);
 
-  if (currentRuns >= MAX_RUNS_PER_PROBLEM) {
+  if (currentRuns > MAX_RUNS_PER_PROBLEM) {
     return NextResponse.json(
       {
         error: `Compile limit reached (${MAX_RUNS_PER_PROBLEM}/${MAX_RUNS_PER_PROBLEM} runs used for this problem). Please submit your final solution.`,
@@ -98,9 +100,6 @@ export async function POST(req: NextRequest) {
       { headers, timeout: 12000 }
     );
 
-    const newRuns = currentRuns + 1;
-    compileTracker.set(trackingKey, newRuns);
-
     return NextResponse.json({
       stdout: data.stdout ?? "",
       stderr: data.stderr ?? "",
@@ -108,8 +107,8 @@ export async function POST(req: NextRequest) {
       time: data.time ?? "0.00",
       memory: data.memory ?? 0,
       status: data.status?.description ?? "UNKNOWN",
-      runsUsed: newRuns,
-      runsLeft: Math.max(0, MAX_RUNS_PER_PROBLEM - newRuns),
+      runsUsed: currentRuns,
+      runsLeft: Math.max(0, MAX_RUNS_PER_PROBLEM - currentRuns),
     });
   } catch (err: unknown) {
     const errMsg = err instanceof Error ? err.message : String(err);
