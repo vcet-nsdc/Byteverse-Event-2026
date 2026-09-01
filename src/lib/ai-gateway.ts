@@ -32,6 +32,10 @@ export interface KeyTelemetry {
   cooldownUntil: number;
   lastError: string | null;
   lastLatencyMs: number | null;
+  dailyLimit: number;
+  dailyRemaining: number;
+  tpmLimit: number;
+  tpmRemaining: number;
 }
 
 // In-memory key telemetry tracker (persists across API invocations in server process)
@@ -45,6 +49,11 @@ function maskApiKey(key: string): string {
 // Initialize telemetry for all keys in pool
 function getOrInitKeyTelemetry(index: number): KeyTelemetry {
   const rawKeys = getRawKeys();
+  const currentModel = getAIModel();
+  const is8b = currentModel.includes("8b");
+  const dailyLimit = is8b ? 14400 : 1000;
+  const tpmLimit = is8b ? 20000 : 6000;
+
   let stats = keyTelemetryMap.get(index);
   if (!stats) {
     const raw = rawKeys[index] ?? "";
@@ -60,8 +69,16 @@ function getOrInitKeyTelemetry(index: number): KeyTelemetry {
       cooldownUntil: 0,
       lastError: null,
       lastLatencyMs: null,
+      dailyLimit,
+      dailyRemaining: dailyLimit,
+      tpmLimit,
+      tpmRemaining: tpmLimit,
     };
     keyTelemetryMap.set(index, stats);
+  } else {
+    stats.dailyLimit = dailyLimit;
+    stats.dailyRemaining = Math.max(0, dailyLimit - stats.totalRequests);
+    stats.tpmLimit = tpmLimit;
   }
   return stats;
 }
@@ -291,16 +308,19 @@ export async function callAI(
   // 4. Call Groq with multi-key rotation and automatic failover
   let lastError: Error | null = null;
   const rawKeys = getRawKeys();
-  const maxAttempts = Math.min(rawKeys.length, 3);
+  const maxAttempts = Math.max(rawKeys.length * 2, 6);
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const { client, index: keyIndex } = getNextHealthyKey();
     const stats = getOrInitKeyTelemetry(keyIndex);
     const startTime = Date.now();
 
+    // If initial attempt encounters contention, fail over to ultra-high capacity 8B model (20,000 TPM & 14,400 RPD)
+    const targetModel = attempt >= 2 ? "llama-3.1-8b-instant" : getAIModel();
+
     try {
       const completion = await client.chat.completions.create({
-        model: getAIModel(),
+        model: targetModel,
         max_tokens: parseInt(process.env.AI_MAX_TOKENS ?? "350"),
         temperature: 0.2,
         messages: [
@@ -323,6 +343,7 @@ export async function callAI(
       stats.lastLatencyMs = latency;
       stats.status = "HEALTHY";
       stats.lastError = null;
+      stats.dailyRemaining = Math.max(0, stats.dailyLimit - stats.totalRequests);
 
       let content = completion.choices[0]?.message?.content ?? "No response generated.";
 
@@ -360,7 +381,9 @@ export async function callAI(
       if (errMessage.includes("429") || errMessage.toLowerCase().includes("rate limit") || errMessage.toLowerCase().includes("tokens per minute")) {
         stats.status = "COOLDOWN";
         stats.cooldownUntil = Date.now() + 60000; // 60s cooldown
-        console.warn(`[AI Key Pool] Key #${keyIndex + 1} (${stats.maskedKey}) rate limited. Cooling down for 60s. Auto-switching to next key...`);
+        console.warn(`[AI Key Pool] Key #${keyIndex + 1} (${stats.maskedKey}) rate limited. Jitter backoff & trying next key...`);
+        // Jittered backoff to absorb concurrent burst spikes without dropping requests
+        await new Promise((resolve) => setTimeout(resolve, 150 * (attempt + 1) + Math.floor(Math.random() * 200)));
       } else {
         stats.status = "ERROR";
         console.warn(`[AI Key Pool] Key #${keyIndex + 1} (${stats.maskedKey}) failed:`, errMessage);
