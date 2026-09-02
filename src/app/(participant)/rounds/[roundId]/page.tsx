@@ -31,6 +31,7 @@ import {
   Copy,
   Flag
 } from "lucide-react";
+import { FormattedStatement } from "@/components/problem/formatted-statement";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
@@ -580,41 +581,18 @@ export default function RoundWorkspacePage() {
                   Round {currentRoundSequence} Finished!
                 </h1>
                 <p className="text-xs text-[#6E6E6E] font-medium leading-relaxed">
-                  Great effort! Review your round performance below while waiting for the next challenge.
+                  Your submissions have been securely recorded. Take a quick break before the next round begins!
                 </p>
               </div>
 
-              {/* Instant Performance Score Card */}
-              <div className="bg-[#F0F2F8] p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] space-y-3 text-left">
-                <div className="text-xs font-mono font-black uppercase tracking-wider text-[#0F172A] flex items-center justify-between border-b border-[#1E1B4B]/10 pb-2">
-                  <span className="flex items-center gap-1.5">
-                    <Trophy className="w-4 h-4 text-[#7F45DB]" /> Your Round {currentRoundSequence} Score
-                  </span>
-                  <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
-                    Recorded
-                  </span>
+              {/* Submission Locked Confirmation Card */}
+              <div className="bg-[#F0F2F8] p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] space-y-2 text-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-mono font-bold border border-emerald-300">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Answers Submitted & Locked
                 </div>
-
-                <div className="grid grid-cols-3 gap-2 text-center pt-1">
-                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
-                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Points</div>
-                    <div className="text-xl sm:text-2xl font-mono font-black text-[#7F45DB]">
-                      {myScore?.finalScore ?? 0}
-                    </div>
-                  </div>
-                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
-                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Solved</div>
-                    <div className="text-xl sm:text-2xl font-mono font-black text-[#0F172A]">
-                      {myScore?.solvedCount ?? Object.keys(answersMap).length}/{myScore?.totalProblemsCount ?? problems.length}
-                    </div>
-                  </div>
-                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
-                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Time</div>
-                    <div className="text-xl sm:text-2xl font-mono font-black text-[#0F172A]">
-                      {formatTime(myScore?.durationSeconds ?? 0)}
-                    </div>
-                  </div>
-                </div>
+                <p className="text-xs text-[#334155] font-medium leading-relaxed pt-1">
+                  All participant answers for Round {currentRoundSequence} have been securely registered in the tournament database. Official scores will be evaluated and released by the organizers.
+                </p>
               </div>
 
               {/* Live 5-Minute Break Countdown Card */}
@@ -655,42 +633,19 @@ export default function RoundWorkspacePage() {
                 <h1 className="font-display font-black text-3xl sm:text-4xl text-[#0F172A] tracking-tight uppercase">
                   ByteVerse 2026 Concluded!
                 </h1>
-                <p className="text-xs text-[#6E6E6E] font-mono leading-relaxed">
-                  All tournament rounds are complete. Head over to the Grand Leaderboard to view final team standings and rankings!
+                <p className="text-xs text-[#6E6E6E] font-medium leading-relaxed">
+                  All tournament rounds are complete! All team answers are securely locked.
                 </p>
               </div>
 
-              {/* Instant Performance Score Card */}
-              <div className="bg-[#F0F2F8] p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] space-y-3 text-left">
-                <div className="text-xs font-mono font-black uppercase tracking-wider text-[#0F172A] flex items-center justify-between border-b border-[#1E1B4B]/10 pb-2">
-                  <span className="flex items-center gap-1.5">
-                    <Trophy className="w-4 h-4 text-[#7F45DB]" /> Grand Finale Score
-                  </span>
-                  <span className="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300">
-                    Recorded
-                  </span>
+              {/* Tournament Completed Confirmation Card */}
+              <div className="bg-[#F0F2F8] p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] space-y-2 text-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-mono font-bold border border-emerald-300">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Submissions Closed & Recorded
                 </div>
-
-                <div className="grid grid-cols-3 gap-2 text-center pt-1">
-                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
-                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Points</div>
-                    <div className="text-xl sm:text-2xl font-mono font-black text-[#7F45DB]">
-                      {myScore?.finalScore ?? 0}
-                    </div>
-                  </div>
-                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
-                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Solved</div>
-                    <div className="text-xl sm:text-2xl font-mono font-black text-[#0F172A]">
-                      {myScore?.solvedCount ?? Object.keys(answersMap).length}/{myScore?.totalProblemsCount ?? problems.length}
-                    </div>
-                  </div>
-                  <div className="bg-white p-3 rounded-xl border border-[#E2E8F0]">
-                    <div className="text-[10px] font-mono uppercase text-[#6E6E6E] font-bold">Time</div>
-                    <div className="text-xl sm:text-2xl font-mono font-black text-[#0F172A]">
-                      {formatTime(myScore?.durationSeconds ?? 0)}
-                    </div>
-                  </div>
-                </div>
+                <p className="text-xs text-[#334155] font-medium leading-relaxed pt-1">
+                  Thank you for competing in ByteVerse 2026! Official scores, final standings, and winners will be announced by the organizers during the award ceremony.
+                </p>
               </div>
 
               <button
@@ -912,8 +867,8 @@ export default function RoundWorkspacePage() {
                 </span>
               </div>
 
-              <div className="text-sm font-semibold text-[#0F172A] leading-relaxed">
-                {currentProblem.statement}
+              <div className="text-sm text-[#0F172A] leading-relaxed">
+                <FormattedStatement statement={currentProblem.statement} />
               </div>
 
               {/* Code Snippet rendered in selected language */}
@@ -1108,8 +1063,8 @@ export default function RoundWorkspacePage() {
                 </div>
 
                 {/* Problem Statement Narrative */}
-                <div className="text-xs text-[#0F172A] leading-relaxed whitespace-pre-wrap font-sans space-y-3 bg-[#F8F9FD] p-4 rounded-2xl border border-[#1E1B4B]/10">
-                  {currentProblem?.statement}
+                <div className="bg-[#F8F9FD] p-4 rounded-2xl border border-[#1E1B4B]/10">
+                  <FormattedStatement statement={currentProblem?.statement} />
                 </div>
 
                 {/* Input & Output Specifications */}

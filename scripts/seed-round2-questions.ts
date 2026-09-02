@@ -10,9 +10,9 @@ const SET_A_QUESTIONS = [
     statement: `**Narrative:** The AI wrote a script to calculate the sum of the first N natural numbers for a math game. It works fine for small N, but for large inputs ($N = 10^9$), it causes a **Time Limit Exceeded (TLE)** error because it loops a billion times!
 
 **Task:** Optimize the $O(N)$ loop into an $O(1)$ mathematical formula:
-$$\\text{Sum} = \\frac{N \\times (N + 1)}{2}$$
+Formula: Sum = (N * (N + 1)) / 2
 
-*(Hint: Use a 64-bit integer / \`long long\` / \`long\` to prevent 32-bit integer overflow!)*`,
+(Hint: Use a 64-bit integer / \`long long\` / \`long\` to prevent 32-bit integer overflow!)`,
     inputFormat: "A single integer N (1 <= N <= 10^9)",
     outputFormat: "A single 64-bit integer representing the sum of 1 to N",
     constraints: "1 <= N <= 10^9",
@@ -55,9 +55,9 @@ $$\\text{Sum} = \\frac{N \\times (N + 1)}{2}$$
     sequence: 2,
     title: "Q2: The Sorted Checker",
     difficulty: "Easy",
-    statement: `**Narrative:** The AI needs to verify if an array of student scores is **strictly increasing** ($arr[i] < arr[i+1]$). Currently, the AI compares *every* element to *all* the elements that come after it using nested loops. This takes $O(N^2)$ time and causes TLE for large arrays.
+    statement: `**Narrative:** The AI needs to verify if an array of student scores is **strictly increasing** (\`arr[i] < arr[i+1]\`). Currently, the AI compares *every* element to *all* the elements that come after it using nested loops. This takes $O(N^2)$ time and causes TLE for large arrays.
 
-**Task:** Optimize it to $O(N)$ by only comparing adjacent neighboring elements ($arr[i]$ and $arr[i+1]$).`,
+**Task:** Optimize it to $O(N)$ by only comparing adjacent neighboring elements (\`arr[i]\` and \`arr[i+1]\`).`,
     inputFormat: "First line: integer N. Second line: N space-separated integers.",
     outputFormat: "1 (or true) if strictly increasing, 0 (or false) otherwise.",
     constraints: "1 <= N <= 100,000",
@@ -103,9 +103,9 @@ $$\\text{Sum} = \\frac{N \\times (N + 1)}{2}$$
     sequence: 3,
     title: "Q3: The Score Spread",
     difficulty: "Easy",
-    statement: `**Narrative:** Find the "spread" (maximum difference: $\\max(arr) - \\min(arr)$) between the highest score and the lowest score in an array. The AI checks the difference of every possible pair using nested loops ($O(N^2)$).
+    statement: `**Narrative:** Find the "spread" (maximum difference: \`max(arr) - min(arr)\`) between the highest score and the lowest score in an array. The AI checks the difference of every possible pair using nested loops ($O(N^2)$).
 
-**Task:** Optimize it to $O(N)$ by tracking the minimum and maximum values in a single pass, then returning $\\text{max\\_val} - \\text{min\\_val}$.`,
+**Task:** Optimize it to $O(N)$ by tracking the minimum and maximum values in a single pass, then returning \`max_val - min_val\`.`,
     inputFormat: "First line: integer N. Second line: N space-separated integers.",
     outputFormat: "A single integer representing max(arr) - min(arr).",
     constraints: "1 <= N <= 100,000",
@@ -155,7 +155,7 @@ $$\\text{Sum} = \\frac{N \\times (N + 1)}{2}$$
     sequence: 4,
     title: "Q4: Max Subarray Signal (Sliding Window)",
     difficulty: "Hard",
-    statement: `**Narrative:** Find the maximum sum of Wi-Fi signal strengths over any contiguous window of size $K$. The AI recalculates the sum of the window from scratch every single time, which causes TLE when $N$ and $K$ are large ($O(N \\times K)$).
+    statement: `**Narrative:** Find the maximum sum of Wi-Fi signal strengths over any contiguous window of size $K$. The AI recalculates the sum of the window from scratch every single time, which causes TLE when $N$ and $K$ are large ($O(N * K)$).
 
 **Task:** Optimize this to $O(N)$ using the **Sliding Window** technique (compute the first window of size $K$, then slide the window by adding the new element entering and subtracting the element leaving).`,
     inputFormat: "First line: integers N and K. Second line: N space-separated integers.",
@@ -212,9 +212,9 @@ const SET_B_QUESTIONS = [
     statement: `**Narrative:** If there are $N$ students at the ByteVerse opening ceremony, and everyone shakes hands with everyone else exactly once, how many handshakes happen? The AI simulates this with nested loops $O(N^2)$. This TLEs when $N = 10^9$.
 
 **Task:** Optimize the $O(N^2)$ simulation into an $O(1)$ mathematical formula:
-$$\\text{Handshakes} = \\frac{N \\times (N - 1)}{2}$$
+Formula: Handshakes = (N * (N - 1)) / 2
 
-*(Hint: Use a 64-bit integer / \`long long\` / \`long\` to prevent overflow!)*`,
+(Hint: Use a 64-bit integer / \`long long\` / \`long\` to prevent overflow!)`,
     inputFormat: "A single integer N (1 <= N <= 10^9)",
     outputFormat: "A single 64-bit integer representing total handshakes",
     constraints: "1 <= N <= 10^9",
@@ -265,7 +265,7 @@ $$\\text{Handshakes} = \\frac{N \\times (N - 1)}{2}$$
     difficulty: "Easy",
     statement: `**Narrative:** Check if all items in a given array are completely identical (e.g., all 5s). The AI compares every element with every other element, taking $O(N^2)$ time.
 
-**Task:** Optimize to $O(N)$ by just comparing every element to the *first* element ($arr[0]$) in the array!`,
+**Task:** Optimize to $O(N)$ by just comparing every element to the *first* element (\`arr[0]\`) in the array!`,
     inputFormat: "First line: integer N. Second line: N space-separated integers.",
     outputFormat: "1 (or true) if all elements are identical, 0 (or false) otherwise.",
     constraints: "1 <= N <= 100,000",
@@ -363,7 +363,7 @@ $$\\text{Handshakes} = \\frac{N \\times (N - 1)}{2}$$
     sequence: 4,
     title: "Q4: Min Subarray Expense (Sliding Window)",
     difficulty: "Hard",
-    statement: `**Narrative:** Find the minimum total expense over any consecutive window of $K$ days. The AI recalculates the window sum from scratch every time, taking $O(N \\times K)$ and causing TLE.
+    statement: `**Narrative:** Find the minimum total expense over any consecutive window of $K$ days. The AI recalculates the window sum from scratch every time, taking $O(N * K)$ and causing TLE.
 
 **Task:** Optimize this to $O(N)$ using the **Sliding Window** technique!`,
     inputFormat: "First line: integers N and K. Second line: N space-separated integers.",
