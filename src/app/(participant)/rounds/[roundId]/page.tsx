@@ -136,6 +136,10 @@ export default function RoundWorkspacePage() {
     submissionId?: string;
     status?: string;
     rawScore?: number;
+    message?: string;
+    compile_output?: string;
+    stderr?: string;
+    stdout?: string;
     error?: string;
   } | null>(null);
 
@@ -157,6 +161,29 @@ export default function RoundWorkspacePage() {
     durationSeconds: number;
   } | null>(null);
   const [nextRoundState, setNextRoundState] = useState<RoundState | null>(null);
+  const [submittedProblems, setSubmittedProblems] = useState<Record<string, { status: string; rawScore?: number }>>({});
+
+  // Fetch existing submissions for this round to prevent re-submission after refresh
+  useEffect(() => {
+    async function loadExistingSubmissions() {
+      try {
+        const res = await fetch(`/api/submissions?roundId=${roundId}`);
+        if (res.ok) {
+          const subs = await res.json();
+          if (Array.isArray(subs)) {
+            const map: Record<string, { status: string; rawScore?: number }> = {};
+            for (const s of subs) {
+              map[s.problemId] = { status: s.status, rawScore: s.rawScore };
+            }
+            setSubmittedProblems(map);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    if (roundId) loadExistingSubmissions();
+  }, [roundId]);
 
   // Fetch all rounds in tournament
   useEffect(() => {
@@ -314,6 +341,10 @@ export default function RoundWorkspacePage() {
     const curr = problems[currentProblemIdx];
     if (!curr) return;
 
+    if (submittedProblems[curr.id]) {
+      return;
+    }
+
     setIsSubmitting(true);
     setActiveConsoleTab("verdict");
     setSubmissionResult(null);
@@ -333,6 +364,31 @@ export default function RoundWorkspacePage() {
       });
       const data = await res.json();
       setSubmissionResult(data);
+
+      if (res.ok && data.status && data.status !== "SYSTEM_ERROR") {
+        // Record as submitted to immediately lock this problem
+        setSubmittedProblems((prev) => ({
+          ...prev,
+          [curr.id]: { status: data.status, rawScore: data.rawScore },
+        }));
+
+        // Switch to the next unsubmitted question automatically after a brief delay
+        setTimeout(() => {
+          setCurrentProblemIdx((prevIdx) => {
+            const nextIdx = problems.findIndex(
+              (p, idx) => idx > prevIdx && !submittedProblems[p.id] && p.id !== curr.id
+            );
+            if (nextIdx !== -1) return nextIdx;
+
+            const anyUnsubmittedIdx = problems.findIndex(
+              (p) => !submittedProblems[p.id] && p.id !== curr.id
+            );
+            if (anyUnsubmittedIdx !== -1) return anyUnsubmittedIdx;
+
+            return prevIdx;
+          });
+        }, 1200);
+      }
     } catch (err: unknown) {
       setSubmissionResult({
         error: err instanceof Error ? err.message : "Submission request failed.",
@@ -649,11 +705,10 @@ export default function RoundWorkspacePage() {
               </div>
 
               <button
-                onClick={() => router.push("/leaderboard")}
-                className="w-full py-4 rounded-2xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white font-mono font-black text-sm uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                onClick={() => router.push("/")}
+                className="w-full py-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E1B4B] text-white font-mono font-black text-sm uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>View Grand Leaderboard</span>
-                <Trophy className="w-4 h-4" />
+                <span>Return to Home</span>
               </button>
             </>
           )}
@@ -991,6 +1046,7 @@ export default function RoundWorkspacePage() {
               <div className="flex items-center gap-2 flex-wrap">
                 {problems.map((p, idx) => {
                   const isCurrent = idx === currentProblemIdx;
+                  const isSubmitted = !!submittedProblems[p.id];
                   return (
                     <button
                       key={p.id}
@@ -998,16 +1054,22 @@ export default function RoundWorkspacePage() {
                       className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-2 ${
                         isCurrent
                           ? "bg-[#7F45DB] text-white border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] scale-105"
+                          : isSubmitted
+                          ? "bg-emerald-50 text-emerald-950 border-emerald-500 hover:border-[#1E1B4B]"
                           : "bg-[#F8F9FD] text-[#0F172A] border-[#1E1B4B]/30 hover:border-[#1E1B4B]"
                       }`}
                     >
                       <span>Q{idx + 1}</span>
-                      {p.difficulty && (
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
-                          p.difficulty === "Easy" ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
-                        }`}>
-                          {p.difficulty}
-                        </span>
+                      {isSubmitted ? (
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                      ) : (
+                        p.difficulty && (
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
+                            p.difficulty === "Easy" ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
+                          }`}>
+                            {p.difficulty}
+                          </span>
+                        )
                       )}
                     </button>
                   );
@@ -1160,14 +1222,21 @@ export default function RoundWorkspacePage() {
                       <span>{isRunning ? "Running..." : "Run Code"}</span>
                     </button>
 
-                    <button
-                      onClick={handleSubmitCode}
-                      disabled={isRunning || isSubmitting}
-                      className="px-5 py-1.5 rounded-xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
-                    >
-                      <Rocket className={`w-3.5 h-3.5 ${isSubmitting ? "animate-spin" : ""}`} />
-                      <span>{isSubmitting ? "Judging..." : "Submit Solution"}</span>
-                    </button>
+                    {submittedProblems[currentProblem?.id] ? (
+                      <div className="px-4 py-1.5 rounded-xl bg-emerald-600 text-white font-mono font-black text-xs border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] flex items-center gap-1.5">
+                        <CheckCircle className="w-3.5 h-3.5" />
+                        <span>Submitted & Locked</span>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={handleSubmitCode}
+                        disabled={isRunning || isSubmitting}
+                        className="px-5 py-1.5 rounded-xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+                      >
+                        <Rocket className={`w-3.5 h-3.5 ${isSubmitting ? "animate-spin" : ""}`} />
+                        <span>{isSubmitting ? "Judging..." : "Submit Solution"}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -1278,15 +1347,25 @@ export default function RoundWorkspacePage() {
                   {activeConsoleTab === "verdict" && (
                     <div>
                       {isSubmitting && <div className="text-amber-300">🚀 Evaluating all test cases against Judge0...</div>}
-                      {!isSubmitting && !submissionResult && (
+                      {!isSubmitting && !submissionResult && submittedProblems[currentProblem?.id] && (
+                        <div className="space-y-1 text-emerald-400">
+                          <div className="flex items-center gap-1.5 font-bold">
+                            <CheckCircle className="w-4 h-4" /> Solution Previously Submitted & Locked
+                          </div>
+                          <div className="text-white/60 text-[11px]">
+                            Status: {submittedProblems[currentProblem.id].status} · Points Awarded: {submittedProblems[currentProblem.id].rawScore ?? 100}
+                          </div>
+                        </div>
+                      )}
+                      {!isSubmitting && !submissionResult && !submittedProblems[currentProblem?.id] && (
                         <div className="text-white/40">Click &apos;Submit Solution&apos; to evaluate against all hidden test cases.</div>
                       )}
                       {submissionResult && (
                         <div className="space-y-2">
                           <div className="text-base font-black flex items-center gap-2">
-                            {submissionResult.status === "ACCEPTED" || submissionResult.status === "QUEUED" ? (
+                            {submissionResult.status === "ACCEPTED" ? (
                               <span className="text-emerald-400 flex items-center gap-1.5">
-                                <CheckCircle className="w-5 h-5" /> Verdict: {submissionResult.status}
+                                <CheckCircle className="w-5 h-5" /> Verdict: ACCEPTED
                               </span>
                             ) : (
                               <span className="text-red-400 flex items-center gap-1.5">
@@ -1294,9 +1373,26 @@ export default function RoundWorkspacePage() {
                               </span>
                             )}
                           </div>
+                          {submissionResult.message && (
+                            <div className="text-xs text-white/90">
+                              {submissionResult.message}
+                            </div>
+                          )}
                           {submissionResult.rawScore !== undefined && (
                             <div className="text-xs text-white/80">
                               Score Awarded: <strong className="text-[#A472F7]">{submissionResult.rawScore} Points</strong>
+                            </div>
+                          )}
+                          {submissionResult.compile_output && (
+                            <div>
+                              <div className="text-[10px] text-amber-400 font-bold uppercase">Compiler Output:</div>
+                              <pre className="text-amber-300 whitespace-pre-wrap">{submissionResult.compile_output}</pre>
+                            </div>
+                          )}
+                          {submissionResult.stderr && (
+                            <div>
+                              <div className="text-[10px] text-red-400 font-bold uppercase">Error:</div>
+                              <pre className="text-red-300 whitespace-pre-wrap">{submissionResult.stderr}</pre>
                             </div>
                           )}
                           {submissionResult.error && (
