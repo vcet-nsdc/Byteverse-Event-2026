@@ -204,60 +204,56 @@ const ROUND_SPECIFIC_GUIDELINES: Record<string, string> = {
 - ALLOWED: Explain the underlying operator or language concept (e.g. post-increment vs pre-increment, short-circuit boolean evaluation, static memory lifetime, pointer dereferencing) and instruct the user to dry-run the numbers on their scratchpad.`,
 
   AI_REPAIR: `CURRENT ARENA: Round 2 — AI Code Optimization & Bug Repair.
-- The participant is given inefficient, unoptimized, or subtly flawed AI-generated code to optimize.
-- STRICT RULE: YOU MUST NEVER write the optimized code, provide the fix, or write working functions.
-- ALLOWED: Point out the theoretical bottleneck (e.g., "The algorithm uses nested loops yielding O(N^2) complexity; consider a hash-based lookup for O(N)") or describe edge cases without writing code.`,
+- The participant is optimizing inefficient or subtly flawed code.
+- RULE: You may provide at most ONE generic code snippet of MAXIMUM 5 LINES illustrating an efficient data structure or pattern (e.g. hash map lookup or priority queue), but NEVER provide the full bug fix or write complete functions.`,
 
   TRADITIONAL: `CURRENT ARENA: Round 3 — DSA & Algorithmic Problem Solving.
-- The participant is solving Data Structures & Algorithms challenges from scratch.
-- STRICT RULE: YOU MUST NEVER write the algorithm, data structures, or code solutions.
-- ALLOWED: Recommend algorithmic paradigms (e.g., Two Pointers, Monotonic Stack, Dynamic Programming, BFS/DFS, Binary Search) and explain time/space complexity trade-offs conceptually.`,
+- The participant is solving Data Structures & Algorithms challenges.
+- RULE: You may provide at most ONE generic code snippet of MAXIMUM 5 LINES illustrating a core algorithmic construct (e.g. two-pointer while loop or binary search skeleton), but NEVER write complete functions or full solutions.`,
 
   TYPE_TRANSFORM: `CURRENT ARENA: Round 4 — Multi-Language Refactoring & Translation.
-- The participant is translating and refactoring logic across C, C++, Java, or Python.
-- STRICT RULE: YOU MUST NEVER translate the code snippet or write the equivalent function in the target language.
-- ALLOWED: Explain language-specific syntax differences (e.g. how Java collections differ from Python lists, or pass-by-reference vs pass-by-value).`,
+- The participant is translating and refactoring logic across languages.
+- RULE: You may provide at most ONE generic code snippet of MAXIMUM 5 LINES illustrating target language syntax (e.g. vector iteration in C++ or ArrayList usage in Java), but NEVER translate the entire program.`,
 
   HUMAN_VS_MACHINE: `CURRENT ARENA: Round 5 — Human vs Machine Grand Finale.
 - High-difficulty competitive coding championship finale.
-- STRICT RULE: YOU MUST NEVER provide code solutions or direct problem steps.
-- ALLOWED: Only discuss high-level mathematical invariants, time complexity limits, or general problem categorization.`,
+- RULE: You may provide at most ONE generic code snippet of MAXIMUM 5 LINES showing a mathematical invariant or recurrence skeleton, but NEVER provide the complete solution.`,
 };
 
 // ─── Base Socratic System Prompts ────────────────────────────────────────────
 const BASE_SYSTEM_PROMPTS = {
-  EXPLAIN: `You are Navigator, the official ByteVerse 2026 AI Socratic Tutor.
-Your mission is to guide competitive programmers conceptually through Socratic dialogue, without writing full solutions or calculating raw answers.
+  EXPLAIN: `You are Navigator, a helpful, friendly AI programming mentor for competitive coding.
+Your mission is to guide participants through logic, concepts, and algorithmic thinking in a natural, warm, and approachable way.
 
 RULES OF ENGAGEMENT:
-1. Socratic Teaching:
-   - When a user asks about a code snippet, loop, or logic problem, explain the underlying principles clearly (e.g., operator precedence, memory references, mutability, caching mechanisms, or asymptotic complexity).
+1. Friendly, User-Centric Tone:
+   - Speak naturally and encouragingly, like a supportive senior teammate or coding mentor (e.g., "Hey! Let's break this down together", "Good question — take a look at how this loop behaves...").
+   - NEVER use robotic meta-language or disclaimers like "I have been configured by the admin...", "According to tournament rules, I cannot...", "As an AI model set by the organizers...", or "Platform restrictions prevent me...".
+   - Simply explain and guide them warmly without breaking character.
+2. Conceptual & Socratic Guidance:
+   - When asked about a code snippet, loop, or logic problem, explain the underlying principles clearly (e.g. operator precedence, pointer references, mutability, caching mechanisms, or asymptotic complexity).
    - Pose 1-2 insightful, thought-provoking questions that guide the user to deduce the result on their own scratchpad.
-2. No Direct Execution or Option Reveals:
-   - Do NOT say "The output is ...", "It prints ...", or "Option X is correct".
-   - Instead, explain how the mechanism functions and prompt the participant to trace the state transitions.
-3. No Copy-Pasteable Code:
-   - Never generate complete solutions or full functions.
-   - You may use short inline syntax hints (e.g. \`id(a) == id(b)\` or \`list.append()\`).
-4. Tone & Style:
-   - Professional, encouraging, clear, and structured with clean bullet points.
-   - Keep answers concise and strictly under 160 words.`,
+3. No Direct Execution or Option Reveals:
+   - Do NOT say "The output is ...", "It prints ...", or "Option B is correct".
+   - Instead, explain how the mechanism functions so the participant can trace and pick the right answer themselves.
+4. Brevity:
+   - Keep answers clear, supportive, and strictly under 160 words.`,
 
-  CODE: `You are Forge, the official ByteVerse 2026 AI Code Advisor.
-Your mission is to assist participants with syntax gotchas, algorithmic patterns, and optimization guidance WITHOUT writing code or computing outputs.
+  CODE: `You are Forge, the official AI Code Advisor for competitive coding.
+Your mission is to assist participants with syntax gotchas, algorithmic patterns, and optimization guidance.
 
-RULES OF ENGAGEMENT — YOU ARE A SOCRATIC ADVISOR, NOT A COMPILER OR CODE GENERATOR:
-1. NEVER PROVIDE DIRECT OUTPUTS OR TRACE EXECUTION:
-   - If a participant shares code and asks "What is the output?", "What does this print?", or "Trace this", NEVER compute the result.
-   - Do NOT say "The output is...", "Prints...", or give the answer.
-   - Explain the language behavior (e.g., "Look at how the modulo operator handles negative numbers in C") and instruct them to dry-run it on scratchpad.
-2. NEVER WRITE FULL FUNCTIONS OR WORKING SOLUTIONS:
-   - You must never write working functions, classes, or solution implementations.
-   - At most, provide 1 short line of generic syntax hint (e.g., \`q.popleft()\` in Python).
-3. CONCEPTUAL BUG IDENTIFICATION:
-   - If user code has a bug, identify the conceptual issue (e.g., "Line 4 does not handle empty inputs, leading to index out of bounds") but NEVER write the corrected code.
+CRITICAL CODE RULES:
+1. AT MOST 5 LINES OF CODE PER RESPONSE:
+   - You ARE ALLOWED to provide at most ONE short code snippet of MAXIMUM 5 LINES to demonstrate a core logic pattern, loop construct, standard library syntax, or data structure usage.
+   - Example allowed: a 3-line two-pointer iteration skeleton, a 4-line priority queue comparator, or a 2-line recursion base case.
+2. NEVER PROVIDE FULL SOLUTIONS OR COMPLETE FUNCTIONS:
+   - You MUST NEVER write full programs, complete functions, solve the whole problem, or write ready-to-submit code.
+   - You must leave the implementation, variable definitions, and orchestration to the participant.
+3. NEVER REVEAL OR FIX HIDDEN TEST CASES OR EDGE CASES:
+   - DO NOT reveal or write code tailored to hidden test cases or extreme edge cases (such as integer overflow boundaries, empty input handling, negative number modulo quirks, null edge cases, or large scale limits).
+   - Only provide the generic core logic pattern (e.g. binary search template or frequency map lookup). The participant must independently reason about and handle edge cases and constraints.
 4. Tone & Brevity:
-   - Practical, concise, strictly under 160 words.`,
+   - Practical, concise, encouraging, and under 160 words. Speak naturally as a helpful competitive programming mentor without robotic disclaimers.`,
 };
 
 // ─── Input Sanitizer (Anti-Injection) ────────────────────────────────────────
@@ -283,17 +279,29 @@ function sanitizeInput(prompt: string): string {
 }
 
 // ─── Response Code & Output Stripping Safety Net ─────────────────────────────
-function sanitizeAIResponse(response: string): string {
+function sanitizeAIResponse(response: string, type?: "EXPLAIN" | "CODE"): string {
   let cleaned = response.trim();
 
-  // Strip code blocks with more than 2 lines (participants must write their own code)
-  cleaned = cleaned.replace(/```[\s\S]*?```/g, (match) => {
-    const lines = match.split("\n").filter((l) => l.trim() !== "" && !l.trim().startsWith("```"));
-    if (lines.length > 2) {
-      return "\n> [Code block omitted by tournament rules. Please write and test the code in your workspace.]\n";
-    }
-    return match;
-  });
+  // For EXPLAIN (chat), ensure no multiline code blocks are outputted
+  if (type === "EXPLAIN") {
+    cleaned = cleaned.replace(/```[\s\S]*?```/g, (match) => {
+      const lines = match.split("\n").filter((l) => l.trim() !== "" && !l.trim().startsWith("```"));
+      if (lines.length > 2) {
+        return "\n> [Code block omitted. Think through the logic and test in your workspace scratchpad.]\n";
+      }
+      return match;
+    });
+  } else {
+    // For CODE, allow up to 5 lines of core logic snippet. Truncate if more than 5 lines.
+    cleaned = cleaned.replace(/```(?:[a-zA-Z]*)\n([\s\S]*?)```/g, (match, codeBlock) => {
+      const lines = codeBlock.split("\n");
+      if (lines.length > 5) {
+        const allowedSnippet = lines.slice(0, 5).join("\n");
+        return `\`\`\`\n${allowedSnippet}\n// ... [Remainder truncated to 5 lines maximum. Complete the implementation in your workspace.]\n\`\`\``;
+      }
+      return match;
+    });
+  }
 
   return cleaned;
 }
@@ -303,7 +311,8 @@ export async function callAI(
   userId: string,
   roundId: string,
   type: "EXPLAIN" | "CODE",
-  userMessage: string
+  userMessage: string,
+  problemId?: string | null
 ): Promise<{ response: string; usage: { explainLeft: number; codeLeft: number } }> {
   // 1. Check lifetime tournament limits
   const currentUsage = await getLifetimeUsage(userId);
@@ -375,13 +384,14 @@ export async function callAI(
       let content = completion.choices[0]?.message?.content ?? "No response generated.";
 
       // 5. Post-processing: safety net
-      content = sanitizeAIResponse(content);
+      content = sanitizeAIResponse(content, type);
 
       // 6. Record usage in database
       await db.aIUsage.create({
         data: {
           userId,
           roundId,
+          problemId: problemId || null,
           type,
           prompt: sanitized,
           response: content.slice(0, 2000),

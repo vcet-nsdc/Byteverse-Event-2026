@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { updateRoundScore } from "@/lib/scoring";
 
 const mcqSchema = z.object({
   problemId: z.string(),
@@ -74,30 +75,8 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Recalculate total score for this round for the user, respecting AI penalty cap
-  const allSubmissions = await db.submission.findMany({
-    where: { userId, roundId },
-  });
-
-  const totalRoundScore = allSubmissions.reduce((sum, s) => sum + (s.finalScore || 0), 0);
-
-  const existingRoundScore = await db.roundScore.findUnique({
-    where: { userId_roundId: { userId, roundId } },
-  });
-  const aiScoreCap = existingRoundScore?.aiScoreCap ?? 100;
-  const finalScore = Math.min(totalRoundScore, aiScoreCap);
-
-  await db.roundScore.upsert({
-    where: { userId_roundId: { userId, roundId } },
-    update: { rawScore: totalRoundScore, finalScore },
-    create: {
-      userId,
-      roundId,
-      rawScore: totalRoundScore,
-      finalScore,
-      aiScoreCap: 100,
-    },
-  });
+  // Recalculate total score for this round for the user, respecting question-level AI penalties
+  await updateRoundScore(userId, roundId);
 
   return NextResponse.json({
     success: true,

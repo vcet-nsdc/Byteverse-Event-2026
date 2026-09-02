@@ -23,6 +23,7 @@ interface Message {
 
 interface AIAssistantDrawerProps {
   roundId: string;
+  problemId?: string | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -151,7 +152,7 @@ function parseInlineFormatting(text: string) {
 }
 
 // ─── Main AI Assistant Drawer Component ─────────────────────────────────────
-export default function AIAssistantDrawer({ roundId, isOpen, onClose }: AIAssistantDrawerProps) {
+export default function AIAssistantDrawer({ roundId, problemId, isOpen, onClose }: AIAssistantDrawerProps) {
   const [activeTab, setActiveTab] = useState<"EXPLAIN" | "CODE">("EXPLAIN");
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -268,6 +269,7 @@ I will point out logical bugs and explain syntax gotchas without writing the ful
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           roundId,
+          problemId: problemId || undefined,
           type: activeTab,
           message: promptText,
         }),

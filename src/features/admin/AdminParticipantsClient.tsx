@@ -22,6 +22,10 @@ interface ParticipantItem {
   violationReasons: string[];
   timeTaken?: string;
   totalSecondsTaken?: number;
+  aiChatPenalty?: number;
+  aiCodePenalty?: number;
+  totalAIPenalty?: number;
+  totalRawScore?: number;
 }
 
 export default function AdminParticipantsClient() {
@@ -183,25 +187,44 @@ export default function AdminParticipantsClient() {
 
                       {/* AI Chat Req */}
                       <td className="p-4 text-center">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 font-bold">
-                          <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
-                          <span>15 / {p.aiChatCount}</span>
+                        <div className="flex flex-col items-center">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 font-bold">
+                            <MessageSquare className="w-3.5 h-3.5 text-blue-600" />
+                            <span>{p.aiChatCount} / 15</span>
+                          </div>
+                          {(p.aiChatPenalty ?? 0) > 0 && (
+                            <span className="text-[10px] text-rose-600 font-mono font-bold mt-0.5">
+                              -{(p.aiChatPenalty ?? 0) % 1 === 0 ? p.aiChatPenalty : (p.aiChatPenalty ?? 0).toFixed(2)} pts
+                            </span>
+                          )}
                         </div>
                       </td>
 
                       {/* AI Code Req */}
                       <td className="p-4 text-center">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 font-bold">
-                          <Terminal className="w-3.5 h-3.5 text-amber-600" />
-                          <span>25 / {p.aiCodeCount}</span>
+                        <div className="flex flex-col items-center">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 font-bold">
+                            <Terminal className="w-3.5 h-3.5 text-amber-600" />
+                            <span>{p.aiCodeCount} / 25</span>
+                          </div>
+                          {(p.aiCodePenalty ?? 0) > 0 && (
+                            <span className="text-[10px] text-rose-600 font-mono font-bold mt-0.5">
+                              -{(p.aiCodePenalty ?? 0) % 1 === 0 ? p.aiCodePenalty : (p.aiCodePenalty ?? 0).toFixed(2)} pts
+                            </span>
+                          )}
                         </div>
                       </td>
 
                       {/* Points Earned */}
                       <td className="p-4 text-right pr-6">
-                        <div className="font-extrabold text-base text-[#7F45DB]">
+                        <div className={`font-extrabold text-base ${p.isDisqualified ? "text-gray-400 line-through" : "text-[#7F45DB]"}`}>
                           {p.pointsEarned.toFixed(1)} <span className="text-[10px] text-[#6E6E6E] font-normal">pts</span>
                         </div>
+                        {(p.totalAIPenalty ?? 0) > 0 && !p.isDisqualified && (
+                          <div className="text-[10px] text-rose-600 font-mono font-bold">
+                            (-{(p.totalAIPenalty ?? 0) % 1 === 0 ? p.totalAIPenalty : (p.totalAIPenalty ?? 0).toFixed(2)} AI penalty)
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );

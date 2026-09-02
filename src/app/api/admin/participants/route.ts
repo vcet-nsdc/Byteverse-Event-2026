@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
       roundScores: {
         select: {
           roundId: true,
+          rawScore: true,
           finalScore: true,
           durationSeconds: true,
           completedAt: true,
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
         },
         orderBy: { round: { sequence: "asc" } },
       },
-      aiUsages: { select: { type: true } },
+      aiUsages: { select: { type: true, roundId: true } },
       auditLogs: {
         where: { action: "INTEGRITY_VIOLATION" },
         select: { id: true, metadata: true, createdAt: true },
@@ -64,10 +65,37 @@ export async function GET(req: NextRequest) {
     orderBy: { name: "asc" },
   });
 
+  const ROUND_QUESTION_POINTS: Record<number, number> = {
+    1: 10,
+    2: 25,
+    3: 50,
+    4: 100,
+    5: 100,
+  };
+
   const participants = rawUsers.map((p) => {
+    const totalRawScore = p.roundScores.reduce((acc, score) => acc + score.rawScore, 0);
     const totalScore = p.roundScores.reduce((acc, score) => acc + score.finalScore, 0);
     const aiChatCount = p.aiUsages.filter((u) => u.type === "EXPLAIN").length;
     const aiCodeCount = p.aiUsages.filter((u) => u.type === "CODE").length;
+
+    const roundSeqMap = new Map<string, number>();
+    for (const rs of p.roundScores) {
+      roundSeqMap.set(rs.roundId, rs.round.sequence);
+    }
+
+    let aiChatPenalty = 0;
+    let aiCodePenalty = 0;
+    for (const u of p.aiUsages) {
+      const seq = roundSeqMap.get(u.roundId) ?? 1;
+      const qPoints = ROUND_QUESTION_POINTS[seq] ?? 25;
+      if (u.type === "EXPLAIN") {
+        aiChatPenalty += qPoints * 0.25;
+      } else if (u.type === "CODE") {
+        aiCodePenalty += qPoints * 0.50;
+      }
+    }
+    const totalAIPenalty = aiChatPenalty + aiCodePenalty;
 
     const violations = p.auditLogs.map((log) => {
       const meta = (log.metadata as Record<string, unknown>) ?? {};
@@ -108,6 +136,10 @@ export async function GET(req: NextRequest) {
       teamId: p.teamMember ? p.teamMember.team.id : null,
       aiChatCount,
       aiCodeCount,
+      aiChatPenalty,
+      aiCodePenalty,
+      totalAIPenalty,
+      totalRawScore: parseFloat(totalRawScore.toFixed(1)),
       totalSubmissions: p._count.submissions,
       pointsEarned: parseFloat(totalScore.toFixed(1)),
       isDisqualified,

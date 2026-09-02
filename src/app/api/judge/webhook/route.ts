@@ -39,7 +39,7 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    return updateRoundScore(submission.userId, submission.roundId, rawScore);
+    return updateRoundScore(submission.userId, submission.roundId);
   });
 
   const eventId = submission.problem.round.eventId;

@@ -8,6 +8,7 @@ import { redisClient } from "@/lib/redis";
 
 const schema = z.object({
   roundId: z.string(),
+  problemId: z.string().optional(),
   type: z.enum(["EXPLAIN", "CODE"]),
   message: z.string().min(1).max(1000),
 });
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
 
-  const { roundId, type, message } = parsed.data;
+  const { roundId, problemId, type, message } = parsed.data;
   const userId = session.user.id;
 
   const round = await db.round.findUnique({ where: { id: roundId } });
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
 
   let result: { response: string; usage: { explainLeft: number; codeLeft: number } };
   try {
-    result = await callAI(userId, roundId, type, message);
+    result = await callAI(userId, roundId, type, message, problemId);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "AI unavailable";
     const usage = await getLifetimeUsage(userId);
@@ -50,8 +51,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Apply the AI penalty to the user's score cap for this round
-  const newScore = await applyAIPenalty(userId, roundId, type);
+  // Apply the question-specific AI penalty to the user's score for this round
+  const newScore = await applyAIPenalty(userId, roundId, type, problemId);
 
   // Broadcast score change
   const eventId = round!.eventId;

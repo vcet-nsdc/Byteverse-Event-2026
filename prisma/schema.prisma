@@ -241,6 +241,7 @@ model AIUsage {
   id         String   @id @default(cuid())
   userId     String
   roundId    String
+  problemId  String?
   type       AIType
   prompt     String
   response   String?
@@ -250,6 +251,7 @@ model AIUsage {
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId, roundId])
+  @@index([userId, problemId])
   @@index([userId, type])
   @@map("ai_usages")
 }

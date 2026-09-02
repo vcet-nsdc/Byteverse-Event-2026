@@ -257,8 +257,8 @@ export async function POST(req: NextRequest) {
     }
     const totalRoundScore = Array.from(bestScores.values()).reduce((sum, val) => sum + val, 0);
 
-    // Instant update to RoundScore
-    await updateRoundScore(userId, roundId, totalRoundScore);
+    // Instant update to RoundScore with question-level AI deductions
+    await updateRoundScore(userId, roundId);
 
     // Instant update to TeamScore if user is in a team
     try {

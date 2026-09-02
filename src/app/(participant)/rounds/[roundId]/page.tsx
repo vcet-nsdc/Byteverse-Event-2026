@@ -1474,6 +1474,7 @@ export default function RoundWorkspacePage() {
       {/* Dedicated AI Assistant Drawer (AI Chat + AI Code) */}
       <AIAssistantDrawer
         roundId={roundId}
+        problemId={currentProblem?.id ?? null}
         isOpen={isAIOpen}
         onClose={() => setIsAIOpen(false)}
       />
