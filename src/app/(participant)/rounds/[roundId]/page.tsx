@@ -272,6 +272,20 @@ export default function RoundWorkspacePage() {
     }
   }, [currentProblemIdx, lang, problems]);
 
+  // Handle language switch from dropdown
+  const handleLanguageChange = (newLang: "cpp" | "c" | "java" | "python") => {
+    setLang(newLang);
+    const curr = problems[currentProblemIdx];
+    if (!curr) return;
+    const saved = codeMap[curr.id]?.[newLang];
+    if (saved !== undefined) {
+      setCode(saved);
+    } else {
+      const starter = curr.starterCodes?.[newLang] || LANG_DEFAULTS[newLang];
+      setCode(starter);
+    }
+  };
+
   // Handle user typing in Monaco editor
   const handleCodeChange = (newVal: string | undefined) => {
     const val = newVal ?? "";
@@ -1191,39 +1205,52 @@ export default function RoundWorkspacePage() {
             <div className="lg:col-span-7 flex flex-col gap-3">
               {/* Editor Window */}
               <div className="flex-1 bg-white rounded-3xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] flex flex-col overflow-hidden min-h-[450px]">
-                {/* Editor Action Header */}
-                <div className="p-3 bg-[#F0F2F8] border-b-2 border-[#1E1B4B]/10 flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <Code2 className="w-4 h-4 text-[#7F45DB]" />
-                    <span className="text-xs font-mono font-black text-[#0F172A] uppercase">
-                      Code Editor ({lang.toUpperCase()})
-                    </span>
-                    <span className="text-[10px] font-mono text-amber-700 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300 font-bold">
-                      Pre-Loaded AI Naive Code
+                {/* Editor Action Header - LeetCode Style */}
+                <div className="p-2.5 bg-[#1E1E1E] border-b border-[#333333] flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-1.5 text-emerald-400 font-mono font-bold text-xs">
+                      <Code2 className="w-4 h-4" />
+                      <span>Code</span>
+                    </div>
+
+                    {/* Language Dropdown Selector */}
+                    <select
+                      value={lang}
+                      onChange={(e) => handleLanguageChange(e.target.value as any)}
+                      className="px-2.5 py-1 rounded-lg bg-[#2D2D2D] text-gray-200 font-mono font-bold text-xs border border-[#404040] focus:outline-none focus:border-[#7F45DB] cursor-pointer"
+                    >
+                      <option value="cpp">C++ (GCC 9.2)</option>
+                      <option value="c">C (GCC 9.2)</option>
+                      <option value="java">Java (OpenJDK 17)</option>
+                      <option value="python">Python (3.10)</option>
+                    </select>
+
+                    <span className="hidden sm:inline-flex text-[10px] font-mono text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded-md border border-amber-800/50 font-medium">
+                      Pre-Loaded Template
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleResetCode}
-                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-[#0F172A] font-mono font-bold text-xs border border-[#1E1B4B]/30 hover:border-[#1E1B4B] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                      title="Reset back to initial naive AI code snippet"
+                      className="px-3 py-1.5 rounded-lg bg-[#2D2D2D] hover:bg-[#3D3D3D] text-gray-300 font-mono font-medium text-xs border border-[#404040] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                      title="Reset back to initial pre-loaded code template"
                     >
-                      <RotateCcw className="w-3.5 h-3.5 text-[#6E6E6E]" />
-                      <span>Reset AI Code</span>
+                      <RotateCcw className="w-3.5 h-3.5 text-gray-400" />
+                      <span>Reset</span>
                     </button>
 
                     <button
                       onClick={handleRunCode}
                       disabled={isRunning || isSubmitting}
-                      className="px-4 py-1.5 rounded-xl bg-white hover:bg-[#F0F2F8] text-[#0F172A] font-mono font-black text-xs border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+                      className="px-3.5 py-1.5 rounded-lg bg-[#2D2D2D] hover:bg-[#3D3D3D] text-white font-mono font-bold text-xs border border-[#404040] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
                     >
-                      <Play className={`w-3.5 h-3.5 fill-[#0F172A] ${isRunning ? "animate-spin" : ""}`} />
-                      <span>{isRunning ? "Running..." : "Run Code"}</span>
+                      <Play className={`w-3.5 h-3.5 fill-white ${isRunning ? "animate-spin" : ""}`} />
+                      <span>{isRunning ? "Running..." : "Run"}</span>
                     </button>
 
                     {submittedProblems[currentProblem?.id] ? (
-                      <div className="px-4 py-1.5 rounded-xl bg-emerald-600 text-white font-mono font-black text-xs border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] flex items-center gap-1.5">
+                      <div className="px-3.5 py-1.5 rounded-lg bg-emerald-700 text-white font-mono font-bold text-xs flex items-center gap-1.5 shadow-sm">
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>Submitted & Locked</span>
                       </div>
@@ -1231,68 +1258,72 @@ export default function RoundWorkspacePage() {
                       <button
                         onClick={handleSubmitCode}
                         disabled={isRunning || isSubmitting}
-                        className="px-5 py-1.5 rounded-xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+                        className="px-4 py-1.5 rounded-lg bg-[#2cbb5d] hover:bg-[#269f4f] text-white font-mono font-black text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-md disabled:opacity-40"
                       >
                         <Rocket className={`w-3.5 h-3.5 ${isSubmitting ? "animate-spin" : ""}`} />
-                        <span>{isSubmitting ? "Judging..." : "Submit Solution"}</span>
+                        <span>{isSubmitting ? "Judging..." : "Submit"}</span>
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Monaco Editor Container */}
-                <div className="flex-1 min-h-[350px]">
+                {/* Monaco Editor Container - Dark Mode */}
+                <div className="flex-1 min-h-[360px] bg-[#1e1e1e]">
                   <MonacoEditor
                     height="100%"
                     language={lang === "c" ? "c" : lang === "cpp" ? "cpp" : lang === "java" ? "java" : "python"}
-                    theme="vs"
+                    theme="vs-dark"
                     value={code}
                     onChange={handleCodeChange}
                     options={{
                       minimap: { enabled: false },
-                      fontSize: 13,
+                      fontSize: 13.5,
+                      lineNumbers: "on",
+                      roundedSelection: false,
                       scrollBeyondLastLine: false,
                       automaticLayout: true,
                       tabSize: 4,
+                      wordWrap: "on",
+                      padding: { top: 12, bottom: 12 },
                     }}
                   />
                 </div>
               </div>
 
-              {/* Bottom Console Drawer */}
-              <div className="bg-white rounded-3xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] overflow-hidden flex flex-col">
+              {/* Bottom Console Drawer - LeetCode Style */}
+              <div className="bg-[#1E1E1E] rounded-2xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] overflow-hidden flex flex-col">
                 {/* Console Tabs */}
-                <div className="px-4 py-2 bg-[#F0F2F8] border-b-2 border-[#1E1B4B]/10 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setActiveConsoleTab("output")}
-                      className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
-                        activeConsoleTab === "output"
-                          ? "bg-white text-[#7F45DB] border border-[#1E1B4B] shadow-sm"
-                          : "text-[#6E6E6E] hover:text-[#0F172A]"
-                      }`}
-                    >
-                      Output Console
-                    </button>
+                <div className="px-3 py-2 bg-[#252526] border-b border-[#333333] flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => setActiveConsoleTab("input")}
                       className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
                         activeConsoleTab === "input"
-                          ? "bg-white text-[#7F45DB] border border-[#1E1B4B] shadow-sm"
-                          : "text-[#6E6E6E] hover:text-[#0F172A]"
+                          ? "bg-[#333333] text-emerald-400 shadow-sm"
+                          : "text-gray-400 hover:text-gray-200"
                       }`}
                     >
-                      Custom Input
+                      Testcase (Input)
+                    </button>
+                    <button
+                      onClick={() => setActiveConsoleTab("output")}
+                      className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
+                        activeConsoleTab === "output"
+                          ? "bg-[#333333] text-emerald-400 shadow-sm"
+                          : "text-gray-400 hover:text-gray-200"
+                      }`}
+                    >
+                      Test Result
                     </button>
                     <button
                       onClick={() => setActiveConsoleTab("verdict")}
                       className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
                         activeConsoleTab === "verdict"
-                          ? "bg-white text-[#7F45DB] border border-[#1E1B4B] shadow-sm"
-                          : "text-[#6E6E6E] hover:text-[#0F172A]"
+                          ? "bg-[#333333] text-emerald-400 shadow-sm"
+                          : "text-gray-400 hover:text-gray-200"
                       }`}
                     >
-                      Submission Verdict
+                      Verdict & Score
                     </button>
                   </div>
                 </div>

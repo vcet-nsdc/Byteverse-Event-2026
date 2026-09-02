@@ -20,29 +20,74 @@ Formula: Sum = (N * (N + 1)) / 2
     sampleOutput: "15",
     timeLimitMs: 1000,
     starterCodes: {
-      c: `long long getSum(long long n) {
+      c: `#include <stdio.h>
+
+// Naive O(N) solution causes TLE for large N
+// TODO: Optimize to O(1) using formula: (n * (n + 1)) / 2
+long long getSum(long long n) {
     long long sum = 0;
-    for(long long i = 1; i <= n; i++) {
+    for (long long i = 1; i <= n; i++) {
         sum += i;
     }
     return sum;
+}
+
+int main() {
+    long long n;
+    if (scanf("%lld", &n) == 1) {
+        printf("%lld\\n", getSum(n));
+    }
+    return 0;
 }`,
-      cpp: `long long getSum(long long n) {
+      cpp: `#include <iostream>
+using namespace std;
+
+// Naive O(N) solution causes TLE for large N
+// TODO: Optimize to O(1) using formula: (n * (n + 1)) / 2
+long long getSum(long long n) {
     long long sum = 0;
-    for(long long i = 1; i <= n; i++) {
+    for (long long i = 1; i <= n; i++) {
         sum += i;
     }
     return sum;
-}`,
-      java: `public long getSum(long n) {
-    long sum = 0;
-    for(long i = 1; i <= n; i++) {
-        sum += i;
+}
+
+int main() {
+    long long n;
+    if (cin >> n) {
+        cout << getSum(n) << "\\n";
     }
-    return sum;
+    return 0;
 }`,
-      python: `def get_sum(n: int) -> int:
-    return sum(range(1, n + 1))`,
+      java: `import java.util.Scanner;
+
+public class Main {
+    // Naive O(N) solution causes TLE for large N
+    // TODO: Optimize to O(1) using formula: (n * (n + 1)) / 2
+    public static long getSum(long n) {
+        long sum = 0;
+        for (long i = 1; i <= n; i++) {
+            sum += i;
+        }
+        return sum;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        if (sc.hasNextLong()) {
+            long n = sc.nextLong();
+            System.out.println(getSum(n));
+        }
+    }
+}`,
+      python: `# Naive O(N) solution causes TLE for large N
+# TODO: Optimize to O(1) using formula: (n * (n + 1)) // 2
+def get_sum(n: int) -> int:
+    return sum(range(1, n + 1))
+
+if __name__ == "__main__":
+    n = int(input().strip())
+    print(get_sum(n))`,
     },
     testCases: [
       { input: "5", expected: "15", isHidden: false },
@@ -65,32 +110,85 @@ Formula: Sum = (N * (N + 1)) / 2
     sampleOutput: "1",
     timeLimitMs: 1000,
     starterCodes: {
-      c: `int isSorted(int arr[], int n) {
-    for(int i = 0; i < n; i++) {
-        for(int j = i + 1; j < n; j++) {
-            if(arr[i] >= arr[j]) return 0;
+      c: `#include <stdio.h>
+
+// Naive O(N^2) solution: compares every element with all following elements
+// TODO: Optimize to O(N) by checking adjacent elements (arr[i] < arr[i+1])
+int isSorted(int arr[], int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (arr[i] >= arr[j]) return 0;
         }
     }
     return 1;
+}
+
+int main() {
+    int n;
+    if (scanf("%d", &n) != 1) return 0;
+    int arr[n];
+    for (int i = 0; i < n; i++) scanf("%d", &arr[i]);
+    printf("%d\\n", isSorted(arr, n));
+    return 0;
 }`,
-      cpp: `bool isSorted(vector<int>& arr) {
-    for(int i = 0; i < arr.size(); i++) {
-        for(int j = i + 1; j < arr.size(); j++) {
-            if(arr[i] >= arr[j]) return false;
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+// Naive O(N^2) solution: compares every element with all following elements
+// TODO: Optimize to O(N) by checking adjacent elements (arr[i] < arr[i+1])
+bool isSorted(vector<int>& arr) {
+    for (int i = 0; i < (int)arr.size(); i++) {
+        for (int j = i + 1; j < (int)arr.size(); j++) {
+            if (arr[i] >= arr[j]) return false;
         }
     }
     return true;
+}
+
+int main() {
+    int n;
+    if (!(cin >> n)) return 0;
+    vector<int> arr(n);
+    for (int i = 0; i < n; i++) cin >> arr[i];
+    cout << (isSorted(arr) ? 1 : 0) << "\\n";
+    return 0;
 }`,
-      java: `public boolean isSorted(int[] arr) {
-    for(int i = 0; i < arr.length; i++) {
-        for(int j = i + 1; j < arr.length; j++) {
-            if(arr[i] >= arr[j]) return false;
+      java: `import java.util.Scanner;
+
+public class Main {
+    // Naive O(N^2) solution: compares every element with all following elements
+    // TODO: Optimize to O(N) by checking adjacent elements (arr[i] < arr[i+1])
+    public static boolean isSorted(int[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = i + 1; j < arr.length; j++) {
+                if (arr[i] >= arr[j]) return false;
+            }
         }
+        return true;
     }
-    return true;
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        if (!sc.hasNextInt()) return;
+        int n = sc.nextInt();
+        int[] arr = new int[n];
+        for (int i = 0; i < n; i++) arr[i] = sc.nextInt();
+        System.out.println(isSorted(arr) ? 1 : 0);
+    }
 }`,
-      python: `def is_sorted(arr: list[int]) -> bool:
-    return all(arr[i] < arr[j] for i in range(len(arr)) for j in range(i + 1, len(arr)))`,
+      python: `# Naive O(N^2) solution: compares every element with all following elements
+# TODO: Optimize to O(N) by checking adjacent elements (arr[i] < arr[i+1])
+def is_sorted(arr: list[int]) -> bool:
+    return all(arr[i] < arr[j] for i in range(len(arr)) for j in range(i + 1, len(arr)))
+
+if __name__ == "__main__":
+    import sys
+    tokens = sys.stdin.read().split()
+    if tokens:
+        n = int(tokens[0])
+        arr = [int(x) for x in tokens[1:n+1]]
+        print(1 if is_sorted(arr) else 0)`,
     },
     testCases: [
       { input: "5\n1 2 3 4 5", expected: "1", isHidden: false },
@@ -113,36 +211,90 @@ Formula: Sum = (N * (N + 1)) / 2
     sampleOutput: "8",
     timeLimitMs: 1000,
     starterCodes: {
-      c: `int getSpread(int arr[], int n) {
+      c: `#include <stdio.h>
+
+// Naive O(N^2) solution: checks all pairs
+// TODO: Optimize to O(N) in a single pass: max(arr) - min(arr)
+int getSpread(int arr[], int n) {
     int max_diff = 0;
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < n; j++) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
             int diff = arr[i] - arr[j];
-            if(diff > max_diff) max_diff = diff;
+            if (diff > max_diff) max_diff = diff;
         }
     }
     return max_diff;
+}
+
+int main() {
+    int n;
+    if (scanf("%d", &n) != 1) return 0;
+    int arr[n];
+    for (int i = 0; i < n; i++) scanf("%d", &arr[i]);
+    printf("%d\\n", getSpread(arr, n));
+    return 0;
 }`,
-      cpp: `int getSpread(vector<int>& arr) {
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// Naive O(N^2) solution: checks all pairs
+// TODO: Optimize to O(N) in a single pass: max(arr) - min(arr)
+int getSpread(vector<int>& arr) {
     int maxDiff = 0;
-    for(int i = 0; i < arr.size(); i++) {
-        for(int j = 0; j < arr.size(); j++) {
+    for (int i = 0; i < (int)arr.size(); i++) {
+        for (int j = 0; j < (int)arr.size(); j++) {
             maxDiff = max(maxDiff, arr[i] - arr[j]);
         }
     }
     return maxDiff;
+}
+
+int main() {
+    int n;
+    if (!(cin >> n)) return 0;
+    vector<int> arr(n);
+    for (int i = 0; i < n; i++) cin >> arr[i];
+    cout << getSpread(arr) << "\\n";
+    return 0;
 }`,
-      java: `public int getSpread(int[] arr) {
-    int maxDiff = 0;
-    for(int i = 0; i < arr.length; i++) {
-        for(int j = 0; j < arr.length; j++) {
-            maxDiff = Math.max(maxDiff, arr[i] - arr[j]);
+      java: `import java.util.Scanner;
+
+public class Main {
+    // Naive O(N^2) solution: checks all pairs
+    // TODO: Optimize to O(N) in a single pass: max(arr) - min(arr)
+    public static int getSpread(int[] arr) {
+        int maxDiff = 0;
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = 0; j < arr.length; j++) {
+                maxDiff = Math.max(maxDiff, arr[i] - arr[j]);
+            }
         }
+        return maxDiff;
     }
-    return maxDiff;
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        if (!sc.hasNextInt()) return;
+        int n = sc.nextInt();
+        int[] arr = new int[n];
+        for (int i = 0; i < n; i++) arr[i] = sc.nextInt();
+        System.out.println(getSpread(arr));
+    }
 }`,
-      python: `def get_spread(arr: list[int]) -> int:
-    return max(abs(arr[i] - arr[j]) for i in range(len(arr)) for j in range(len(arr)))`,
+      python: `# Naive O(N^2) solution: checks all pairs
+# TODO: Optimize to O(N) in a single pass: max(arr) - min(arr)
+def get_spread(arr: list[int]) -> int:
+    return max(abs(arr[i] - arr[j]) for i in range(len(arr)) for j in range(len(arr)))
+
+if __name__ == "__main__":
+    import sys
+    tokens = sys.stdin.read().split()
+    if tokens:
+        n = int(tokens[0])
+        arr = [int(x) for x in tokens[1:n+1]]
+        print(get_spread(arr))`,
     },
     testCases: [
       { input: "4\n10 2 8 5", expected: "8", isHidden: false },
@@ -165,35 +317,90 @@ Formula: Sum = (N * (N + 1)) / 2
     sampleOutput: "7",
     timeLimitMs: 1000,
     starterCodes: {
-      c: `int maxSignal(int arr[], int n, int k) {
+      c: `#include <stdio.h>
+
+// Naive O(N*K) solution: recalculates window sum from scratch
+// TODO: Optimize to O(N) using sliding window
+int maxSignal(int arr[], int n, int k) {
     int max_sum = 0;
-    for(int i = 0; i <= n - k; i++) {
+    for (int i = 0; i <= n - k; i++) {
         int curr = 0;
-        for(int j = i; j < i + k; j++) curr += arr[j];
-        if(curr > max_sum) max_sum = curr;
+        for (int j = i; j < i + k; j++) curr += arr[j];
+        if (curr > max_sum) max_sum = curr;
     }
     return max_sum;
+}
+
+int main() {
+    int n, k;
+    if (scanf("%d %d", &n, &k) != 2) return 0;
+    int arr[n];
+    for (int i = 0; i < n; i++) scanf("%d", &arr[i]);
+    printf("%d\\n", maxSignal(arr, n, k));
+    return 0;
 }`,
-      cpp: `int maxSignal(vector<int>& arr, int k) {
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// Naive O(N*K) solution: recalculates window sum from scratch
+// TODO: Optimize to O(N) using sliding window
+int maxSignal(vector<int>& arr, int k) {
     int maxSum = 0;
-    for(int i = 0; i <= (int)arr.size() - k; i++) {
+    for (int i = 0; i <= (int)arr.size() - k; i++) {
         int currentSum = 0;
-        for(int j = i; j < i + k; j++) currentSum += arr[j];
+        for (int j = i; j < i + k; j++) currentSum += arr[j];
         maxSum = max(maxSum, currentSum);
     }
     return maxSum;
+}
+
+int main() {
+    int n, k;
+    if (!(cin >> n >> k)) return 0;
+    vector<int> arr(n);
+    for (int i = 0; i < n; i++) cin >> arr[i];
+    cout << maxSignal(arr, k) << "\\n";
+    return 0;
 }`,
-      java: `public int maxSignal(int[] arr, int k) {
-    int maxSum = 0;
-    for(int i = 0; i <= arr.length - k; i++) {
-        int currentSum = 0;
-        for(int j = i; j < i + k; j++) currentSum += arr[j];
-        maxSum = Math.max(maxSum, currentSum);
+      java: `import java.util.Scanner;
+
+public class Main {
+    // Naive O(N*K) solution: recalculates window sum from scratch
+    // TODO: Optimize to O(N) using sliding window
+    public static int maxSignal(int[] arr, int k) {
+        int maxSum = 0;
+        for (int i = 0; i <= arr.length - k; i++) {
+            int currentSum = 0;
+            for (int j = i; j < i + k; j++) currentSum += arr[j];
+            maxSum = Math.max(maxSum, currentSum);
+        }
+        return maxSum;
     }
-    return maxSum;
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        if (!sc.hasNextInt()) return;
+        int n = sc.nextInt();
+        int k = sc.nextInt();
+        int[] arr = new int[n];
+        for (int i = 0; i < n; i++) arr[i] = sc.nextInt();
+        System.out.println(maxSignal(arr, k));
+    }
 }`,
-      python: `def max_signal(arr: list[int], k: int) -> int:
-    return max(sum(arr[i:i + k]) for i in range(len(arr) - k + 1))`,
+      python: `# Naive O(N*K) solution: recalculates window sum from scratch
+# TODO: Optimize to O(N) using sliding window
+def max_signal(arr: list[int], k: int) -> int:
+    return max(sum(arr[i:i + k]) for i in range(len(arr) - k + 1))
+
+if __name__ == "__main__":
+    import sys
+    tokens = sys.stdin.read().split()
+    if tokens:
+        n, k = int(tokens[0]), int(tokens[1])
+        arr = [int(x) for x in tokens[2:n+2]]
+        print(max_signal(arr, k))`,
     },
     testCases: [
       { input: "4 2\n1 2 3 4", expected: "7", isHidden: false },
@@ -222,35 +429,80 @@ Formula: Handshakes = (N * (N - 1)) / 2
     sampleOutput: "6",
     timeLimitMs: 1000,
     starterCodes: {
-      c: `long long countHandshakes(long long n) {
+      c: `#include <stdio.h>
+
+// Naive O(N^2) simulation causes TLE for large N
+// TODO: Optimize to O(1) using formula: (n * (n - 1)) / 2
+long long countHandshakes(long long n) {
     long long count = 0;
-    for(long long i = 0; i < n; i++) {
-        for(long long j = i + 1; j < n; j++) {
+    for (long long i = 0; i < n; i++) {
+        for (long long j = i + 1; j < n; j++) {
             count++;
         }
     }
     return count;
+}
+
+int main() {
+    long long n;
+    if (scanf("%lld", &n) == 1) {
+        printf("%lld\\n", countHandshakes(n));
+    }
+    return 0;
 }`,
-      cpp: `long long countHandshakes(long long n) {
+      cpp: `#include <iostream>
+using namespace std;
+
+// Naive O(N^2) simulation causes TLE for large N
+// TODO: Optimize to O(1) using formula: (n * (n - 1)) / 2
+long long countHandshakes(long long n) {
     long long count = 0;
-    for(long long i = 0; i < n; i++) {
-        for(long long j = i + 1; j < n; j++) {
+    for (long long i = 0; i < n; i++) {
+        for (long long j = i + 1; j < n; j++) {
             count++;
         }
     }
     return count;
+}
+
+int main() {
+    long long n;
+    if (cin >> n) {
+        cout << countHandshakes(n) << "\\n";
+    }
+    return 0;
 }`,
-      java: `public long countHandshakes(long n) {
-    long count = 0;
-    for(long i = 0; i < n; i++) {
-        for(long j = i + 1; j < n; j++) {
-            count++;
+      java: `import java.util.Scanner;
+
+public class Main {
+    // Naive O(N^2) simulation causes TLE for large N
+    // TODO: Optimize to O(1) using formula: (n * (n - 1)) / 2
+    public static long countHandshakes(long n) {
+        long count = 0;
+        for (long i = 0; i < n; i++) {
+            for (long j = i + 1; j < n; j++) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        if (sc.hasNextLong()) {
+            long n = sc.nextLong();
+            System.out.println(countHandshakes(n));
         }
     }
-    return count;
 }`,
-      python: `def count_handshakes(n: int) -> int:
-    return sum(1 for i in range(n) for j in range(i + 1, n))`,
+      python: `# Naive O(N^2) simulation causes TLE for large N
+# TODO: Optimize to O(1) using formula: (n * (n - 1)) // 2
+def count_handshakes(n: int) -> int:
+    return sum(1 for i in range(n) for j in range(i + 1, n))
+
+if __name__ == "__main__":
+    n = int(input().strip())
+    print(count_handshakes(n))`,
     },
     testCases: [
       { input: "4", expected: "6", isHidden: false },
@@ -273,32 +525,85 @@ Formula: Handshakes = (N * (N - 1)) / 2
     sampleOutput: "1",
     timeLimitMs: 1000,
     starterCodes: {
-      c: `int isUniform(int arr[], int n) {
-    for(int i = 0; i < n; i++) {
-        for(int j = i + 1; j < n; j++) {
-            if(arr[i] != arr[j]) return 0;
+      c: `#include <stdio.h>
+
+// Naive O(N^2) solution: compares every pair
+// TODO: Optimize to O(N) by checking if every arr[i] == arr[0]
+int isUniform(int arr[], int n) {
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (arr[i] != arr[j]) return 0;
         }
     }
     return 1;
+}
+
+int main() {
+    int n;
+    if (scanf("%d", &n) != 1) return 0;
+    int arr[n];
+    for (int i = 0; i < n; i++) scanf("%d", &arr[i]);
+    printf("%d\\n", isUniform(arr, n));
+    return 0;
 }`,
-      cpp: `bool isUniform(vector<int>& arr) {
-    for(int i = 0; i < arr.size(); i++) {
-        for(int j = i + 1; j < arr.size(); j++) {
-            if(arr[i] != arr[j]) return false;
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+// Naive O(N^2) solution: compares every pair
+// TODO: Optimize to O(N) by checking if every arr[i] == arr[0]
+bool isUniform(vector<int>& arr) {
+    for (int i = 0; i < (int)arr.size(); i++) {
+        for (int j = i + 1; j < (int)arr.size(); j++) {
+            if (arr[i] != arr[j]) return false;
         }
     }
     return true;
+}
+
+int main() {
+    int n;
+    if (!(cin >> n)) return 0;
+    vector<int> arr(n);
+    for (int i = 0; i < n; i++) cin >> arr[i];
+    cout << (isUniform(arr) ? 1 : 0) << "\\n";
+    return 0;
 }`,
-      java: `public boolean isUniform(int[] arr) {
-    for(int i = 0; i < arr.length; i++) {
-        for(int j = i + 1; j < arr.length; j++) {
-            if(arr[i] != arr[j]) return false;
+      java: `import java.util.Scanner;
+
+public class Main {
+    // Naive O(N^2) solution: compares every pair
+    // TODO: Optimize to O(N) by checking if every arr[i] == arr[0]
+    public static boolean isUniform(int[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = i + 1; j < arr.length; j++) {
+                if (arr[i] != arr[j]) return false;
+            }
         }
+        return true;
     }
-    return true;
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        if (!sc.hasNextInt()) return;
+        int n = sc.nextInt();
+        int[] arr = new int[n];
+        for (int i = 0; i < n; i++) arr[i] = sc.nextInt();
+        System.out.println(isUniform(arr) ? 1 : 0);
+    }
 }`,
-      python: `def is_uniform(arr: list[int]) -> bool:
-    return all(arr[i] == arr[j] for i in range(len(arr)) for j in range(i + 1, len(arr)))`,
+      python: `# Naive O(N^2) solution: compares every pair
+# TODO: Optimize to O(N) by checking if every arr[i] == arr[0]
+def is_uniform(arr: list[int]) -> bool:
+    return all(arr[i] == arr[j] for i in range(len(arr)) for j in range(i + 1, len(arr)))
+
+if __name__ == "__main__":
+    import sys
+    tokens = sys.stdin.read().split()
+    if tokens:
+        n = int(tokens[0])
+        arr = [int(x) for x in tokens[1:n+1]]
+        print(1 if is_uniform(arr) else 0)`,
     },
     testCases: [
       { input: "4\n5 5 5 5", expected: "1", isHidden: false },
@@ -321,36 +626,90 @@ Formula: Handshakes = (N * (N - 1)) / 2
     sampleOutput: "12",
     timeLimitMs: 1000,
     starterCodes: {
-      c: `long long maxProduct(int arr[], int n) {
+      c: `#include <stdio.h>
+
+// Naive O(N^2) solution: multiplies every pair
+// TODO: Optimize to O(N) by finding the two largest elements
+long long maxProduct(int arr[], int n) {
     long long max_prod = 0;
-    for(int i = 0; i < n; i++) {
-        for(int j = i + 1; j < n; j++) {
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
             long long prod = (long long)arr[i] * arr[j];
-            if(prod > max_prod) max_prod = prod;
+            if (prod > max_prod) max_prod = prod;
         }
     }
     return max_prod;
+}
+
+int main() {
+    int n;
+    if (scanf("%d", &n) != 1) return 0;
+    int arr[n];
+    for (int i = 0; i < n; i++) scanf("%d", &arr[i]);
+    printf("%lld\\n", maxProduct(arr, n));
+    return 0;
 }`,
-      cpp: `long long maxProduct(vector<int>& arr) {
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// Naive O(N^2) solution: multiplies every pair
+// TODO: Optimize to O(N) by finding the two largest elements
+long long maxProduct(vector<int>& arr) {
     long long maxProd = 0;
-    for(int i = 0; i < arr.size(); i++) {
-        for(int j = i + 1; j < arr.size(); j++) {
+    for (int i = 0; i < (int)arr.size(); i++) {
+        for (int j = i + 1; j < (int)arr.size(); j++) {
             maxProd = max(maxProd, (long long)arr[i] * arr[j]);
         }
     }
     return maxProd;
+}
+
+int main() {
+    int n;
+    if (!(cin >> n)) return 0;
+    vector<int> arr(n);
+    for (int i = 0; i < n; i++) cin >> arr[i];
+    cout << maxProduct(arr) << "\\n";
+    return 0;
 }`,
-      java: `public long maxProduct(int[] arr) {
-    long maxProd = 0;
-    for(int i = 0; i < arr.length; i++) {
-        for(int j = i + 1; j < arr.length; j++) {
-            maxProd = Math.max(maxProd, (long)arr[i] * arr[j]);
+      java: `import java.util.Scanner;
+
+public class Main {
+    // Naive O(N^2) solution: multiplies every pair
+    // TODO: Optimize to O(N) by finding the two largest elements
+    public static long maxProduct(int[] arr) {
+        long maxProd = 0;
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = i + 1; j < arr.length; j++) {
+                maxProd = Math.max(maxProd, (long)arr[i] * arr[j]);
+            }
         }
+        return maxProd;
     }
-    return maxProd;
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        if (!sc.hasNextInt()) return;
+        int n = sc.nextInt();
+        int[] arr = new int[n];
+        for (int i = 0; i < n; i++) arr[i] = sc.nextInt();
+        System.out.println(maxProduct(arr));
+    }
 }`,
-      python: `def max_product(arr: list[int]) -> int:
-    return max((arr[i] * arr[j] for i in range(len(arr)) for j in range(i + 1, len(arr))), default=0)`,
+      python: `# Naive O(N^2) solution: multiplies every pair
+# TODO: Optimize to O(N) by finding the two largest elements
+def max_product(arr: list[int]) -> int:
+    return max((arr[i] * arr[j] for i in range(len(arr)) for j in range(i + 1, len(arr))), default=0)
+
+if __name__ == "__main__":
+    import sys
+    tokens = sys.stdin.read().split()
+    if tokens:
+        n = int(tokens[0])
+        arr = [int(x) for x in tokens[1:n+1]]
+        print(max_product(arr))`,
     },
     testCases: [
       { input: "4\n1 4 3 2", expected: "12", isHidden: false },
@@ -373,35 +732,90 @@ Formula: Handshakes = (N * (N - 1)) / 2
     sampleOutput: "6",
     timeLimitMs: 1000,
     starterCodes: {
-      c: `int minExpense(int arr[], int n, int k) {
+      c: `#include <stdio.h>
+
+// Naive O(N*K) solution: recalculates window sum from scratch
+// TODO: Optimize to O(N) using sliding window
+int minExpense(int arr[], int n, int k) {
     int min_val = 2147483647;
-    for(int i = 0; i <= n - k; i++) {
+    for (int i = 0; i <= n - k; i++) {
         int sum = 0;
-        for(int j = i; j < i + k; j++) sum += arr[j];
-        if(sum < min_val) min_val = sum;
+        for (int j = i; j < i + k; j++) sum += arr[j];
+        if (sum < min_val) min_val = sum;
     }
     return min_val;
+}
+
+int main() {
+    int n, k;
+    if (scanf("%d %d", &n, &k) != 2) return 0;
+    int arr[n];
+    for (int i = 0; i < n; i++) scanf("%d", &arr[i]);
+    printf("%d\\n", minExpense(arr, n, k));
+    return 0;
 }`,
-      cpp: `int minExpense(vector<int>& arr, int k) {
+      cpp: `#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+// Naive O(N*K) solution: recalculates window sum from scratch
+// TODO: Optimize to O(N) using sliding window
+int minExpense(vector<int>& arr, int k) {
     int minVal = 2147483647;
-    for(int i = 0; i <= (int)arr.size() - k; i++) {
+    for (int i = 0; i <= (int)arr.size() - k; i++) {
         int sum = 0;
-        for(int j = i; j < i + k; j++) sum += arr[j];
+        for (int j = i; j < i + k; j++) sum += arr[j];
         minVal = min(minVal, sum);
     }
     return minVal;
+}
+
+int main() {
+    int n, k;
+    if (!(cin >> n >> k)) return 0;
+    vector<int> arr(n);
+    for (int i = 0; i < n; i++) cin >> arr[i];
+    cout << minExpense(arr, k) << "\\n";
+    return 0;
 }`,
-      java: `public int minExpense(int[] arr, int k) {
-    int minVal = Integer.MAX_VALUE;
-    for(int i = 0; i <= arr.length - k; i++) {
-        int sum = 0;
-        for(int j = i; j < i + k; j++) sum += arr[j];
-        minVal = Math.min(minVal, sum);
+      java: `import java.util.Scanner;
+
+public class Main {
+    // Naive O(N*K) solution: recalculates window sum from scratch
+    // TODO: Optimize to O(N) using sliding window
+    public static int minExpense(int[] arr, int k) {
+        int minVal = Integer.MAX_VALUE;
+        for (int i = 0; i <= arr.length - k; i++) {
+            int sum = 0;
+            for (int j = i; j < i + k; j++) sum += arr[j];
+            minVal = Math.min(minVal, sum);
+        }
+        return minVal;
     }
-    return minVal;
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        if (!sc.hasNextInt()) return;
+        int n = sc.nextInt();
+        int k = sc.nextInt();
+        int[] arr = new int[n];
+        for (int i = 0; i < n; i++) arr[i] = sc.nextInt();
+        System.out.println(minExpense(arr, k));
+    }
 }`,
-      python: `def min_expense(arr: list[int], k: int) -> int:
-    return min(sum(arr[i:i + k]) for i in range(len(arr) - k + 1))`,
+      python: `# Naive O(N*K) solution: recalculates window sum from scratch
+# TODO: Optimize to O(N) using sliding window
+def min_expense(arr: list[int], k: int) -> int:
+    return min(sum(arr[i:i + k]) for i in range(len(arr) - k + 1))
+
+if __name__ == "__main__":
+    import sys
+    tokens = sys.stdin.read().split()
+    if tokens:
+        n, k = int(tokens[0]), int(tokens[1])
+        arr = [int(x) for x in tokens[2:n+2]]
+        print(min_expense(arr, k))`,
     },
     testCases: [
       { input: "5 2\n3 8 2 5 1", expected: "6", isHidden: false },
@@ -413,7 +827,7 @@ Formula: Handshakes = (N * (N - 1)) / 2
 ];
 
 async function seedRound2() {
-  console.log("⚡ Seeding Round 2: AI Code Optimization Problems & Starter Codes...");
+  console.log("⚡ Seeding Round 2: Complete Executable Starter Codes for C, C++, Java & Python...");
 
   const round2 = await db.round.findFirst({
     where: { eventId: EVENT_ID, sequence: 2 },
@@ -449,11 +863,12 @@ async function seedRound2() {
         sampleOutput: q.sampleOutput,
         difficulty: q.difficulty,
         timeLimitMs: q.timeLimitMs,
-        set: "A",
-        sequence: q.sequence,
-        starterCodes: q.starterCodes,
+        memoryLimitMb: 256,
+        allowedLangs: ["cpp", "c", "java", "python"],
         isPublished: true,
-        allowedLangs: ["c", "cpp", "java", "python"],
+        set: "A",
+        starterCodes: q.starterCodes,
+        sequence: q.sequence,
       },
     });
 
@@ -470,8 +885,6 @@ async function seedRound2() {
         },
       });
     }
-
-    console.log(`✅ Seeded Set A: ${q.title} (${q.difficulty}) with ${q.testCases.length} test cases`);
   }
 
   // Seed Set B Questions
@@ -488,11 +901,12 @@ async function seedRound2() {
         sampleOutput: q.sampleOutput,
         difficulty: q.difficulty,
         timeLimitMs: q.timeLimitMs,
-        set: "B",
-        sequence: q.sequence,
-        starterCodes: q.starterCodes,
+        memoryLimitMb: 256,
+        allowedLangs: ["cpp", "c", "java", "python"],
         isPublished: true,
-        allowedLangs: ["c", "cpp", "java", "python"],
+        set: "B",
+        starterCodes: q.starterCodes,
+        sequence: q.sequence,
       },
     });
 
@@ -509,13 +923,16 @@ async function seedRound2() {
         },
       });
     }
-
-    console.log(`✅ Seeded Set B: ${q.title} (${q.difficulty}) with ${q.testCases.length} test cases`);
   }
 
-  console.log("🎉 Round 2 AI Code Optimization Question Bank Successfully Seeded!");
+  console.log("✅ Round 2 successfully seeded with 8 questions (Set A & Set B) with complete boilerplates!");
 }
 
 seedRound2()
-  .catch(console.error)
-  .finally(() => db.$disconnect());
+  .catch((e) => {
+    console.error("❌ Seeding failed:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await db.$disconnect();
+  });
