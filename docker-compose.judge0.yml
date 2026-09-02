@@ -1,0 +1,79 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: byteverse
+      POSTGRES_USER: byteverse
+      POSTGRES_PASSWORD: BJtus6WFdza8fRGKM7ADPIr21j3nYvpL
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "0.0.0.0:5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U byteverse -d byteverse"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  judge0-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: judge0
+      POSTGRES_USER: judge0
+      POSTGRES_PASSWORD: Zw7Hn21yxcYaJvNMqICzQ5thREumKsPb
+    volumes:
+      - judge0pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U judge0 -d judge0"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --requirepass 3AhY47QFgiScfRDIuXKVUGjztOPo6aNb --appendonly yes
+    volumes:
+      - redisdata:/data
+    ports:
+      - "0.0.0.0:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "3AhY47QFgiScfRDIuXKVUGjztOPo6aNb", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  judge0:
+    image: judge0/judge0:1.13.1
+    restart: unless-stopped
+    volumes:
+      - ./docker/judge0.conf:/judge0.conf:ro
+    ports:
+      - "0.0.0.0:2358:2358"
+    privileged: true
+    depends_on:
+      judge0-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: judge0-db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: judge0
+      POSTGRES_USER: judge0
+      POSTGRES_PASSWORD: Zw7Hn21yxcYaJvNMqICzQ5thREumKsPb
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: 3AhY47QFgiScfRDIuXKVUGjztOPo6aNb
+      REDIS_URL: redis://:3AhY47QFgiScfRDIuXKVUGjztOPo6aNb@redis:6379
+      AUTH_TOKEN: nsJLGeoqB1du7Yj5CkQpKw6mNtEUW3b8
+      DISABLE_CGROUPS: "true"
+      CALLBACKS_URL: https://byteverse-testing-platform-26.vercel.app/api/judge/webhook
+      CALLBACKS_URL_BEARER_TOKEN: MNVlhg2iJqhVGQNhk+Jp0L5QliXRNLjexiTOhQY2OaI=
+
+volumes:
+  pgdata:
+  judge0pgdata:
+  redisdata:
