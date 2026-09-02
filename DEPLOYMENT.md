@@ -1,7 +1,7 @@
 # ByteVerse 2026 â€” Production Split Deployment Architecture
 
 This document describes the production deployment architecture for ByteVerse 2026:
-- **Frontend & API:** Hosted on **Vercel** (`https://byteverse-testing-platform-26.vercel.app`)
+- **Frontend & API:** Hosted on **Vercel** (`https://platform-26.vercel.app`)
 - **Execution & Database Engine:** Hosted on **Azure Virtual Machine** (`13.70.5.64`)
 
 ---
@@ -78,7 +78,7 @@ Set these environment variables in your Vercel Project Settings (**Settings** â†
 | `JUDGE0_URL` | `http://13.70.5.64:2358` |
 | `JUDGE0_API_KEY` | `nsJLGeoqB1du7Yj5CkQpKw6mNtEUW3b8` |
 | `JUDGE0_WEBHOOK_SECRET` | `MNVlhg2iJqhVGQNhk+Jp0L5QliXRNLjexiTOhQY2OaI=` |
-| `NEXTAUTH_URL` | `https://byteverse-testing-platform-26.vercel.app` |
+| `NEXTAUTH_URL` | `https://platform-26.vercel.app` |
 | `NEXTAUTH_SECRET` | `5c6436ba4df746e4b6d4ee2ea439b1a55502c388a107ef46c24090b84c8a29a0` |
 | `ADMIN_PIN` | `2026` |
 | `ADMIN_INVITE_TOKEN` | `bv2026-admin-nsdc-key` |

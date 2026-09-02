@@ -21,7 +21,8 @@
     "test:ai": "node scripts/test-ai-keys.mjs",
     "test:e2e": "playwright test",
     "test:load": "k6 run tests/load/main.js",
-    "test:stress": "node scripts/stress-test-judge0.mjs 25"
+    "test:stress": "node scripts/stress-test-judge0.mjs 25",
+    "test:flow": "node scripts/simulate-competition-flow.mjs 10"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",

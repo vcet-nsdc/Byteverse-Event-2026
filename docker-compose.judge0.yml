@@ -70,7 +70,7 @@ services:
       REDIS_URL: redis://:3AhY47QFgiScfRDIuXKVUGjztOPo6aNb@redis:6379
       AUTH_TOKEN: nsJLGeoqB1du7Yj5CkQpKw6mNtEUW3b8
       DISABLE_CGROUPS: "true"
-      CALLBACKS_URL: https://byteverse-testing-platform-26.vercel.app/api/judge/webhook
+      CALLBACKS_URL: https://platform-26.vercel.app/api/judge/webhook
       CALLBACKS_URL_BEARER_TOKEN: MNVlhg2iJqhVGQNhk+Jp0L5QliXRNLjexiTOhQY2OaI=
 
 volumes:
