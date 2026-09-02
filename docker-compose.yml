@@ -59,6 +59,12 @@ services:
       redis:
         condition: service_healthy
     environment:
+      POSTGRES_HOST: judge0-db
+      POSTGRES_USER: judge0
+      POSTGRES_DB: judge0
+      POSTGRES_PASSWORD: ${JUDGE0_DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       JUDGE0_DB_PASSWORD: ${JUDGE0_DB_PASSWORD}
       JUDGE0_WEBHOOK_SECRET: ${JUDGE0_WEBHOOK_SECRET:?JUDGE0_WEBHOOK_SECRET is required}
