@@ -68,7 +68,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["npx", "prisma", "migrate", "deploy"]
+      target: builder
+    command: ["npx", "prisma", "db", "push"]
     environment:
       DATABASE_URL: postgresql://byteverse:${POSTGRES_PASSWORD}@postgres:5432/byteverse
     depends_on:
