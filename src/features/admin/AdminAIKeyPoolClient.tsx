@@ -23,6 +23,14 @@ interface KeyTelemetry {
   index: number;
   maskedKey: string;
   totalRequests: number;
+  dailyLimit: number;
+  dailyRemaining: number;
+  rpmLimit: number;
+  currentRpm: number;
+  peakRpm: number;
+  tpmLimit: number;
+  currentTpm: number;
+  peakTpm: number;
   totalTokens: number;
   promptTokens: number;
   completionTokens: number;
@@ -31,10 +39,6 @@ interface KeyTelemetry {
   cooldownUntil: number;
   lastError: string | null;
   lastLatencyMs: number | null;
-  dailyLimit?: number;
-  dailyRemaining?: number;
-  tpmLimit?: number;
-  tpmRemaining?: number;
 }
 
 interface ParticipantUsage {
@@ -55,6 +59,10 @@ interface TelemetryData {
   errorCount: number;
   totalTokensConsumed: number;
   totalRequestsServed: number;
+  poolCurrentRpm: number;
+  poolPeakRpm: number;
+  poolCurrentTpm: number;
+  poolPeakTpm: number;
   dbTotalTokens: number;
   dbTotalPrompts: number;
   keys: KeyTelemetry[];
@@ -183,53 +191,53 @@ export default function AdminAIKeyPoolClient() {
             <Key className="w-4 h-4 text-[#7F45DB]" />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-[#0F172A] font-mono">
-            {data?.totalKeys ?? 0} <span className="text-xs font-bold text-[#6E6E6E]">Accounts</span>
+            {data?.healthyCount ?? 0} / {data?.totalKeys ?? 0} <span className="text-xs font-bold text-[#6E6E6E]">Active</span>
           </div>
           <div className="text-[11px] font-mono text-emerald-600 font-bold flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Round-Robin Auto Rotation Active</span>
+            <span>Round-Robin Load Balancing</span>
           </div>
         </div>
 
-        {/* Card 2: Healthy Accounts */}
+        {/* Card 2: Max Requests / Min (RPM) */}
         <div className="bg-white p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] space-y-2">
           <div className="flex items-center justify-between text-[#6E6E6E] text-xs font-mono font-bold">
-            <span>Pool Health Status</span>
-            <Activity className="w-4 h-4 text-emerald-600" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-600 font-mono">
-            {data?.healthyCount ?? 0} / {data?.totalKeys ?? 0}
-          </div>
-          <div className="text-[11px] font-mono text-[#6E6E6E]">
-            {data?.cooldownCount ?? 0} in Cooldown · {data?.errorCount ?? 0} Error
-          </div>
-        </div>
-
-        {/* Card 3: Total Tokens Consumed */}
-        <div className="bg-white p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] space-y-2">
-          <div className="flex items-center justify-between text-[#6E6E6E] text-xs font-mono font-bold">
-            <span>Tournament Tokens Used</span>
-            <Cpu className="w-4 h-4 text-[#7F45DB]" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-[#7F45DB] font-mono">
-            {(data?.dbTotalTokens ?? 0).toLocaleString()} <span className="text-xs font-bold text-[#6E6E6E]">Tokens</span>
-          </div>
-          <div className="text-[11px] font-mono text-[#6E6E6E]">
-            Historical token tally in DB
-          </div>
-        </div>
-
-        {/* Card 4: Prompts Served */}
-        <div className="bg-white p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] space-y-2">
-          <div className="flex items-center justify-between text-[#6E6E6E] text-xs font-mono font-bold">
-            <span>Total Prompts Handled</span>
-            <MessageSquare className="w-4 h-4 text-blue-600" />
+            <span>Max Requests / Min</span>
+            <Activity className="w-4 h-4 text-blue-600" />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-blue-600 font-mono">
-            {(data?.dbTotalPrompts ?? 0).toLocaleString()} <span className="text-xs font-bold text-[#6E6E6E]">Calls</span>
+            {data?.poolPeakRpm || data?.poolCurrentRpm || 0} <span className="text-xs font-bold text-[#6E6E6E]">/ {(data?.totalKeys ?? 1) * 30} RPM</span>
           </div>
           <div className="text-[11px] font-mono text-[#6E6E6E]">
-            15 Chat / 25 Code participant limits
+            Current: {data?.poolCurrentRpm ?? 0} RPM · Cap: 30 RPM/acc
+          </div>
+        </div>
+
+        {/* Card 3: Max Tokens / Min (TPM) */}
+        <div className="bg-white p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] space-y-2">
+          <div className="flex items-center justify-between text-[#6E6E6E] text-xs font-mono font-bold">
+            <span>Max Tokens / Min</span>
+            <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+          </div>
+          <div className="text-2xl sm:text-3xl font-black text-amber-600 font-mono">
+            {(data?.poolPeakTpm || data?.poolCurrentTpm || 0).toLocaleString()} <span className="text-xs font-bold text-[#6E6E6E]">/ {((data?.totalKeys ?? 1) * 18000).toLocaleString()} TPM</span>
+          </div>
+          <div className="text-[11px] font-mono text-[#6E6E6E]">
+            Current: {(data?.poolCurrentTpm ?? 0).toLocaleString()} TPM · Cap: 18k TPM/acc
+          </div>
+        </div>
+
+        {/* Card 4: Total Requests (Daily Cap) */}
+        <div className="bg-white p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] space-y-2">
+          <div className="flex items-center justify-between text-[#6E6E6E] text-xs font-mono font-bold">
+            <span>Total Requests Served</span>
+            <MessageSquare className="w-4 h-4 text-[#7F45DB]" />
+          </div>
+          <div className="text-2xl sm:text-3xl font-black text-[#7F45DB] font-mono">
+            {(data?.totalRequestsServed ?? 0).toLocaleString()} <span className="text-xs font-bold text-[#6E6E6E]">/ {((data?.totalKeys ?? 1) * 14400).toLocaleString()}</span>
+          </div>
+          <div className="text-[11px] font-mono text-[#6E6E6E]">
+            14,400 daily requests per account cap
           </div>
         </div>
       </div>
@@ -301,48 +309,64 @@ export default function AdminAIKeyPoolClient() {
                     <Key className="w-3.5 h-3.5 text-[#8A8A8A] shrink-0 ml-1" />
                   </div>
 
-                  {/* Key Stats Breakdown */}
+                  {/* Key Stats Breakdown: RPM & TPM */}
                   <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                    <div className="p-2 bg-[#F8F9FD] rounded-lg border border-[#1E1B4B]/10">
-                      <div className="text-[10px] text-[#6E6E6E] font-bold uppercase">Requests Handled</div>
-                      <div className="text-base font-black text-[#0F172A]">{k.totalRequests}</div>
+                    <div className="p-2.5 bg-[#F8F9FD] rounded-xl border border-[#1E1B4B]/10">
+                      <div className="text-[10px] text-[#6E6E6E] font-bold uppercase flex items-center justify-between">
+                        <span>Max Req / Min</span>
+                        <span className="text-blue-600 font-extrabold">30 cap</span>
+                      </div>
+                      <div className="text-base font-black text-[#0F172A] mt-0.5">
+                        {k.currentRpm} <span className="text-[10px] text-[#6E6E6E] font-normal">RPM</span>
+                      </div>
+                      <div className="text-[10px] text-[#6E6E6E] mt-0.5">
+                        Peak: <strong className="text-[#0F172A]">{k.peakRpm} RPM</strong>
+                      </div>
                     </div>
-                    <div className="p-2 bg-[#F8F9FD] rounded-lg border border-[#1E1B4B]/10">
-                      <div className="text-[10px] text-[#6E6E6E] font-bold uppercase">Tokens Consumed</div>
-                      <div className="text-base font-black text-[#7F45DB]">{k.totalTokens.toLocaleString()}</div>
+
+                    <div className="p-2.5 bg-[#F8F9FD] rounded-xl border border-[#1E1B4B]/10">
+                      <div className="text-[10px] text-[#6E6E6E] font-bold uppercase flex items-center justify-between">
+                        <span>Max Token / Min</span>
+                        <span className="text-amber-600 font-extrabold">18k cap</span>
+                      </div>
+                      <div className="text-base font-black text-[#7F45DB] mt-0.5">
+                        {k.currentTpm.toLocaleString()} <span className="text-[10px] text-[#6E6E6E] font-normal">TPM</span>
+                      </div>
+                      <div className="text-[10px] text-[#6E6E6E] mt-0.5">
+                        Peak: <strong className="text-[#0F172A]">{k.peakTpm.toLocaleString()} TPM</strong>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Groq Account Token Quota */}
+                  {/* Groq Account Daily Request Exhaustion Quota */}
                   <div className="space-y-1.5 font-mono pt-1">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-[#6E6E6E] font-bold uppercase text-[10px]">Account Quota:</span>
+                      <span className="text-[#6E6E6E] font-bold uppercase text-[10px]">Total Requests:</span>
                       <strong className="text-[#7F45DB] font-black">
-                        {k.totalTokens.toLocaleString()} / 40,000 tokens used
+                        {k.totalRequests.toLocaleString()} / 14,400 daily requests
                       </strong>
                     </div>
                     <div className="w-full h-2.5 rounded-full bg-[#E2E8F0] overflow-hidden border border-[#1E1B4B]/20">
                       <div
                         className={`h-full transition-all ${
-                          k.totalTokens < 20000 ? "bg-emerald-500" : k.totalTokens < 35000 ? "bg-amber-500" : "bg-destructive"
+                          k.totalRequests < 8000 ? "bg-emerald-500" : k.totalRequests < 12000 ? "bg-amber-500" : "bg-destructive"
                         }`}
                         style={{
-                          width: `${Math.min(100, Math.max(3, (k.totalTokens / 40000) * 100))}%`,
+                          width: `${Math.min(100, Math.max(3, (k.totalRequests / 14400) * 100))}%`,
                         }}
                       />
                     </div>
                     <div className="text-[10px] text-[#6E6E6E] flex items-center justify-between">
-                      <span>Remaining: <strong className="text-emerald-700">{Math.max(0, 40000 - k.totalTokens).toLocaleString()} tokens</strong></span>
-                      <span>{Math.round((k.totalTokens / 40000) * 100)}% used</span>
+                      <span>Remaining: <strong className="text-emerald-700">{Math.max(0, 14400 - k.totalRequests).toLocaleString()} reqs</strong></span>
+                      <span>{((k.totalRequests / 14400) * 100).toFixed(1)}% used</span>
                     </div>
                   </div>
 
-                  {/* Prompt vs Completion breakdown */}
+                  {/* Rate Limits & Latency Footer */}
                   <div className="text-[11px] font-mono text-[#6E6E6E] flex items-center justify-between border-t border-[#1E1B4B]/10 pt-2">
-                    <span>⚡ {(k.tpmLimit ?? 6000).toLocaleString()} TPM</span>
-                    <span>In: {k.promptTokens.toLocaleString()} · Out: {k.completionTokens.toLocaleString()}</span>
+                    <span>⚡ 18,000 TPM limit · 30 RPM limit</span>
                     <span>
-                      <strong className="text-[#0F172A]">{k.lastLatencyMs ? `${k.lastLatencyMs}ms` : "—"}</strong>
+                      Latency: <strong className="text-[#0F172A]">{k.lastLatencyMs ? `${k.lastLatencyMs}ms` : "—"}</strong>
                     </span>
                   </div>
 

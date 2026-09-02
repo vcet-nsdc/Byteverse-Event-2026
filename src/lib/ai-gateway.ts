@@ -40,6 +40,14 @@ export interface KeyTelemetry {
   index: number;
   maskedKey: string;
   totalRequests: number;
+  dailyLimit: number; // 14,400 Requests per day
+  dailyRemaining: number;
+  rpmLimit: number; // 30 Requests per minute
+  currentRpm: number;
+  peakRpm: number;
+  tpmLimit: number; // 18,000 Tokens per minute
+  currentTpm: number;
+  peakTpm: number;
   totalTokens: number;
   promptTokens: number;
   completionTokens: number;
@@ -48,14 +56,11 @@ export interface KeyTelemetry {
   cooldownUntil: number;
   lastError: string | null;
   lastLatencyMs: number | null;
-  dailyLimit: number;
-  dailyRemaining: number;
-  tpmLimit: number;
-  tpmRemaining: number;
 }
 
 // In-memory key telemetry tracker (persists across API invocations in server process)
 const keyTelemetryMap: Map<number, KeyTelemetry> = new Map();
+const keyMinuteWindows: Map<number, Array<{ timestamp: number; tokens: number }>> = new Map();
 
 function maskApiKey(key: string): string {
   if (key.length <= 10) return "gsk_••••••••";
@@ -65,11 +70,17 @@ function maskApiKey(key: string): string {
 // Initialize telemetry for all keys in pool
 function getOrInitKeyTelemetry(index: number): KeyTelemetry {
   const rawKeys = getRawKeys();
-  const currentModel = getAIModel();
-  const is8b = currentModel.includes("8b");
-  const dailyLimit = is8b ? 14400 : 1000;
-  const tpmLimit = is8b ? 20000 : 6000;
+  const dailyLimit = 14400; // Groq Daily Exhaustion Point
+  const rpmLimit = 30;     // Groq Minute Exhaustion Point
+  const tpmLimit = 18000;  // Groq Token Trap (18,000 TPM)
   const raw = rawKeys[index] ?? "";
+
+  // Prune 60-second sliding window
+  const now = Date.now();
+  const window = (keyMinuteWindows.get(index) ?? []).filter((item) => item.timestamp > now - 60000);
+  keyMinuteWindows.set(index, window);
+  const currentRpm = window.length;
+  const currentTpm = window.reduce((sum, item) => sum + item.tokens, 0);
 
   let stats = keyTelemetryMap.get(index);
   if (!stats) {
@@ -87,15 +98,24 @@ function getOrInitKeyTelemetry(index: number): KeyTelemetry {
       lastLatencyMs: null,
       dailyLimit,
       dailyRemaining: dailyLimit,
+      rpmLimit,
+      currentRpm,
+      peakRpm: currentRpm,
       tpmLimit,
-      tpmRemaining: tpmLimit,
+      currentTpm,
+      peakTpm: currentTpm,
     };
     keyTelemetryMap.set(index, stats);
   } else {
     stats.maskedKey = maskApiKey(raw);
     stats.dailyLimit = dailyLimit;
     stats.dailyRemaining = Math.max(0, dailyLimit - stats.totalRequests);
+    stats.rpmLimit = rpmLimit;
+    stats.currentRpm = currentRpm;
+    stats.peakRpm = Math.max(stats.peakRpm || 0, currentRpm);
     stats.tpmLimit = tpmLimit;
+    stats.currentTpm = currentTpm;
+    stats.peakTpm = Math.max(stats.peakTpm || 0, currentTpm);
   }
   return stats;
 }
@@ -381,6 +401,11 @@ export async function callAI(
       stats.lastError = null;
       stats.dailyRemaining = Math.max(0, stats.dailyLimit - stats.totalRequests);
 
+      // Record in key's 60-second sliding window
+      const win = keyMinuteWindows.get(keyIndex) ?? [];
+      win.push({ timestamp: Date.now(), tokens: totalTokens });
+      keyMinuteWindows.set(keyIndex, win);
+
       let content = completion.choices[0]?.message?.content ?? "No response generated.";
 
       // 5. Post-processing: safety net
@@ -441,6 +466,10 @@ export async function getAllKeysTelemetry(): Promise<{
   errorCount: number;
   totalTokensConsumed: number;
   totalRequestsServed: number;
+  poolCurrentRpm: number;
+  poolPeakRpm: number;
+  poolCurrentTpm: number;
+  poolPeakTpm: number;
   keys: KeyTelemetry[];
   dbTotalTokens: number;
   dbTotalPrompts: number;
@@ -462,6 +491,10 @@ export async function getAllKeysTelemetry(): Promise<{
   const errorCount = keys.filter((k) => k.status === "ERROR").length;
   const totalTokensConsumed = keys.reduce((acc, k) => acc + k.totalTokens, 0);
   const totalRequestsServed = keys.reduce((acc, k) => acc + k.totalRequests, 0);
+  const poolCurrentRpm = keys.reduce((acc, k) => acc + (k.currentRpm || 0), 0);
+  const poolPeakRpm = keys.reduce((acc, k) => acc + (k.peakRpm || 0), 0);
+  const poolCurrentTpm = keys.reduce((acc, k) => acc + (k.currentTpm || 0), 0);
+  const poolPeakTpm = keys.reduce((acc, k) => acc + (k.peakTpm || 0), 0);
 
   // Query database aggregate for historical tournament totals
   const dbAggregate = await db.aIUsage.aggregate({
@@ -476,6 +509,10 @@ export async function getAllKeysTelemetry(): Promise<{
     errorCount,
     totalTokensConsumed,
     totalRequestsServed,
+    poolCurrentRpm,
+    poolPeakRpm,
+    poolCurrentTpm,
+    poolPeakTpm,
     keys,
     dbTotalTokens: dbAggregate._sum.tokensUsed ?? 0,
     dbTotalPrompts: dbAggregate._count.id ?? 0,

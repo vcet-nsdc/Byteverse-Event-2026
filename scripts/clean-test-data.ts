@@ -21,8 +21,9 @@ async function main() {
   await db.teamMember.deleteMany();
   await db.team.deleteMany();
 
-  // Delete audit logs
+  // Delete audit logs & announcements
   await db.auditLog.deleteMany();
+  await db.announcement.deleteMany();
 
   // Delete non-admin users
   const deletedUsers = await db.user.deleteMany({
