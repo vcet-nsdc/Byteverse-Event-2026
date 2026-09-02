@@ -381,11 +381,17 @@ async function main() {
 
   console.log(`Found Round 1: ${round1.id} (${round1.name})`);
 
-  // Delete existing problems in Round 1 to start fresh
+  // Delete existing submissions, test cases, and problems in Round 1 to start fresh
+  await db.submission.deleteMany({
+    where: { roundId: round1.id },
+  });
+  await db.testCase.deleteMany({
+    where: { problem: { roundId: round1.id } },
+  });
   await db.problem.deleteMany({
     where: { roundId: round1.id },
   });
-  console.log("Cleared existing Round 1 problems.");
+  console.log("Cleared existing Round 1 problems and submissions.");
 
   // Insert SET A Questions
   for (const q of SET_A_QUESTIONS) {

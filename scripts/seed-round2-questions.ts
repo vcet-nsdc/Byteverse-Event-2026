@@ -424,7 +424,10 @@ async function seedRound2() {
     return;
   }
 
-  // Clear existing problems in Round 2
+  // Clear existing submissions, test cases, and problems in Round 2
+  await db.submission.deleteMany({
+    where: { roundId: round2.id },
+  });
   await db.testCase.deleteMany({
     where: { problem: { roundId: round2.id } },
   });

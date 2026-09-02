@@ -890,7 +890,10 @@ async function seedRound4() {
 
   console.log(`📍 Found/Created Round 4: ${round4.name} (${round4.id})`);
 
-  // 2. Clean existing questions for Round 4
+  // 2. Clean existing submissions, questions, and test cases for Round 4
+  await db.submission.deleteMany({
+    where: { roundId: round4.id },
+  });
   await db.testCase.deleteMany({
     where: { problem: { roundId: round4.id } },
   });
