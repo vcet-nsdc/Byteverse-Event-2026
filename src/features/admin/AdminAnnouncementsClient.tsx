@@ -36,8 +36,16 @@ export default function AdminAnnouncementsClient() {
     fetchAnnouncements();
   }, []);
 
-  const handlePublish = async (e: React.FormEvent) => {
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!title.trim() || !body.trim()) return;
+    setShowConfirmModal(true);
+  };
+
+  const handlePublish = async () => {
+    setShowConfirmModal(false);
     setPublishing(true);
     setMessage("");
     try {
@@ -81,7 +89,7 @@ export default function AdminAnnouncementsClient() {
       )}
 
       {/* Broadcast Form */}
-      <form onSubmit={handlePublish} className="bg-white p-6 md:p-8 rounded-2xl border-2 border-[#1E1B4B] shadow-[5px_5px_0px_0px_#1E1B4B] space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white p-6 md:p-8 rounded-2xl border-2 border-[#1E1B4B] shadow-[5px_5px_0px_0px_#1E1B4B] space-y-4">
         <h2 className="text-lg font-bold text-[#0F172A] uppercase font-display flex items-center gap-2">
           <Megaphone className="w-5 h-5 text-[#7F45DB]" />
           <span>Broadcast New Announcement</span>
@@ -165,6 +173,39 @@ export default function AdminAnnouncementsClient() {
           ))
         )}
       </div>
+
+      {/* Broadcast Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="bg-white p-6 border-2 border-[#1E1B4B] max-w-md w-full rounded-2xl shadow-[6px_6px_0px_0px_#1E1B4B]">
+            <h3 className="text-[#0F172A] font-bold text-lg font-display mb-2 flex items-center gap-2">
+              <Megaphone className="w-5 h-5 text-[#7F45DB]" />
+              Confirm Announcement Broadcast
+            </h3>
+            <p className="text-xs text-[#6E6E6E] mb-4 font-mono">
+              Are you sure you want to broadcast this message to all participant workstations right now?
+            </p>
+            <div className="bg-[#F8F9FD] p-3 rounded-xl border border-[#1E1B4B]/20 mb-6 space-y-1">
+              <div className="text-xs font-bold text-[#0F172A]">{title}</div>
+              <div className="text-[11px] text-[#6E6E6E] line-clamp-2">{body}</div>
+            </div>
+            <div className="flex gap-2 justify-end font-mono text-xs font-bold">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="px-4 py-2 border-2 border-[#1E1B4B] rounded-xl text-[#0F172A] bg-white hover:bg-[#F0F2F8]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePublish}
+                className="px-4 py-2 bg-[#7F45DB] hover:bg-[#6D35C7] text-white rounded-xl border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B]"
+              >
+                Yes, Broadcast Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

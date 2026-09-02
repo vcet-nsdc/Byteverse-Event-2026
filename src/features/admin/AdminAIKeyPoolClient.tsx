@@ -313,23 +313,27 @@ export default function AdminAIKeyPoolClient() {
                     </div>
                   </div>
 
-                  {/* Remaining Daily Quota Bar */}
-                  <div className="space-y-1 font-mono pt-1">
+                  {/* Groq Account Token Quota */}
+                  <div className="space-y-1.5 font-mono pt-1">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-[#6E6E6E] font-medium">Daily Requests Left:</span>
-                      <strong className="text-emerald-700 font-black">
-                        {(k.dailyRemaining ?? Math.max(0, (k.dailyLimit ?? 1000) - k.totalRequests)).toLocaleString()} / {(k.dailyLimit ?? 1000).toLocaleString()}
+                      <span className="text-[#6E6E6E] font-bold uppercase text-[10px]">Account Quota:</span>
+                      <strong className="text-[#7F45DB] font-black">
+                        {k.totalTokens.toLocaleString()} / 40,000 tokens used
                       </strong>
                     </div>
-                    <div className="w-full h-2 rounded-full bg-[#E2E8F0] overflow-hidden">
+                    <div className="w-full h-2.5 rounded-full bg-[#E2E8F0] overflow-hidden border border-[#1E1B4B]/20">
                       <div
                         className={`h-full transition-all ${
-                          (k.dailyRemaining ?? 1000) > 300 ? "bg-emerald-500" : (k.dailyRemaining ?? 1000) > 100 ? "bg-amber-500" : "bg-destructive"
+                          k.totalTokens < 20000 ? "bg-emerald-500" : k.totalTokens < 35000 ? "bg-amber-500" : "bg-destructive"
                         }`}
                         style={{
-                          width: `${Math.min(100, Math.max(0, (((k.dailyRemaining ?? Math.max(0, (k.dailyLimit ?? 1000) - k.totalRequests))) / (k.dailyLimit ?? 1000)) * 100))}%`,
+                          width: `${Math.min(100, Math.max(3, (k.totalTokens / 40000) * 100))}%`,
                         }}
                       />
+                    </div>
+                    <div className="text-[10px] text-[#6E6E6E] flex items-center justify-between">
+                      <span>Remaining: <strong className="text-emerald-700">{Math.max(0, 40000 - k.totalTokens).toLocaleString()} tokens</strong></span>
+                      <span>{Math.round((k.totalTokens / 40000) * 100)}% used</span>
                     </div>
                   </div>
 

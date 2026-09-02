@@ -49,6 +49,8 @@ export async function POST(req: NextRequest) {
   });
 
   await redisClient.publish("admin", JSON.stringify({ type: "ANNOUNCEMENT", announcement }));
+  await redisClient.publish("round", JSON.stringify({ type: "ANNOUNCEMENT", announcement }));
+  await redisClient.publish("announcements", JSON.stringify({ type: "ANNOUNCEMENT", announcement }));
 
   return NextResponse.json({ announcement }, { status: 201 });
 }

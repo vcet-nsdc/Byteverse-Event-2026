@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import AnnouncementBanner from "@/components/participant/AnnouncementBanner";
 
 export default async function ParticipantLayout({
   children,
@@ -15,5 +16,10 @@ export default async function ParticipantLayout({
     redirect("/admin");
   }
 
-  return <div className="min-h-screen bg-bv-deep">{children}</div>;
+  return (
+    <div className="min-h-screen bg-bv-deep relative">
+      <AnnouncementBanner />
+      {children}
+    </div>
+  );
 }

@@ -29,7 +29,8 @@ import {
   XCircle,
   HelpCircle,
   Copy,
-  Flag
+  Flag,
+  ShieldAlert
 } from "lucide-react";
 import { FormattedStatement } from "@/components/problem/formatted-statement";
 
@@ -608,6 +609,36 @@ export default function RoundWorkspacePage() {
   const currentProblem = problems[currentProblemIdx] ?? null;
   const activeRoundType = round?.type ?? allRounds.find((r) => r.id === roundId)?.type;
   const isMCQ = activeRoundType === "CODE_LOGIC" || (currentProblem?.options !== undefined && currentProblem?.options !== null);
+
+  // ── GATE 0: Disqualified Team Screen (Completely Frozen) ──
+  if (roundState.phase === "DISQUALIFIED" || team?.status === "DISQUALIFIED") {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 font-sans relative z-50">
+        <div className="text-center max-w-xl w-full bg-black/90 border-4 border-red-600 rounded-3xl p-8 shadow-[0_0_50px_rgba(239,68,68,0.5)] space-y-6 animate-in fade-in zoom-in-95">
+          <div className="w-20 h-20 rounded-3xl bg-red-950/80 border-2 border-red-600 mx-auto flex items-center justify-center shadow-[4px_4px_0px_0px_#EF4444] animate-pulse">
+            <ShieldAlert className="w-10 h-10 text-red-500" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-red-950 text-red-400 border border-red-600 text-xs font-mono font-black uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+              Tournament Integrity Notice
+            </div>
+            <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tight uppercase">
+              Workstation Disqualified
+            </h1>
+            <p className="text-sm text-red-300 font-mono leading-relaxed pt-2">
+              Your team has been disqualified by tournament administrators. Access to problem statements, compiler execution, and submission verification has been revoked.
+            </p>
+          </div>
+
+          <div className="bg-red-950/40 border border-red-800/60 p-4 rounded-2xl text-xs text-gray-300 font-mono text-center">
+            If you believe this was done in error or an accidental trigger, please approach the stage or contact an event invigilator immediately.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── GATE 1: Pre-Round Readiness Check & Agreement Gate ──
   if (!isReadinessPassed && roundState.phase !== "GATE_TEAM") {

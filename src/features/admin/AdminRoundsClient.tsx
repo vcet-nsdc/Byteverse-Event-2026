@@ -36,6 +36,52 @@ function getScheduleForRound(sequence: number) {
   return FIXED_EVENT_SCHEDULE.find((entry) => entry.sequence === sequence) ?? null;
 }
 
+function RoundLiveTimer({ startsAt, durationMin, status }: { startsAt: string | null; durationMin: number; status: string }) {
+  const [timeLeft, setTimeLeft] = useState<{ mins: number; secs: number; isOver: boolean } | null>(null);
+
+  useEffect(() => {
+    if (status !== "ACTIVE" || !startsAt) {
+      setTimeLeft(null);
+      return;
+    }
+
+    const calculate = () => {
+      const startTime = new Date(startsAt).getTime();
+      const endTime = startTime + durationMin * 60 * 1000;
+      const diffSecs = Math.floor((endTime - Date.now()) / 1000);
+
+      if (diffSecs <= 0) {
+        setTimeLeft({ mins: 0, secs: 0, isOver: true });
+      } else {
+        const mins = Math.floor(diffSecs / 60);
+        const secs = diffSecs % 60;
+        setTimeLeft({ mins, secs, isOver: false });
+      }
+    };
+
+    calculate();
+    const interval = setInterval(calculate, 1000);
+    return () => clearInterval(interval);
+  }, [startsAt, durationMin, status]);
+
+  if (status !== "ACTIVE" || !timeLeft) return null;
+
+  return (
+    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl border-2 font-mono text-xs font-black shadow-sm ${
+      timeLeft.isOver
+        ? "bg-rose-100 text-rose-800 border-rose-400 animate-pulse"
+        : timeLeft.mins < 5
+        ? "bg-amber-100 text-amber-900 border-amber-400 animate-pulse"
+        : "bg-emerald-100 text-emerald-900 border-emerald-400"
+    }`}>
+      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+      <span>
+        {timeLeft.isOver ? "⚠️ Overtime: Time Expired" : `⏳ ${timeLeft.mins}m ${timeLeft.secs.toString().padStart(2, "0")}s remaining`}
+      </span>
+    </div>
+  );
+}
+
 export default function AdminRoundsClient() {
   const [rounds, setRounds] = useState<Round[]>([]);
   const [loading, setLoading] = useState(true);
@@ -234,6 +280,7 @@ export default function AdminRoundsClient() {
                     >
                       {round.status}
                     </span>
+                    <RoundLiveTimer startsAt={round.startsAt} durationMin={round.durationMin} status={round.status} />
                   </div>
 
                   <div className="flex items-center gap-4 text-xs font-mono text-[#6E6E6E]">

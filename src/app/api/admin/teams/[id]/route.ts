@@ -7,7 +7,6 @@ import { redisClient } from "@/lib/redis";
 
 
 // PATCH /api/admin/teams/[id] — update status (ACTIVE/LOCKED/DISQUALIFIED/PENDING)
-// DELETE /api/admin/teams/[id] — soft-delete (set DISQUALIFIED + isLocked)
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -36,17 +35,22 @@ export async function PATCH(
   if (status !== undefined) updateData.status = status;
   if (isLocked !== undefined) updateData.isLocked = isLocked;
 
-  // If disqualifying, create a Disqualification record
-  if (status === "DISQUALIFIED" && reason) {
+  // If re-qualifying (setting to ACTIVE), remove disqualification record
+  if (status === "ACTIVE") {
+    await db.disqualification.deleteMany({ where: { teamId: id } });
+  }
+
+  // If disqualifying, create/update a Disqualification record
+  if (status === "DISQUALIFIED") {
     await db.disqualification.upsert({
       where: { teamId: id },
       create: {
         teamId: id,
-        reason: reason,
+        reason: reason || "Disqualified by tournament administrator",
         disqualifiedBy: session.user.id!,
       },
       update: {
-        reason: reason,
+        reason: reason || "Disqualified by tournament administrator",
         disqualifiedBy: session.user.id!,
       },
     });
@@ -59,10 +63,12 @@ export async function PATCH(
 
   await logAction(session.user.id!, "TEAM_STATUS_CHANGE", id, { status, isLocked, reason });
   await redisClient.publish("admin", JSON.stringify({ type: "TEAM_STATUS", teamId: id, status, isLocked }));
+  await redisClient.publish("round", JSON.stringify({ type: "TEAM_STATUS", teamId: id, status, isLocked }));
 
   return NextResponse.json({ id: team.id, status: team.status, isLocked: team.isLocked });
 }
 
+// DELETE /api/admin/teams/[id] — COMPLETE WIPE of team & its participant data
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -73,22 +79,40 @@ export async function DELETE(
   }
 
   const { id } = await params;
-  const existing = await db.team.findUnique({ where: { id } });
-  if (!existing) return NextResponse.json({ error: "Team not found" }, { status: 404 });
-
-  // Soft delete: disqualify + lock
-  await db.team.update({
+  const team = await db.team.findUnique({
     where: { id },
-    data: { status: "DISQUALIFIED", isLocked: true, updatedAt: new Date() },
+    include: { members: { select: { userId: true } } },
+  });
+  if (!team) return NextResponse.json({ error: "Team not found" }, { status: 404 });
+
+  const userIds = team.members.map((m) => m.userId);
+
+  // Complete transactional wipe
+  await db.$transaction(async (tx) => {
+    if (userIds.length > 0) {
+      await tx.submission.deleteMany({ where: { userId: { in: userIds } } });
+      await tx.roundScore.deleteMany({ where: { userId: { in: userIds } } });
+      await tx.aIUsage.deleteMany({ where: { userId: { in: userIds } } });
+      await tx.auditLog.deleteMany({ where: { userId: { in: userIds } } });
+      await tx.disqualification.deleteMany({ where: { userId: { in: userIds } } });
+    }
+
+    await tx.disqualification.deleteMany({ where: { teamId: id } });
+    await tx.teamScore.deleteMany({ where: { teamId: id } });
+    await tx.teamMember.deleteMany({ where: { teamId: id } });
+
+    if (userIds.length > 0) {
+      await tx.user.deleteMany({
+        where: { id: { in: userIds }, role: "PARTICIPANT" },
+      });
+    }
+
+    await tx.team.delete({ where: { id } });
   });
 
-  await db.disqualification.upsert({
-    where: { teamId: id },
-    create: { teamId: id, reason: "Deleted by admin", disqualifiedBy: session.user.id! },
-    update: { reason: "Deleted by admin", disqualifiedBy: session.user.id! },
-  });
+  await logAction(session.user.id!, "TEAM_WIPED_DELETED", id, { teamName: team.name });
+  await redisClient.publish("admin", JSON.stringify({ type: "TEAM_DELETED", teamId: id }));
+  await redisClient.publish("round", JSON.stringify({ type: "TEAM_DELETED", teamId: id }));
 
-  await logAction(session.user.id!, "TEAM_DELETED", id, {});
-
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, message: "Team and all participant data wiped successfully." });
 }

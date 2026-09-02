@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 // Initialize PostgreSQL client
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -56,12 +57,18 @@ async function loginUser(email, password) {
       redirect: "manual",
     });
 
-    const sessionCookie = loginRes.headers.get("set-cookie");
-    if (!sessionCookie) return null;
+    const rawCookies = typeof loginRes.headers.getSetCookie === "function"
+      ? loginRes.headers.getSetCookie()
+      : [loginRes.headers.get("set-cookie") || ""];
 
-    // Combine cookies
-    const authCookie = sessionCookie.split(";")[0];
-    return authCookie;
+    const cookiePairs = [];
+    for (const c of rawCookies) {
+      const part = c.split(";")[0].trim();
+      if (part) cookiePairs.push(part);
+    }
+
+    if (cookiePairs.length === 0) return null;
+    return cookiePairs.join("; ");
   } catch {
     return null;
   }
@@ -69,6 +76,14 @@ async function loginUser(email, password) {
 
 async function prepareTestParticipants(roundId) {
   console.log(`🔧 Preparing ${CONCURRENCY} test teams and participants in database...`);
+
+  // Clean previous sim-user submissions to allow fresh testing
+  await db.submission.deleteMany({
+    where: { user: { email: { startsWith: "sim-user-" } } },
+  });
+  await db.roundScore.deleteMany({
+    where: { user: { email: { startsWith: "sim-user-" } } },
+  });
 
   const passwordHash = await bcrypt.hash("testpass2026", 10);
   const participants = [];
@@ -100,7 +115,7 @@ async function prepareTestParticipants(roundId) {
           name: teamName,
           eventId: EVENT_ID,
           inviteCode: `SIM${i.toString().padStart(5, "0")}`,
-          status: "APPROVED",
+          status: "ACTIVE",
         },
       });
     }
@@ -180,7 +195,7 @@ async function simulateParticipantFlow(participant, problem, roundId, index) {
     }
 
     // 3. Test "Submit Solution" (POST /api/submissions)
-    const idempotencyKey = typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : "11111111-1111-4111-a111-111111111111";
+    const idempotencyKey = crypto.randomUUID();
     const subStart = Date.now();
     const subRes = await fetch(`${BASE_URL}/api/submissions`, {
       method: "POST",

@@ -120,11 +120,16 @@ export async function updateRoundScore(
   const aiScoreCap = existing?.aiScoreCap ?? 100;
   const finalScore = Math.min(rawScore, aiScoreCap);
 
+  const durationSeconds = round.startsAt
+    ? Math.max(1, Math.round((Date.now() - new Date(round.startsAt).getTime()) / 1000))
+    : null;
+
   await db.roundScore.upsert({
     where: { userId_roundId: { userId, roundId } },
     update: {
       rawScore,
       finalScore,
+      durationSeconds: durationSeconds ?? existing?.durationSeconds ?? null,
       completedAt: new Date(),
     },
     create: {
@@ -132,6 +137,7 @@ export async function updateRoundScore(
       roundId,
       rawScore,
       finalScore,
+      durationSeconds,
       aiScoreCap,
       completedAt: new Date(),
     },

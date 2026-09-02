@@ -112,7 +112,9 @@ export default function AdminParticipantsClient() {
                     <tr
                       key={p.id}
                       className={`transition-colors ${
-                        p.hasCheated
+                        p.isDisqualified
+                          ? "bg-slate-950 text-white hover:bg-slate-900 border-l-8 border-l-red-600 shadow-[inset_0_0_25px_rgba(0,0,0,0.9)]"
+                          : p.hasCheated
                           ? "bg-red-50/90 hover:bg-red-100/90 border-l-4 border-l-destructive"
                           : "hover:bg-[#F8F9FD]"
                       }`}
@@ -120,16 +122,16 @@ export default function AdminParticipantsClient() {
                       {/* Name & College/Email */}
                       <td className="p-4 pl-6">
                         <div className="flex items-center gap-2">
-                          <span className={`font-display font-bold text-sm ${p.hasCheated ? "text-destructive" : "text-[#0F172A]"}`}>
+                          <span className={`font-display font-bold text-sm ${p.isDisqualified ? "text-white line-through" : p.hasCheated ? "text-destructive" : "text-[#0F172A]"}`}>
                             {p.name}
                           </span>
                           {p.isDisqualified && (
-                            <span className="text-[10px] px-2 py-0.5 rounded-full border border-destructive/40 text-destructive bg-destructive/10 font-bold">
-                              Disqualified
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-600 text-white font-black uppercase">
+                              DISQUALIFIED
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-[#6E6E6E] mt-0.5">
+                        <div className={`text-[11px] mt-0.5 ${p.isDisqualified ? "text-gray-400" : "text-[#6E6E6E]"}`}>
                           {p.email} {p.college ? `· ${p.college}` : ""}
                         </div>
                       </td>
@@ -137,7 +139,7 @@ export default function AdminParticipantsClient() {
                       {/* Team Name */}
                       <td className="p-4">
                         {p.teamName !== "—" ? (
-                          <span className="text-[#0F172A] font-semibold flex items-center gap-1.5">
+                          <span className={`font-semibold flex items-center gap-1.5 ${p.isDisqualified ? "text-red-400 font-black line-through" : "text-[#0F172A]"}`}>
                             <Users className="w-3.5 h-3.5 text-[#7F45DB]" />
                             {p.teamName}
                           </span>
@@ -169,9 +171,13 @@ export default function AdminParticipantsClient() {
 
                       {/* Time Taken Column */}
                       <td className="p-4 text-center">
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 font-bold">
+                        <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl font-bold ${
+                          p.isDisqualified
+                            ? "bg-slate-800 text-gray-300 border border-gray-700"
+                            : "bg-purple-50 border border-purple-200 text-purple-900"
+                        }`}>
                           <Clock className="w-3.5 h-3.5 text-[#7F45DB] shrink-0" />
-                          <span>{p.timeTaken || "In Progress"}</span>
+                          <span>{p.timeTaken || "—"}</span>
                         </div>
                       </td>
 
