@@ -45,41 +45,30 @@ export async function POST(
   const maxDurationSeconds = round.durationMin * 60;
   const finalDuration = Math.min(Math.max(0, Math.round(durationSeconds)), maxDurationSeconds);
 
-  // Calculate participant's score for this round
+  // Calculate participant's score for this round using the centralized scoring engine
+  const { calculateRoundScoreForUser } = await import("@/lib/scoring");
+  const scoreData = await calculateRoundScoreForUser(userId, roundId);
+  const rawScore = scoreData.rawScore;
+  const finalScore = scoreData.finalScore;
+
   const existingSubmissions = await db.submission.findMany({
     where: { userId, roundId },
-    select: { problemId: true, status: true, rawScore: true, finalScore: true },
+    select: { problemId: true, status: true, rawScore: true },
   });
 
   const totalProblemsCount = await db.problem.count({ where: { roundId } });
-
-  let rawScore = 0;
   let solvedCount = 0;
-
   if (round.type === "CODE_LOGIC") {
-    // MCQ round: 10 points per accepted answer
-    const acceptedAnswers = existingSubmissions.filter((s) => s.status === "ACCEPTED");
-    solvedCount = acceptedAnswers.length;
-    rawScore = solvedCount * 10;
+    solvedCount = existingSubmissions.filter((s) => s.status === "ACCEPTED").length;
   } else {
-    // Coding rounds: Best score per unique problem
     const bestProblemScores: Record<string, number> = {};
     for (const s of existingSubmissions) {
       const currentBest = bestProblemScores[s.problemId] ?? 0;
-      const subScore = s.finalScore ?? s.rawScore ?? (s.status === "ACCEPTED" ? 100 : 0);
-      if (subScore > currentBest) {
-        bestProblemScores[s.problemId] = subScore;
-      }
+      const subScore = s.rawScore ?? (s.status === "ACCEPTED" ? 100 : 0);
+      if (subScore > currentBest) bestProblemScores[s.problemId] = subScore;
     }
-    rawScore = Object.values(bestProblemScores).reduce((acc, v) => acc + v, 0);
     solvedCount = Object.values(bestProblemScores).filter((s) => s >= 100).length;
   }
-
-  const existingScoreRecord = await db.roundScore.findUnique({
-    where: { userId_roundId: { userId, roundId } },
-  });
-  const aiScoreCap = existingScoreRecord?.aiScoreCap ?? 100;
-  const finalScore = Math.min(rawScore, aiScoreCap);
 
   // Upsert RoundScore with calculated score and durationSeconds
   const roundScore = await db.roundScore.upsert({
@@ -97,7 +86,6 @@ export async function POST(
       roundId,
       rawScore,
       finalScore,
-      aiScoreCap,
       completedAt: new Date(),
       durationSeconds: finalDuration,
     },

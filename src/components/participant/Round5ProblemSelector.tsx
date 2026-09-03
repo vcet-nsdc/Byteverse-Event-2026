@@ -95,8 +95,8 @@ export default function Round5ProblemSelector({
                   <span className="w-7 h-7 rounded-xl bg-[#7F45DB] text-white font-mono font-black text-xs flex items-center justify-center border border-[#1E1B4B]">
                     #{idx + 1}
                   </span>
-                  <span className="px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-400 font-mono font-bold text-[11px] uppercase">
-                    100 Points
+                  <span className="px-3 py-0.5 rounded-full bg-[#7F45DB]/10 text-[#4A2293] border border-[#7F45DB]/30 font-mono font-bold text-[11px] uppercase">
+                    Challenge {idx + 1}
                   </span>
                 </div>
 
@@ -105,7 +105,7 @@ export default function Round5ProblemSelector({
                     {p.title}
                   </h3>
                   <div className="text-[11px] font-mono text-[#7F45DB] font-bold mt-1 flex items-center gap-1">
-                    <Cpu className="w-3.5 h-3.5" /> High-Complexity Algorithm
+                    <Cpu className="w-3.5 h-3.5" /> Competitive Coding
                   </div>
                 </div>
 

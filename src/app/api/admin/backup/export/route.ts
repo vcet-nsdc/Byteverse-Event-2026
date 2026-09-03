@@ -85,6 +85,8 @@ export async function GET(req: NextRequest) {
     const totalAIPenalty = aiChatPenalty + aiCodePenalty;
     const isDisqualified = !!p.disqualification || p.teamMember?.team.status === "DISQUALIFIED";
 
+    const calculatedFinalScore = Math.max(0, totalRawScore - totalAIPenalty);
+
     return {
       id: p.id,
       name: p.name ?? "Unnamed Participant",
@@ -101,7 +103,7 @@ export async function GET(req: NextRequest) {
       aiChatCalls,
       aiCodeCalls,
       totalAIPenalty: parseFloat(totalAIPenalty.toFixed(2)),
-      finalPoints: parseFloat(totalFinalScore.toFixed(2)),
+      finalPoints: parseFloat(calculatedFinalScore.toFixed(2)),
       isDisqualified: isDisqualified ? "YES" : "NO",
     };
   });

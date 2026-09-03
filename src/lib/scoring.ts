@@ -173,18 +173,26 @@ export async function calculateRoundScoreForUser(userId: string, roundId: string
     const codeCalls = probAI.filter((u) => u.type === "CODE").length;
 
     // Chat: 0.25 penalty factor on question points; Code: 0.50 penalty factor on question points
-    const penaltyRate = Math.min(1.0, (chatCalls * 0.25) + (codeCalls * 0.50));
-    const problemDeduction = maxProblemPoints * penaltyRate;
-    const problemFinal = Math.max(0, problemRaw - problemDeduction);
+    const questionDeduction = (chatCalls * 0.25 * maxProblemPoints) + (codeCalls * 0.50 * maxProblemPoints);
 
     totalRawScore += problemRaw;
-    totalFinalScore += problemFinal;
-    totalAIDeductions += problemDeduction;
+    totalAIDeductions += questionDeduction;
   }
+
+  // Account for any AI calls without explicit problemId
+  const unassignedAI = aiUsages.filter(
+    (u) => !u.problemId && problems.length > 1
+  );
+  for (const u of unassignedAI) {
+    const deduction = u.type === "EXPLAIN" ? maxProblemPoints * 0.25 : maxProblemPoints * 0.50;
+    totalAIDeductions += deduction;
+  }
+
+  const calculatedFinalScore = Math.max(0, totalRawScore - totalAIDeductions);
 
   return {
     rawScore: Math.round(totalRawScore * 100) / 100,
-    finalScore: Math.round(totalFinalScore * 100) / 100,
+    finalScore: Math.round(calculatedFinalScore * 100) / 100,
     aiDeductions: Math.round(totalAIDeductions * 100) / 100,
   };
 }
@@ -199,21 +207,28 @@ export async function updateRoundScore(
 
   const scoreData = await calculateRoundScoreForUser(userId, roundId);
 
-  const durationSeconds = round.startsAt
-    ? Math.max(1, Math.round((Date.now() - new Date(round.startsAt).getTime()) / 1000))
-    : null;
-
   const existing = await db.roundScore.findUnique({
     where: { userId_roundId: { userId, roundId } },
   });
+
+  const maxAllowedSeconds = round.durationMin * 60;
+  let durationSeconds: number | null = existing?.durationSeconds ?? null;
+  if (durationSeconds === null && round.startsAt) {
+    durationSeconds = Math.min(
+      maxAllowedSeconds,
+      Math.max(1, Math.round((Date.now() - new Date(round.startsAt).getTime()) / 1000))
+    );
+  } else if (durationSeconds !== null) {
+    durationSeconds = Math.min(durationSeconds, maxAllowedSeconds);
+  }
 
   await db.roundScore.upsert({
     where: { userId_roundId: { userId, roundId } },
     update: {
       rawScore: scoreData.rawScore,
       finalScore: scoreData.finalScore,
-      durationSeconds: durationSeconds ?? existing?.durationSeconds ?? null,
-      completedAt: new Date(),
+      durationSeconds,
+      completedAt: existing?.completedAt ?? new Date(),
     },
     create: {
       userId,

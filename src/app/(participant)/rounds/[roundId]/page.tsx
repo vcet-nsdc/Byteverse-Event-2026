@@ -309,6 +309,13 @@ export default function RoundWorkspacePage() {
     }
   }, [currentProblemIdx, lang, problems]);
 
+  // Reset terminal and execution results when switching questions
+  useEffect(() => {
+    setRunResult(null);
+    setSubmissionResult(null);
+    setActiveConsoleTab("output");
+  }, [currentProblemIdx]);
+
   // Handle language switch from dropdown
   const handleLanguageChange = (newLang: "cpp" | "c" | "java" | "python") => {
     setLang(newLang);
@@ -788,19 +795,19 @@ export default function RoundWorkspacePage() {
                 </div>
               </div>
 
-              {/* Host Launch Status & Enter Button */}
+              {/* Arena Open Status & Enter Button */}
               {isNextRoundLive ? (
                 <button
                   onClick={() => router.push(`/rounds/${nextRound.id}`)}
                   className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-black text-sm uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse"
                 >
                   <Rocket className="w-5 h-5 text-white" />
-                  <span>Host Started Round {nextRound.sequence} · Enter Arena Now ➔</span>
+                  <span>Round {nextRound.sequence} is Live · Enter Arena Now ➔</span>
                 </button>
               ) : (
                 <div className="w-full py-4 px-4 rounded-2xl bg-white border-2 border-[#1E1B4B] text-[#475569] font-mono font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-[3px_3px_0px_0px_#1E1B4B]">
                   <Clock className="w-4 h-4 text-[#7F45DB] animate-spin" />
-                  <span>Waiting for Tournament Host to Launch Round {nextRound.sequence} ({ROUND_TIMETABLE[nextRound.sequence]?.start})...</span>
+                  <span>Round {nextRound.sequence} will open at {ROUND_TIMETABLE[nextRound.sequence]?.start}...</span>
                 </div>
               )}
 
@@ -939,7 +946,7 @@ export default function RoundWorkspacePage() {
                 : "bg-amber-100 text-amber-900 border-amber-400"
             }`}>
               <span className={`w-2 h-2 rounded-full ${isReadyToStart ? "bg-emerald-600" : "bg-amber-600"} animate-pulse`} />
-              Round {currentRoundSequence} · {isReadyToStart ? "Live in Progress" : "Waiting for Proctor"}
+              Round {currentRoundSequence} · {isReadyToStart ? "Live in Progress" : "Scheduled"}
             </div>
             <h1 className="font-display font-black text-2xl sm:text-3xl text-[#0F172A] tracking-tight uppercase">
               {round?.name ?? `Round ${currentRoundSequence}`}
@@ -956,7 +963,7 @@ export default function RoundWorkspacePage() {
             <ul className="text-[#6E6E6E] space-y-1 list-disc list-inside">
               <li>Anti-Cheat Shield and keyboard lockouts are actively engaged.</li>
               <li>Switching tabs, exiting fullscreen, or blurring will lock the workstation.</li>
-              <li>Problems will unlock automatically as soon as the proctor starts the round.</li>
+              <li>Problems will unlock automatically once the round officially begins.</li>
             </ul>
           </div>
 
@@ -971,7 +978,7 @@ export default function RoundWorkspacePage() {
           ) : (
             <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-300 text-amber-900 font-mono text-xs font-bold flex items-center justify-center gap-2">
               <Clock className="w-4 h-4 text-amber-700 animate-spin" />
-              <span>Waiting for Tournament Host to Launch Round...</span>
+              <span>Round will open at {ROUND_TIMETABLE[currentRoundSequence]?.start ?? "scheduled time"}...</span>
             </div>
           )}
         </div>
@@ -1008,7 +1015,7 @@ export default function RoundWorkspacePage() {
       {roundState.phase === "PAUSED" && (
         <div className="bg-amber-400 text-amber-950 px-4 py-2.5 font-mono text-xs font-black uppercase tracking-wider border-b-2 border-[#1E1B4B] shadow-md flex items-center justify-center gap-3 sticky top-0 z-50 animate-pulse">
           <Clock className="w-4 h-4 text-amber-950 animate-spin" />
-          <span>⏸️ ROUND PAUSED BY TOURNAMENT HOST — Workspace & Countdown Timer are temporarily frozen. Please wait for resume.</span>
+          <span>⏸️ ROUND TEMPORARILY PAUSED — Workspace & countdown timer are frozen. Please standby.</span>
         </div>
       )}
 
@@ -1131,9 +1138,6 @@ export default function RoundWorkspacePage() {
                     {currentProblem.title}
                   </h2>
                 </div>
-                <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-[#F0F2F8] text-[#0F172A] border border-[#E2E8F0]">
-                  Question Value: 10 Points
-                </span>
               </div>
 
               <div className="text-sm text-[#0F172A] leading-relaxed">
@@ -1274,16 +1278,8 @@ export default function RoundWorkspacePage() {
                       }`}
                     >
                       <span>Q{idx + 1}</span>
-                      {isSubmitted ? (
+                      {isSubmitted && (
                         <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-                      ) : (
-                        p.difficulty && (
-                          <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
-                            p.difficulty === "Easy" ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"
-                          }`}>
-                            {p.difficulty}
-                          </span>
-                        )
                       )}
                     </button>
                   );
@@ -1320,15 +1316,6 @@ export default function RoundWorkspacePage() {
                     <span className="text-xs font-mono font-black px-2.5 py-0.5 rounded-lg bg-[#7F45DB]/10 text-[#4A2293] border border-[#7F45DB]/30">
                       Problem {currentProblemIdx + 1} of {problems.length}
                     </span>
-                    {currentProblem?.difficulty && (
-                      <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg border ${
-                        currentProblem.difficulty === "Easy"
-                          ? "bg-emerald-50 text-emerald-800 border-emerald-300"
-                          : "bg-red-50 text-red-800 border-red-300"
-                      }`}>
-                        {currentProblem.difficulty}
-                      </span>
-                    )}
                     <span className="text-xs font-mono text-[#6E6E6E] ml-auto">
                       Time Limit: {currentProblem?.timeLimitMs ?? 1000}ms
                     </span>
@@ -1483,17 +1470,13 @@ export default function RoundWorkspacePage() {
                       <option value="java">Java (OpenJDK 17)</option>
                       <option value="python">Python (3.10)</option>
                     </select>
-
-                    <span className="hidden sm:inline-flex text-[10px] font-mono text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded-md border border-amber-800/50 font-medium">
-                      Pre-Loaded Template
-                    </span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleResetCode}
                       className="px-3 py-1.5 rounded-lg bg-[#2D2D2D] hover:bg-[#3D3D3D] text-gray-300 font-mono font-medium text-xs border border-[#404040] transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
-                      title="Reset back to initial pre-loaded code template"
+                      title="Reset code"
                     >
                       <RotateCcw className="w-3.5 h-3.5 text-gray-400" />
                       <span>Reset</span>
@@ -1622,7 +1605,7 @@ export default function RoundWorkspacePage() {
                           : "text-gray-400 hover:text-gray-200"
                       }`}
                     >
-                      Verdict & Score
+                      Test Cases
                     </button>
                   </div>
                 </div>
@@ -1642,7 +1625,7 @@ export default function RoundWorkspacePage() {
                     <div>
                       {isRunning && <div className="text-amber-300">⏳ Compiling and executing code in sandbox...</div>}
                       {!isRunning && !runResult && (
-                        <div className="text-white/40">Click &apos;Run Code&apos; to test your solution against standard input.</div>
+                        <div className="text-white/40">Click &apos;Run&apos; to test your solution against standard input.</div>
                       )}
                       {runResult && (
                         <div className="space-y-2">
@@ -1676,59 +1659,32 @@ export default function RoundWorkspacePage() {
 
                   {activeConsoleTab === "verdict" && (
                     <div>
-                      {isSubmitting && <div className="text-amber-300">🚀 Evaluating all test cases against Judge0...</div>}
-                      {!isSubmitting && !submissionResult && submittedProblems[currentProblem?.id] && (
-                        <div className="space-y-1 text-emerald-400">
-                          <div className="flex items-center gap-1.5 font-bold">
-                            <CheckCircle className="w-4 h-4" /> Solution Previously Submitted & Locked
-                          </div>
-                          <div className="text-white/60 text-[11px]">
-                            Status: {submittedProblems[currentProblem.id].status} · Points Awarded: {submittedProblems[currentProblem.id].rawScore ?? 100}
-                          </div>
-                        </div>
-                      )}
-                      {!isSubmitting && !submissionResult && !submittedProblems[currentProblem?.id] && (
-                        <div className="text-white/40">Click &apos;Submit Solution&apos; to evaluate against all hidden test cases.</div>
-                      )}
-                      {submissionResult && (
+                      {isSubmitting && <div className="text-amber-300">⏳ Running test cases against your solution...</div>}
+                      {!isSubmitting && (submissionResult || submittedProblems[currentProblem?.id]) && (
                         <div className="space-y-2">
-                          <div className="text-base font-black flex items-center gap-2">
-                            {submissionResult.status === "ACCEPTED" ? (
-                              <span className="text-emerald-400 flex items-center gap-1.5">
-                                <CheckCircle className="w-5 h-5" /> Verdict: ACCEPTED
-                              </span>
-                            ) : (
-                              <span className="text-red-400 flex items-center gap-1.5">
-                                <XCircle className="w-5 h-5" /> Verdict: {submissionResult.status ?? "FAILED"}
-                              </span>
-                            )}
+                          <div className="text-sm font-black flex items-center gap-2 text-emerald-400">
+                            <CheckCircle className="w-5 h-5 text-emerald-400" />
+                            <span>Test cases have been run successfully against our solution.</span>
                           </div>
-                          {submissionResult.message && (
-                            <div className="text-xs text-white/90">
-                              {submissionResult.message}
-                            </div>
-                          )}
-                          {submissionResult.rawScore !== undefined && (
-                            <div className="text-xs text-white/80">
-                              Score Awarded: <strong className="text-[#A472F7]">{submissionResult.rawScore} Points</strong>
-                            </div>
-                          )}
-                          {submissionResult.compile_output && (
-                            <div>
+                          <p className="text-xs text-white/70">
+                            Your solution has been securely registered and locked for post-round evaluation.
+                          </p>
+                          {submissionResult?.compile_output && (
+                            <div className="pt-1">
                               <div className="text-[10px] text-amber-400 font-bold uppercase">Compiler Output:</div>
                               <pre className="text-amber-300 whitespace-pre-wrap">{submissionResult.compile_output}</pre>
                             </div>
                           )}
-                          {submissionResult.stderr && (
-                            <div>
-                              <div className="text-[10px] text-red-400 font-bold uppercase">Error:</div>
+                          {submissionResult?.stderr && (
+                            <div className="pt-1">
+                              <div className="text-[10px] text-red-400 font-bold uppercase">Runtime Notice:</div>
                               <pre className="text-red-300 whitespace-pre-wrap">{submissionResult.stderr}</pre>
                             </div>
                           )}
-                          {submissionResult.error && (
-                            <div className="text-xs text-red-300">{submissionResult.error}</div>
-                          )}
                         </div>
+                      )}
+                      {!isSubmitting && !submissionResult && !submittedProblems[currentProblem?.id] && (
+                        <div className="text-white/40">Click &apos;Submit Solution&apos; to evaluate against all test cases.</div>
                       )}
                     </div>
                   )}
@@ -1830,7 +1786,7 @@ export default function RoundWorkspacePage() {
                   • Challenge Problems in Arena: <strong className="text-[#7F45DB]">{problems.length}</strong>
                 </div>
               )}
-              <div className="text-[#6E6E6E]">• You will transition into the 5-minute break period before the next round.</div>
+              <div className="text-[#6E6E6E]">• You will transition into the intermission screen until the next scheduled round begins.</div>
             </div>
 
             <div className="grid grid-cols-2 gap-3 pt-2">

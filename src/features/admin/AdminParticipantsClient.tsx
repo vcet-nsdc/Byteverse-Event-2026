@@ -246,7 +246,7 @@ export default function AdminParticipantsClient() {
                         </div>
                         {(p.totalAIPenalty ?? 0) > 0 && !p.isDisqualified && (
                           <div className="text-[10px] text-rose-600 font-mono font-bold">
-                            (-{(p.totalAIPenalty ?? 0) % 1 === 0 ? p.totalAIPenalty : (p.totalAIPenalty ?? 0).toFixed(2)} AI penalty)
+                            (-{(p.totalAIPenalty ?? 0) % 1 === 0 ? p.totalAIPenalty : (p.totalAIPenalty ?? 0).toFixed(2)} AI penalty from {(p.totalRawScore ?? p.pointsEarned).toFixed(1)} raw)
                           </div>
                         )}
                       </td>

@@ -106,14 +106,15 @@ export async function GET(req: NextRequest) {
     const hasCheated = violationCount > 0;
 
     const timeTakenList = p.roundScores.map((rs) => {
+      const maxMins = rs.round.durationMin;
       let mins = 0;
       if (rs.durationSeconds) {
-        mins = Math.max(1, Math.round(rs.durationSeconds / 60));
+        mins = Math.min(maxMins, Math.max(1, Math.round(rs.durationSeconds / 60)));
       } else if (rs.completedAt && rs.round.startsAt) {
         const diffMs = new Date(rs.completedAt).getTime() - new Date(rs.round.startsAt).getTime();
-        mins = Math.max(1, Math.round(diffMs / 60000));
+        mins = Math.min(maxMins, Math.max(1, Math.round(diffMs / 60000)));
       } else if (rs.completedAt) {
-        mins = Math.max(1, Math.round(rs.round.durationMin));
+        mins = maxMins;
       } else {
         return `R${rs.round.sequence}-In Progress`;
       }
@@ -121,8 +122,12 @@ export async function GET(req: NextRequest) {
     });
 
     const timeTaken = timeTakenList.length > 0 ? timeTakenList.join(", ") : "—";
-    const totalSecondsTaken = p.roundScores.reduce((acc, rs) => acc + (rs.durationSeconds ?? (rs.round.durationMin * 60)), 0);
+    const totalSecondsTaken = p.roundScores.reduce(
+      (acc, rs) => acc + Math.min(rs.durationSeconds ?? (rs.round.durationMin * 60), rs.round.durationMin * 60),
+      0
+    );
 
+    const calculatedFinalScore = Math.max(0, totalRawScore - totalAIPenalty);
     const isDisqualified = !!p.disqualification || p.teamMember?.team.status === "DISQUALIFIED";
 
     return {
@@ -141,7 +146,7 @@ export async function GET(req: NextRequest) {
       totalAIPenalty,
       totalRawScore: parseFloat(totalRawScore.toFixed(1)),
       totalSubmissions: p._count.submissions,
-      pointsEarned: parseFloat(totalScore.toFixed(1)),
+      pointsEarned: parseFloat(calculatedFinalScore.toFixed(1)),
       isDisqualified,
       hasCheated,
       violationCount,
