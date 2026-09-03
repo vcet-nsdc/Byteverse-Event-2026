@@ -1186,7 +1186,7 @@ export default function RoundWorkspacePage() {
               {/* 4 Options Grid */}
               <div className="space-y-3 pt-2">
                 <div className="text-xs font-mono uppercase text-[#0F172A] font-black tracking-wider flex items-center justify-between">
-                  <span>Select the correct option ({lang.toUpperCase()}):</span>
+                  <span>Choose an Option:</span>
                   {answersMap[currentProblem.id] && (
                     <span className="text-emerald-700 font-bold text-xs flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" /> Answer Saved

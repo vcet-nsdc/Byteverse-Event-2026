@@ -53,6 +53,12 @@ interface Round5AnalysisModalProps {
   isLocked: boolean;
 }
 
+function formatScore10(score: number | undefined | null, fallback: number): string {
+  if (score === undefined || score === null) return `${fallback} / 10`;
+  const normalized = score > 10 ? (score / 10).toFixed(1).replace(/\.0$/, "") : score;
+  return `${normalized} / 10`;
+}
+
 export default function Round5AnalysisModal({
   isOpen,
   onClose,
@@ -142,10 +148,10 @@ export default function Round5AnalysisModal({
               <tr>
                 <td className="p-3 font-bold text-[#0F172A]">1. Clean Code Names</td>
                 <td className="p-3 text-center font-black text-[#7F45DB]">
-                  {report.cleanCodeNames?.score ?? 8} / 10
+                  {formatScore10(report.cleanCodeNames?.score, 8)}
                 </td>
                 <td className="p-3 text-center text-[#6E6E6E] font-bold">
-                  {machineReport?.cleanCodeNames?.score ?? 9} / 10
+                  {formatScore10(machineReport?.cleanCodeNames?.score, 9)}
                 </td>
                 <td className="p-3 text-[11px] text-[#6E6E6E] hidden sm:table-cell">
                   {report.cleanCodeNames?.feedback ?? "Evaluates naming conventions and readability."}
@@ -183,7 +189,7 @@ export default function Round5AnalysisModal({
                   </span>
                 </td>
                 <td className="p-3 text-center text-amber-700 font-bold">
-                  {machineReport?.edgeCasesPass?.ratio ?? "2/3"} (Failed 1)
+                  {machineReport?.edgeCasesPass?.ratio ?? "0/2"}
                 </td>
                 <td className="p-3 text-[11px] text-[#6E6E6E] hidden sm:table-cell">
                   Boundary traps where AI failed (overflow, min/max bounds).
@@ -194,10 +200,10 @@ export default function Round5AnalysisModal({
               <tr className="bg-[#F8F9FD]">
                 <td className="p-3 font-bold text-[#0F172A]">4. Comment Format</td>
                 <td className="p-3 text-center font-black text-[#7F45DB]">
-                  {report.commentFormat?.score ?? 7} / 10
+                  {formatScore10(report.commentFormat?.score, 7)}
                 </td>
                 <td className="p-3 text-center text-[#6E6E6E] font-bold">
-                  {machineReport?.commentFormat?.score ?? 7} / 10
+                  {formatScore10(machineReport?.commentFormat?.score, 8)}
                 </td>
                 <td className="p-3 text-[11px] text-[#6E6E6E] hidden sm:table-cell">
                   {report.commentFormat?.feedback ?? "Quality of inline documentation and logic explanation."}
@@ -208,10 +214,10 @@ export default function Round5AnalysisModal({
               <tr>
                 <td className="p-3 font-bold text-[#0F172A]">5. Syntax Format</td>
                 <td className="p-3 text-center font-black text-[#7F45DB]">
-                  {report.syntaxFormat?.score ?? 9} / 10
+                  {formatScore10(report.syntaxFormat?.score, 9)}
                 </td>
                 <td className="p-3 text-center text-[#6E6E6E] font-bold">
-                  {machineReport?.syntaxFormat?.score ?? 10} / 10
+                  {formatScore10(machineReport?.syntaxFormat?.score, 9)}
                 </td>
                 <td className="p-3 text-[11px] text-[#6E6E6E] hidden sm:table-cell">
                   {report.syntaxFormat?.feedback ?? "Adherence to idiomatic style and clean indentation."}

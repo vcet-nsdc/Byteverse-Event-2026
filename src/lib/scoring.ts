@@ -138,17 +138,39 @@ export async function calculateRoundScoreForUser(userId: string, roundId: string
     });
   }
 
-  // If Round 4 or Round 5, participant chooses 1 problem out of 3
+  // If Round 4 or Round 5, participant chooses 1 problem out of the options
   if (round.sequence === 4 || round.sequence === 5) {
     const user = await db.user.findUnique({
       where: { id: userId },
       select: { round4ProblemId: true, round5ProblemId: true },
     });
-    const selectedId = round.sequence === 4 ? user?.round4ProblemId : user?.round5ProblemId;
+    const team = membership?.teamId
+      ? await db.team.findUnique({
+          where: { id: membership.teamId },
+          select: { round4ProblemId: true, round5ProblemId: true },
+        })
+      : null;
+
+    // Also check if user has any submitted solution in this round
+    const existingSubs = await db.submission.findMany({
+      where: { userId, roundId },
+      select: { problemId: true },
+      orderBy: { submittedAt: "desc" },
+    });
+    const submittedProblemId = existingSubs[0]?.problemId;
+
+    const selectedId =
+      round.sequence === 4
+        ? user?.round4ProblemId || team?.round4ProblemId || submittedProblemId
+        : user?.round5ProblemId || team?.round5ProblemId || submittedProblemId;
+
     if (selectedId) {
-      const selected = problems.filter((p) => p.id === selectedId);
-      if (selected.length > 0) {
-        problems = selected;
+      const selectedProblem = await db.problem.findUnique({
+        where: { id: selectedId },
+        select: { id: true, sequence: true },
+      });
+      if (selectedProblem) {
+        problems = [selectedProblem];
       }
     }
   }
