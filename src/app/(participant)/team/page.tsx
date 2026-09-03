@@ -9,7 +9,7 @@ interface TeamInfo {
   name: string;
   inviteCode: string;
   status: string;
-  members: Array<{ name: string; email: string; isLeader: boolean }>;
+  members: Array<{ name: string; email: string; college?: string | null; isLeader: boolean }>;
   userIsLeader: boolean;
 }
 
@@ -42,9 +42,11 @@ export default function TeamPage() {
   const [leaderFirstName, setLeaderFirstName] = useState("");
   const [leaderLastName, setLeaderLastName] = useState("");
   const [leaderEmail, setLeaderEmail] = useState("");
+  const [leaderCollege, setLeaderCollege] = useState("");
   const [memberFirstName, setMemberFirstName] = useState("");
   const [memberLastName, setMemberLastName] = useState("");
   const [memberEmail, setMemberEmail] = useState("");
+  const [memberCollege, setMemberCollege] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -108,6 +110,7 @@ export default function TeamPage() {
           leaderFirstName,
           leaderLastName,
           leaderEmail,
+          college: leaderCollege,
           eventId: process.env.NEXT_PUBLIC_EVENT_ID ?? "byteverse-2026",
         }),
       });
@@ -139,7 +142,13 @@ export default function TeamPage() {
       const response = await fetch("/api/teams/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ inviteCode, firstName: memberFirstName, lastName: memberLastName, email: memberEmail }),
+        body: JSON.stringify({ 
+          inviteCode, 
+          firstName: memberFirstName, 
+          lastName: memberLastName, 
+          email: memberEmail,
+          college: memberCollege,
+        }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -283,8 +292,13 @@ export default function TeamPage() {
                     className="flex items-center justify-between p-3.5 bg-[#F8F9FD] rounded-xl text-sm border-2 border-[#1E1B4B]"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Users className="w-4 h-4 text-[#7F45DB]" />
-                      <span className="text-[#0F172A] font-bold">{m.name || m.email}</span>
+                      <Users className="w-4 h-4 text-[#7F45DB] shrink-0" />
+                      <div>
+                        <div className="text-[#0F172A] font-bold">{m.name || m.email}</div>
+                        {m.college && (
+                          <div className="text-[11px] text-[#6E6E6E] font-mono">{m.college}</div>
+                        )}
+                      </div>
                     </div>
                     <span
                       className={`text-xs px-2.5 py-0.5 rounded-lg font-mono font-black ${m.isLeader
@@ -438,6 +452,20 @@ export default function TeamPage() {
                     />
                   </div>
 
+                  <div>
+                    <label className="text-xs text-[#0F172A] font-extrabold uppercase tracking-wider block mb-1.5 font-mono">
+                      College / Institution Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={leaderCollege}
+                      onChange={(e) => setLeaderCollege(e.target.value)}
+                      placeholder="e.g. VCET / NSDC College of Engineering"
+                      className="w-full bg-[#F8F9FD] text-[#0F172A] rounded-xl px-4 py-3 text-xs font-mono border-2 border-[#1E1B4B] focus:outline-none focus:border-[#7F45DB] transition-all"
+                    />
+                  </div>
+
                   <button
                     type="submit"
                     disabled={creating}
@@ -504,6 +532,20 @@ export default function TeamPage() {
                       value={memberEmail}
                       onChange={(e) => setMemberEmail(e.target.value)}
                       placeholder="jordan@college.edu"
+                      className="w-full bg-[#F8F9FD] text-[#0F172A] rounded-xl px-4 py-3 text-xs font-mono border-2 border-[#1E1B4B] focus:outline-none focus:border-[#7F45DB] transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-[#0F172A] font-extrabold uppercase tracking-wider block mb-1.5 font-mono">
+                      College / Institution Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={memberCollege}
+                      onChange={(e) => setMemberCollege(e.target.value)}
+                      placeholder="e.g. VCET / NSDC College of Engineering"
                       className="w-full bg-[#F8F9FD] text-[#0F172A] rounded-xl px-4 py-3 text-xs font-mono border-2 border-[#1E1B4B] focus:outline-none focus:border-[#7F45DB] transition-all"
                     />
                   </div>

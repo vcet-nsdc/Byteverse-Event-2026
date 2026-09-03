@@ -10,6 +10,7 @@ const schema = z.object({
   firstName: z.string().min(1, "First name is required").optional(),
   lastName: z.string().min(1, "Last name is required").optional(),
   email: z.string().email("Invalid email address").optional(),
+  college: z.string().min(1, "College name is required").optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: errorMsg }, { status: 422 });
   }
 
-  const { inviteCode, firstName, lastName, email } = parsed.data;
+  const { inviteCode, firstName, lastName, email, college } = parsed.data;
 
   // Verify whether current session user actually exists in the database
   let currentUser = session?.user?.id
@@ -56,10 +57,14 @@ export async function POST(req: NextRequest) {
     try {
       const userRecord = await db.user.upsert({
         where: { email: emailToUse },
-        update: { name: fullName },
+        update: { 
+          name: fullName,
+          ...(college ? { college: college.trim() } : {}),
+        },
         create: {
           email: emailToUse,
           name: fullName,
+          college: college?.trim() || "NSDC College",
           passwordHash,
           role: "PARTICIPANT",
         },

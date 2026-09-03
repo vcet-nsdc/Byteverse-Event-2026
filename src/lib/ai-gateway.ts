@@ -143,7 +143,7 @@ export function getFailoverAIModel(): string {
 /**
  * Finds the next available healthy key that is not in rate-limit cooldown
  */
-function getNextHealthyKey(): { client: OpenAI; index: number } {
+export function getNextHealthyKey(): { client: OpenAI; index: number } {
   const rawKeys = getRawKeys();
   if (rawKeys.length === 0) {
     throw new Error(

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Search, MessageSquare, Terminal, Users, ShieldAlert, CheckCircle2, Clock } from "lucide-react";
+import { Search, MessageSquare, Terminal, Users, ShieldAlert, CheckCircle2, Clock, Download } from "lucide-react";
 
 interface ParticipantItem {
   id: string;
@@ -63,16 +63,40 @@ export default function AdminParticipantsClient() {
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by participant or team name..."
-            className="w-full bg-white border-2 border-[#1E1B4B] focus:border-[#7F45DB] text-[#0F172A] text-xs rounded-xl pl-10 pr-4 py-2.5 font-mono shadow-[3px_3px_0px_0px_#1E1B4B] focus:outline-none transition-all"
-          />
+        {/* Actions: Export Backup & Search Bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+          {/* Backup Export Buttons */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <a
+              href="/api/admin/backup/export?format=csv"
+              download
+              className="px-3.5 py-2.5 rounded-xl bg-white hover:bg-[#F0F2F8] text-[#0F172A] font-mono font-bold text-xs border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+              title="Download full tournament scores and standings snapshot as Excel-compatible CSV"
+            >
+              <Download className="w-3.5 h-3.5 text-[#7F45DB]" />
+              <span>Export CSV</span>
+            </a>
+            <a
+              href="/api/admin/backup/export?format=json"
+              download
+              className="px-3 py-2.5 rounded-xl bg-[#F0F2F8] hover:bg-[#E2E8F0] text-[#0F172A] font-mono font-bold text-xs border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-1 cursor-pointer shrink-0"
+              title="Download raw JSON snapshot"
+            >
+              <span>JSON</span>
+            </a>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative w-full sm:w-72">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search participant or team..."
+              className="w-full bg-white border-2 border-[#1E1B4B] focus:border-[#7F45DB] text-[#0F172A] text-xs rounded-xl pl-10 pr-4 py-2.5 font-mono shadow-[3px_3px_0px_0px_#1E1B4B] focus:outline-none transition-all"
+            />
+          </div>
         </div>
       </div>
 

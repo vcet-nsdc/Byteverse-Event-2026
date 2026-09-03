@@ -20,6 +20,7 @@ interface Member {
   userId: string;
   name: string | null;
   email: string;
+  college?: string | null;
   isLeader: boolean;
   violationCount: number;
 }
@@ -243,7 +244,7 @@ export default function AdminTeamsClient() {
                             t.members.map((m, idx) => (
                               <span key={m.userId}>
                                 <span className={`${isDisqualified ? "text-gray-300" : m.violationCount > 0 ? "text-destructive font-black" : m.isLeader ? "text-[#7F45DB] font-bold" : "text-[#0F172A]"}`}>
-                                  {m.name || m.email} {m.violationCount > 0 ? `(🚩${m.violationCount})` : ""}
+                                  {m.name || m.email} {m.college ? <span className="text-[10px] text-[#8A8A8A] font-normal">[{m.college}]</span> : ""} {m.violationCount > 0 ? `(🚩${m.violationCount})` : ""}
                                 </span>
                                 {idx < t.members.length - 1 ? " & " : ""}
                               </span>

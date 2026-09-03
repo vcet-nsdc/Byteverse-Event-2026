@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
               id: true,
               name: true,
               email: true,
+              college: true,
               roundScores: { select: { finalScore: true } },
               aiUsages: { select: { type: true } },
               auditLogs: {
@@ -65,12 +66,12 @@ export async function GET(req: NextRequest) {
       for (const rs of u.roundScores) {
         memberScoresSum += rs.finalScore;
       }
+      totalViolations += u.auditLogs.length;
       for (const log of u.auditLogs) {
-        totalViolations++;
-        const meta = (log.metadata as Record<string, unknown>) ?? {};
+        const meta = log.metadata as { reason?: string } | null;
         violationList.push({
           memberName: u.name || u.email,
-          reason: (meta.reason as string) || "Integrity Violation",
+          reason: meta?.reason || "Tab switch or unauthorized focus loss",
         });
       }
     }
@@ -95,6 +96,7 @@ export async function GET(req: NextRequest) {
         userId: m.user.id,
         name: m.user.name,
         email: m.user.email,
+        college: m.user.college,
         isLeader: m.isLeader,
         violationCount: m.user.auditLogs.length,
       })),

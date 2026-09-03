@@ -16,6 +16,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts && tsx scripts/seed-round1-questions.ts && tsx scripts/seed-round2-questions.ts && tsx scripts/seed-round3-questions.ts && tsx scripts/seed-round4-questions.ts",
     "db:clean": "tsx scripts/clean-test-data.ts",
+    "backup:scores": "tsx scripts/backup-scores.ts",
     "db:reset": "tsx prisma/seed.ts && tsx scripts/seed-round1-questions.ts && tsx scripts/seed-round2-questions.ts && tsx scripts/seed-round3-questions.ts && tsx scripts/seed-round4-questions.ts",
     "test": "jest --runInBand",
     "test:ai": "node scripts/test-ai-keys.mjs",

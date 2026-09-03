@@ -18,6 +18,7 @@ export async function GET() {
                   id: true,
                   name: true,
                   email: true,
+                  college: true,
                   roundScores: true,
                 },
               },
@@ -44,6 +45,7 @@ export async function GET() {
     members: team.members.map((m) => ({
       name: m.user.name,
       email: m.user.email,
+      college: m.user.college,
       isLeader: m.isLeader,
       roundScores: m.user.roundScores.map((rs) => ({
         roundId: rs.roundId,

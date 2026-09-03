@@ -11,6 +11,7 @@ const schema = z.object({
   leaderFirstName: z.string().min(1, "First name is required").optional(),
   leaderLastName: z.string().min(1, "Last name is required").optional(),
   leaderEmail: z.string().email("Invalid email address").optional(),
+  college: z.string().min(1, "College name is required").optional(),
 });
 
 function generate8DigitInviteCode(): string {
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: errorMsg }, { status: 422 });
   }
 
-  const { name, leaderFirstName, leaderLastName, leaderEmail } = parsed.data;
+  const { name, leaderFirstName, leaderLastName, leaderEmail, college } = parsed.data;
   let eventId = parsed.data.eventId;
 
   if (!eventId) {
@@ -83,10 +84,14 @@ export async function POST(req: NextRequest) {
     try {
       const userRecord = await db.user.upsert({
         where: { email: emailToUse },
-        update: { name: fullName },
+        update: { 
+          name: fullName,
+          ...(college ? { college: college.trim() } : {}),
+        },
         create: {
           email: emailToUse,
           name: fullName,
+          college: college?.trim() || "NSDC College",
           passwordHash,
           role: "PARTICIPANT",
         },

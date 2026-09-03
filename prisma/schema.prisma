@@ -66,10 +66,11 @@ model User {
   email         String    @unique
   name          String?
   college       String?   @default("NSDC College")
-  passwordHash  String?
-  role          Role      @default(PARTICIPANT)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  passwordHash     String?
+  role             Role      @default(PARTICIPANT)
+  round5ProblemId  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   teamMember       TeamMember?
   submissions      Submission[]
@@ -86,11 +87,12 @@ model Team {
   id         String     @id @default(cuid())
   name       String     @unique
   inviteCode String     @unique @default(cuid())
-  status     TeamStatus @default(PENDING)
-  isLocked   Boolean    @default(false)
-  eventId    String
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+  status           TeamStatus @default(PENDING)
+  isLocked         Boolean    @default(false)
+  round5ProblemId  String?
+  eventId          String
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
   event            Event              @relation(fields: [eventId], references: [id])
   members          TeamMember[]
@@ -181,6 +183,7 @@ model Problem {
   starterCodes       Json?
   options            Json?
   correctOption      String?
+  aiAnalysisReport   Json?
   sequence           Int      @default(1)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -196,12 +199,13 @@ model Problem {
 model TestCase {
   id        String   @id @default(cuid())
   problemId String
-  input     String
-  expected  String
-  isHidden  Boolean  @default(false)
-  score     Int      @default(0)
-  sequence  Int      @default(1)
-  createdAt DateTime @default(now())
+  input      String
+  expected   String
+  isHidden   Boolean  @default(false)
+  isEdgeCase Boolean  @default(false)
+  score      Int      @default(0)
+  sequence   Int      @default(1)
+  createdAt  DateTime @default(now())
 
   problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
@@ -220,6 +224,8 @@ model Submission {
   rawScore        Float            @default(0)
   finalScore      Float            @default(0)
   aiScoreCap      Int              @default(100)
+  isFinal         Boolean          @default(false)
+  analysisReport  Json?
   executionTimeMs Int?
   memoryUsedMb    Float?
   judgeToken      String?

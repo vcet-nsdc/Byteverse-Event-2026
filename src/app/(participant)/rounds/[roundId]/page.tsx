@@ -6,6 +6,8 @@ import { useParams, useRouter } from "next/navigation";
 import SystemReadinessGate from "@/components/participant/SystemReadinessGate";
 import AntiCheatShield from "@/components/participant/AntiCheatShield";
 import AIAssistantDrawer from "@/components/participant/AIAssistantDrawer";
+import Round5ProblemSelector from "@/components/participant/Round5ProblemSelector";
+import Round5AnalysisModal from "@/components/participant/Round5AnalysisModal";
 import { 
   Play, 
   Send, 
@@ -30,9 +32,20 @@ import {
   HelpCircle,
   Copy,
   Flag,
-  ShieldAlert
+  ShieldAlert,
+  Bot,
+  Zap,
+  Calendar
 } from "lucide-react";
 import { FormattedStatement } from "@/components/problem/formatted-statement";
+
+const ROUND_TIMETABLE: Record<number, { window: string; start: string; end: string; duration: string; name: string }> = {
+  1: { window: "12:00 PM - 12:20 PM", start: "12:00 PM", end: "12:20 PM", duration: "20 mins duration", name: "Code Logic" },
+  2: { window: "12:25 PM - 12:50 PM", start: "12:25 PM", end: "12:50 PM", duration: "25 mins duration", name: "Code Optimization" },
+  3: { window: "12:55 PM - 01:30 PM", start: "12:55 PM", end: "01:30 PM", duration: "35 mins duration", name: "Algorithmic Efficiency" },
+  4: { window: "01:35 PM - 02:20 PM", start: "01:35 PM", end: "02:20 PM", duration: "45 mins duration", name: "Deep Problem Solving" },
+  5: { window: "02:25 PM - 03:00 PM", start: "02:25 PM", end: "03:00 PM", duration: "35 mins duration", name: "AI vs Human Grand Finale" },
+};
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
 
@@ -53,6 +66,10 @@ interface Problem {
   set?: string;
   starterCodes?: Record<string, string> | null;
   options?: Record<string, Record<string, string>> | null;
+  sampleCount?: number;
+  hiddenCount?: number;
+  edgeCount?: number;
+  aiAnalysisReport?: any;
 }
 
 interface TeamMember {
@@ -153,6 +170,16 @@ export default function RoundWorkspacePage() {
   const [showEndRoundModal, setShowEndRoundModal] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
 
+  // Round 5 Human vs Machine Duel State
+  const [isRound5Selected, setIsRound5Selected] = useState(false);
+  const [round5Problems, setRound5Problems] = useState<any[]>([]);
+  const [round5RunsRemaining, setRound5RunsRemaining] = useState(10);
+  const [isRound5Locked, setIsRound5Locked] = useState(false);
+  const [round5LatestReport, setRound5LatestReport] = useState<any>(null);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [isAnalyzingR5, setIsAnalyzingR5] = useState(false);
+  const [showLockConfirmModal, setShowLockConfirmModal] = useState(false);
+
   // Instant Score & Next Round Telemetry
   const [myScore, setMyScore] = useState<{
     finalScore: number;
@@ -235,7 +262,16 @@ export default function RoundWorkspacePage() {
       const res = await fetch(`/api/rounds/${roundId}/problem`);
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data.problems) && data.problems.length > 0) {
+        if (data.isRound5) {
+          setIsRound5Selected(Boolean(data.hasSelected));
+          setRound5Problems(data.problems || []);
+          setRound5RunsRemaining(data.analysisRunsRemaining ?? 10);
+          setIsRound5Locked(Boolean(data.isLocked));
+          setRound5LatestReport(data.latestReport ?? null);
+          if (data.hasSelected && Array.isArray(data.problems) && data.problems.length > 0) {
+            setProblems(data.problems);
+          }
+        } else if (Array.isArray(data.problems) && data.problems.length > 0) {
           setProblems(data.problems);
           if (data.answers) setAnswersMap(data.answers);
         }
@@ -471,17 +507,22 @@ export default function RoundWorkspacePage() {
     return () => clearInterval(timer);
   }, [roundState.phase, hasEnteredArena]);
 
-  // 5-Minute Break Countdown Timer & User Early Round Finalization
+  // User Early Round Finalization or Timer Expiration
   const isRoundFinished = (timeLeft !== null && timeLeft <= 0) || roundState.phase === "BREAK" || roundState.phase === "ENDED" || hasUserEndedRound;
+  const isTournamentConcluded = (currentRoundSequence === 5 && isRoundFinished) || (!nextRound && isRoundFinished);
+
+  // When all 5 rounds conclude: automatically exit fullscreen
   useEffect(() => {
-    if (!isRoundFinished) return;
-
-    const breakTimer = setInterval(() => {
-      setBreakTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(breakTimer);
-  }, [isRoundFinished]);
+    if (isTournamentConcluded) {
+      try {
+        if (typeof document !== "undefined" && document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }, [isTournamentConcluded]);
 
   // Fetch Participant Score when round ends
   useEffect(() => {
@@ -586,6 +627,45 @@ export default function RoundWorkspacePage() {
     }
   };
 
+  // Handle Round 5 7-Dimension Code Analysis & Locking
+  const handleRound5Analysis = async (isFinal = false) => {
+    const curr = problems[currentProblemIdx];
+    if (!curr) return;
+    setIsAnalyzingR5(true);
+    try {
+      const res = await fetch(`/api/rounds/${roundId}/analysis`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          problemId: curr.id,
+          language: lang,
+          sourceCode: code,
+          isFinal,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.analysisReport) {
+        setRound5LatestReport(data.analysisReport);
+        setRound5RunsRemaining(data.runsRemaining);
+        setIsRound5Locked(Boolean(data.isLocked));
+        setShowAnalysisModal(true);
+        if (isFinal) {
+          setShowLockConfirmModal(false);
+          setSubmittedProblems((prev) => ({
+            ...prev,
+            [curr.id]: { status: "ACCEPTED", rawScore: data.score },
+          }));
+        }
+      } else if (data.error) {
+        alert(data.error);
+      }
+    } catch (err) {
+      console.error("Round 5 Analysis Error:", err);
+    } finally {
+      setIsAnalyzingR5(false);
+    }
+  };
+
   // Start Round Action — Engages Fullscreen and platform restrictions
   const handleStartRound = async () => {
     if (problems.length === 0) {
@@ -609,6 +689,7 @@ export default function RoundWorkspacePage() {
   const currentProblem = problems[currentProblemIdx] ?? null;
   const activeRoundType = round?.type ?? allRounds.find((r) => r.id === roundId)?.type;
   const isMCQ = activeRoundType === "CODE_LOGIC" || (currentProblem?.options !== undefined && currentProblem?.options !== null);
+  const isRound5 = currentRoundSequence === 5 || activeRoundType === "HUMAN_VS_MACHINE";
 
   // ── GATE 0: Disqualified Team Screen (Completely Frozen) ──
   if (roundState.phase === "DISQUALIFIED" || team?.status === "DISQUALIFIED") {
@@ -656,7 +737,7 @@ export default function RoundWorkspacePage() {
     );
   }
 
-  // ── CONSTANT SCREEN: 5-Minute Break & Round Concluded Screen with Score Display ──
+  // ── CONSTANT SCREEN: Intermission & Tournament Concluded Screens ──
   if (isRoundFinished) {
     const isNextRoundLive = nextRoundState?.phase === "ACTIVE";
 
@@ -664,97 +745,166 @@ export default function RoundWorkspacePage() {
       <div className="min-h-screen bg-[#F8F9FD] flex items-center justify-center p-6 font-sans relative">
         <AntiCheatShield
           roundId={roundId}
-          isActive={true}
+          isActive={!isTournamentConcluded}
         />
-        <div className="text-center max-w-xl w-full bg-white border-2 border-[#1E1B4B] rounded-3xl p-8 shadow-[8px_8px_0px_0px_#1E1B4B] space-y-6 animate-in fade-in zoom-in-95 relative z-10">
-          {nextRound ? (
+        <div className="text-center max-w-2xl w-full bg-white border-2 border-[#1E1B4B] rounded-3xl p-6 sm:p-8 shadow-[8px_8px_0px_0px_#1E1B4B] space-y-6 animate-in fade-in zoom-in-95 relative z-10">
+          {!isTournamentConcluded && nextRound ? (
             <>
-              <div className="w-20 h-20 rounded-3xl bg-amber-100 border-2 border-[#1E1B4B] mx-auto flex items-center justify-center shadow-[4px_4px_0px_0px_#D97706] animate-bounce">
-                <Coffee className="w-10 h-10 text-amber-800" />
+              <div className="w-20 h-20 rounded-3xl bg-[#7F45DB]/10 border-2 border-[#1E1B4B] mx-auto flex items-center justify-center shadow-[4px_4px_0px_0px_#7F45DB] animate-bounce">
+                <Coffee className="w-10 h-10 text-[#7F45DB]" />
               </div>
 
               <div className="space-y-1.5">
-                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-400 text-xs font-mono font-black uppercase tracking-wider">
-                  <span className="w-2 h-2 rounded-full bg-amber-600 animate-pulse" />
-                  Round {currentRoundSequence} Concluded · Break Period
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-400 text-xs font-mono font-black uppercase tracking-wider">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  Round {currentRoundSequence} Finished · Submissions Saved
                 </div>
                 <h1 className="font-display font-black text-3xl sm:text-4xl text-[#0F172A] tracking-tight uppercase">
-                  Round {currentRoundSequence} Finished!
+                  Round {currentRoundSequence} Concluded!
                 </h1>
-                <p className="text-xs text-[#6E6E6E] font-medium leading-relaxed">
-                  Your submissions have been securely recorded. Take a quick break before the next round begins!
+                <p className="text-xs text-[#6E6E6E] font-medium leading-relaxed font-mono">
+                  All participant answers for Round {currentRoundSequence} have been securely registered.
                 </p>
               </div>
 
-              {/* Submission Locked Confirmation Card */}
-              <div className="bg-[#F0F2F8] p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] space-y-2 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-mono font-bold border border-emerald-300">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Answers Submitted & Locked
-                </div>
-                <p className="text-xs text-[#334155] font-medium leading-relaxed pt-1">
-                  All participant answers for Round {currentRoundSequence} have been securely registered in the tournament database. Official scores will be evaluated and released by the organizers.
-                </p>
-              </div>
-
-              {/* Live 5-Minute Break Countdown Card */}
-              <div className="p-5 bg-[#F8F9FD] rounded-2xl border-2 border-[#1E1B4B] text-center space-y-2 shadow-[3px_3px_0px_0px_#1E1B4B]">
+              {/* Next Round Scheduled Timing Card */}
+              <div className="p-6 bg-[#F0F2F8] rounded-2xl border-2 border-[#1E1B4B] text-center space-y-3 shadow-[4px_4px_0px_0px_#1E1B4B]">
                 <div className="text-xs font-mono text-[#6E6E6E] uppercase font-bold flex items-center justify-center gap-1.5">
-                  <Timer className="w-4 h-4 text-[#7F45DB]" /> Break Time Remaining
+                  <Calendar className="w-4 h-4 text-[#7F45DB]" /> Upcoming Round Schedule
                 </div>
-                <div className="font-mono text-4xl sm:text-5xl font-black text-[#7F45DB] tabular-nums tracking-wider">
-                  {formatTime(breakTimeLeft)}
+                <div className="font-display text-2xl sm:text-3xl font-black text-[#0F172A] tracking-tight">
+                  Next Round will begin at{" "}
+                  <span className="text-[#7F45DB] underline decoration-[#7F45DB]/40">
+                    {ROUND_TIMETABLE[nextRound.sequence]?.start ?? "scheduled time"}
+                  </span>
                 </div>
-                <div className="text-[11px] font-mono text-[#6E6E6E]">
-                  Next challenge: <strong className="text-[#0F172A]">Round {nextRound.sequence}: {nextRound.name}</strong> ({nextRound.durationMin} Mins)
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-xl bg-white border border-[#1E1B4B]/20 text-xs font-mono font-bold text-[#4A2293]">
+                  <span>Timing Window: {ROUND_TIMETABLE[nextRound.sequence]?.window}</span>
+                  <span>•</span>
+                  <span>{ROUND_TIMETABLE[nextRound.sequence]?.duration}</span>
+                </div>
+                <div className="text-xs font-mono text-[#6E6E6E]">
+                  Next Challenge: <strong className="text-[#0F172A]">Round {nextRound.sequence}: {nextRound.name}</strong>
                 </div>
               </div>
 
-              {/* Start Next Round Button (Locked until Host starts next round) */}
+              {/* Host Launch Status & Enter Button */}
               {isNextRoundLive ? (
                 <button
                   onClick={() => router.push(`/rounds/${nextRound.id}`)}
-                  className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-black text-sm uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#1E1B4B] transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse"
+                  className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-mono font-black text-sm uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer animate-pulse"
                 >
                   <Rocket className="w-5 h-5 text-white" />
-                  <span>Host Started Round {nextRound.sequence} · Enter Arena Now →</span>
+                  <span>Host Started Round {nextRound.sequence} · Enter Arena Now ➔</span>
                 </button>
               ) : (
-                <div className="w-full py-4 px-4 rounded-2xl bg-[#F0F2F8] border-2 border-[#1E1B4B] text-[#6E6E6E] font-mono font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[3px_3px_0px_0px_#1E1B4B]">
+                <div className="w-full py-4 px-4 rounded-2xl bg-white border-2 border-[#1E1B4B] text-[#475569] font-mono font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 shadow-[3px_3px_0px_0px_#1E1B4B]">
                   <Clock className="w-4 h-4 text-[#7F45DB] animate-spin" />
-                  <span>Round {nextRound.sequence} Locked — Host Will Launch Soon</span>
+                  <span>Waiting for Tournament Host to Launch Round {nextRound.sequence} ({ROUND_TIMETABLE[nextRound.sequence]?.start})...</span>
                 </div>
               )}
+
+              {/* Full 5-Round Timetable Preview (exact match to schedule image) */}
+              <div className="pt-2 text-left space-y-2">
+                <div className="text-[11px] font-mono text-[#6E6E6E] uppercase font-black">
+                  Official Tournament Schedule:
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 font-mono">
+                  {[1, 2, 3, 4, 5].map((seq) => {
+                    const sched = ROUND_TIMETABLE[seq];
+                    const isDone = seq <= currentRoundSequence;
+                    const isCurrentUpcoming = seq === nextRound.sequence;
+                    return (
+                      <div
+                        key={seq}
+                        className={`p-3 rounded-2xl border-2 transition-all ${
+                          isCurrentUpcoming
+                            ? "bg-[#7F45DB]/10 border-[#7F45DB] shadow-[2px_2px_0px_0px_#7F45DB]"
+                            : isDone
+                            ? "bg-emerald-50/80 border-emerald-300"
+                            : "bg-[#F8F9FD] border-[#E2E8F0]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between text-[11px] font-black">
+                          <span className={isCurrentUpcoming ? "text-[#7F45DB]" : isDone ? "text-emerald-800" : "text-[#0F172A]"}>
+                            Round {seq}
+                          </span>
+                          {isDone && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+                        </div>
+                        <div className="text-xs text-[#7F45DB] font-black mt-1">
+                          {sched.window}
+                        </div>
+                        <div className="text-[10px] text-[#6E6E6E] mt-0.5 font-medium">
+                          {sched.duration}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </>
           ) : (
+            /* ── ALL 5 ROUNDS COMPLETE / TOURNAMENT CONCLUDED ── */
             <>
               <div className="w-20 h-20 rounded-3xl bg-[#7F45DB]/10 border-2 border-[#1E1B4B] mx-auto flex items-center justify-center shadow-[4px_4px_0px_0px_#7F45DB] animate-bounce">
                 <Trophy className="w-10 h-10 text-[#7F45DB]" />
               </div>
+
               <div className="space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-400 text-xs font-mono font-black uppercase tracking-wider">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  All 5 Rounds Completed · Tournament Finished
+                </div>
                 <h1 className="font-display font-black text-3xl sm:text-4xl text-[#0F172A] tracking-tight uppercase">
                   ByteVerse 2026 Concluded!
                 </h1>
-                <p className="text-xs text-[#6E6E6E] font-medium leading-relaxed">
-                  All tournament rounds are complete! All team answers are securely locked.
+                <p className="text-xs sm:text-sm text-[#475569] font-mono leading-relaxed max-w-lg mx-auto">
+                  Congratulations! You have completed all 5 tournament rounds. Fullscreen lock and Anti-Cheat restrictions have been disengaged.
                 </p>
               </div>
 
-              {/* Tournament Completed Confirmation Card */}
-              <div className="bg-[#F0F2F8] p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] space-y-2 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-mono font-bold border border-emerald-300">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Submissions Closed & Recorded
+              {/* All 5 Rounds Checklist */}
+              <div className="p-4 bg-[#F8F9FD] rounded-2xl border-2 border-[#1E1B4B] text-left font-mono space-y-2.5 shadow-[3px_3px_0px_0px_#1E1B4B]">
+                <div className="text-xs font-black text-[#0F172A] uppercase flex items-center justify-between">
+                  <span>Tournament Rounds Status:</span>
+                  <span className="text-emerald-700 font-extrabold">5 of 5 Completed</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                  {[1, 2, 3, 4, 5].map((seq) => (
+                    <div key={seq} className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-300 text-center">
+                      <div className="flex items-center justify-center gap-1 text-xs font-black text-emerald-900">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        Round {seq}
+                      </div>
+                      <div className="text-[10px] text-emerald-700 font-medium mt-0.5">Recorded</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Submissions Recorded Notice */}
+              <div className="bg-[#F0F2F8] p-5 rounded-2xl border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] space-y-2 text-center font-mono">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Submissions Closed & Under Evaluation
                 </div>
                 <p className="text-xs text-[#334155] font-medium leading-relaxed pt-1">
-                  Thank you for competing in ByteVerse 2026! Official scores, final standings, and winners will be announced by the organizers during the award ceremony.
+                  Thank you for competing in ByteVerse 2026! Official scores, final tournament standings, and award winners will be announced by the organizers during the closing ceremony.
                 </p>
               </div>
 
-              <button
-                onClick={() => router.push("/")}
-                className="w-full py-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E1B4B] text-white font-mono font-black text-sm uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>Return to Home</span>
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    if (typeof document !== "undefined" && document.fullscreenElement) {
+                      document.exitFullscreen().catch(() => {});
+                    }
+                    router.push("/");
+                  }}
+                  className="w-full py-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E1B4B] text-white font-mono font-black text-sm uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Return to Home</span>
+                </button>
+              </div>
             </>
           )}
         </div>
@@ -829,6 +979,23 @@ export default function RoundWorkspacePage() {
     );
   }
 
+  // ── ROUND 5 CHALLENGE SELECTION SCREEN (PICK 1 OF 3) ──
+  if (isRound5 && !isRound5Selected && (roundState.phase === "ACTIVE" || hasEnteredArena)) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FD] flex flex-col font-sans relative">
+        <AntiCheatShield
+          roundId={roundId}
+          isActive={!isRoundFinished}
+        />
+        <Round5ProblemSelector
+          roundId={roundId}
+          problems={round5Problems}
+          onSelectSuccess={fetchProblems}
+        />
+      </div>
+    );
+  }
+
   // ── ACTIVE ARENA ──
   return (
     <div className="min-h-screen bg-[#F8F9FD] flex flex-col font-sans relative">
@@ -890,15 +1057,17 @@ export default function RoundWorkspacePage() {
             </select>
           </div>
 
-          {/* AI Assistant Toggle Button (Enlarged & Highlighted) */}
-          <button
-            onClick={() => setIsAIOpen((prev) => !prev)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white text-xs sm:text-sm font-mono font-black border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all cursor-pointer"
-            title="Open AI Tutor & Code Advisor"
-          >
-            <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
-            <span>AI Assistant</span>
-          </button>
+          {/* AI Assistant Toggle Button (Hidden in Round 5) */}
+          {!isRound5 && (
+            <button
+              onClick={() => setIsAIOpen((prev) => !prev)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#7F45DB] hover:bg-[#6D35C7] text-white text-xs sm:text-sm font-mono font-black border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all cursor-pointer"
+              title="Open AI Tutor & Code Advisor"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300" />
+              <span>AI Assistant</span>
+            </button>
+          )}
 
           {/* Finish Round Early Button (Enlarged & Highlighted) */}
           <button
@@ -1169,6 +1338,65 @@ export default function RoundWorkspacePage() {
                   </h2>
                 </div>
 
+                {/* Round 5 Test Suite Breakdown Matrix */}
+                {isRound5 && currentProblem?.sampleCount !== undefined && (
+                  <div className="p-3.5 bg-[#F0F2F8] rounded-2xl border-2 border-[#1E1B4B] space-y-2 font-mono text-xs shadow-[3px_3px_0px_0px_#1E1B4B]">
+                    <div className="font-black text-[#0F172A] uppercase flex items-center justify-between text-[11px]">
+                      <span className="flex items-center gap-1.5"><Terminal className="w-3.5 h-3.5 text-[#7F45DB]" /> Test Suite Distribution</span>
+                      <span className="text-[#7F45DB] font-extrabold">
+                        {(currentProblem.sampleCount || 0) + (currentProblem.hiddenCount || 0) + (currentProblem.edgeCount || 0)} Total Cases
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                      <div className="p-2 bg-white rounded-xl border border-[#1E1B4B]/20">
+                        <div className="text-emerald-700 font-extrabold text-xs">{currentProblem.sampleCount} Cases</div>
+                        <div className="text-[#6E6E6E] font-medium">Sample (Public)</div>
+                      </div>
+                      <div className="p-2 bg-white rounded-xl border border-[#1E1B4B]/20">
+                        <div className="text-blue-700 font-extrabold text-xs">{currentProblem.hiddenCount} Cases</div>
+                        <div className="text-[#6E6E6E] font-medium">Hidden Stress</div>
+                      </div>
+                      <div className="p-2 bg-white rounded-xl border border-[#1E1B4B]/20">
+                        <div className="text-amber-700 font-extrabold text-xs">{currentProblem.edgeCount} Cases</div>
+                        <div className="text-[#6E6E6E] font-medium">Adversarial Edge</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Round 5 Machine Rival Baseline Report */}
+                {isRound5 && currentProblem?.aiAnalysisReport && (
+                  <div className="p-3.5 bg-purple-50/90 rounded-2xl border-2 border-[#7F45DB] space-y-2 font-mono text-xs shadow-[3px_3px_0px_0px_#7F45DB]">
+                    <div className="flex items-center justify-between text-[#4A2293] font-black uppercase text-[11px]">
+                      <span className="flex items-center gap-1.5"><Bot className="w-4 h-4 text-[#7F45DB]" /> Machine Rival Baseline</span>
+                      <span className="text-[10px] bg-[#7F45DB]/10 px-2 py-0.5 rounded-md border border-[#7F45DB]/30 font-bold">
+                        {currentProblem.aiAnalysisReport.model ?? "DeepByte-AI"}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-[11px]">
+                      <div className="bg-white p-2 rounded-lg border border-[#7F45DB]/20">
+                        <span className="text-[#6E6E6E] text-[10px] block">Time Complexity:</span>
+                        <strong className="text-[#0F172A]">{currentProblem.aiAnalysisReport.timeComplexity?.estimate ?? "O(N log N)"}</strong>
+                      </div>
+                      <div className="bg-white p-2 rounded-lg border border-[#7F45DB]/20">
+                        <span className="text-[#6E6E6E] text-[10px] block">Edge Cases Passed:</span>
+                        <strong className="text-amber-700">{currentProblem.aiAnalysisReport.edgeCasesPass?.ratio ?? "2/3"}</strong>
+                      </div>
+                      <div className="bg-white p-2 rounded-lg border border-[#7F45DB]/20">
+                        <span className="text-[#6E6E6E] text-[10px] block">Clean Names:</span>
+                        <strong className="text-emerald-700">{currentProblem.aiAnalysisReport.cleanCodeNames?.score ?? 9}/10</strong>
+                      </div>
+                      <div className="bg-white p-2 rounded-lg border border-[#7F45DB]/20">
+                        <span className="text-[#6E6E6E] text-[10px] block">Syntax Format:</span>
+                        <strong className="text-blue-700">{currentProblem.aiAnalysisReport.syntaxFormat?.score ?? 10}/10</strong>
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-[#4A2293] font-medium italic pt-0.5">
+                      Target: Out-code the Machine by passing 3/3 Edge Cases with optimal clean code & complexity.
+                    </div>
+                  </div>
+                )}
+
                 {/* Problem Statement Narrative */}
                 <div className="bg-[#F8F9FD] p-4 rounded-2xl border border-[#1E1B4B]/10">
                   <FormattedStatement statement={currentProblem?.statement} />
@@ -1280,20 +1508,60 @@ export default function RoundWorkspacePage() {
                       <span>{isRunning ? "Running..." : "Run"}</span>
                     </button>
 
-                    {submittedProblems[currentProblem?.id] ? (
-                      <div className="px-3.5 py-1.5 rounded-lg bg-emerald-700 text-white font-mono font-bold text-xs flex items-center gap-1.5 shadow-sm">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        <span>Submitted & Locked</span>
-                      </div>
+                    {isRound5 ? (
+                      <>
+                        {round5LatestReport && (
+                          <button
+                            onClick={() => setShowAnalysisModal(true)}
+                            className="px-3.5 py-1.5 rounded-lg bg-[#7F45DB]/20 hover:bg-[#7F45DB]/30 text-[#A472F7] font-mono font-bold text-xs border border-[#7F45DB]/50 transition-all flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Zap className="w-3.5 h-3.5 text-amber-300" />
+                            <span>View Report</span>
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => handleRound5Analysis(false)}
+                          disabled={isAnalyzingR5 || isRunning || round5RunsRemaining <= 0 || isRound5Locked}
+                          className="px-3.5 py-1.5 rounded-lg bg-[#7F45DB] hover:bg-[#6D35C7] text-white font-mono font-bold text-xs border border-[#1E1B4B] transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+                          title="Evaluate code against all test cases and receive 7-dimension quality report"
+                        >
+                          <Bot className={`w-3.5 h-3.5 ${isAnalyzingR5 ? "animate-spin" : ""}`} />
+                          <span>{isAnalyzingR5 ? "Analyzing..." : `Run Analysis (${round5RunsRemaining}/10)`}</span>
+                        </button>
+
+                        {isRound5Locked ? (
+                          <div className="px-3.5 py-1.5 rounded-lg bg-emerald-700 text-white font-mono font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                            <CheckCircle className="w-3.5 h-3.5" />
+                            <span>Locked & Evaluated</span>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowLockConfirmModal(true)}
+                            disabled={isAnalyzingR5 || isRunning}
+                            className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-mono font-black text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-md disabled:opacity-40"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            <span>Final Lock & Submit</span>
+                          </button>
+                        )}
+                      </>
                     ) : (
-                      <button
-                        onClick={handleSubmitCode}
-                        disabled={isRunning || isSubmitting}
-                        className="px-4 py-1.5 rounded-lg bg-[#2cbb5d] hover:bg-[#269f4f] text-white font-mono font-black text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-md disabled:opacity-40"
-                      >
-                        <Rocket className={`w-3.5 h-3.5 ${isSubmitting ? "animate-spin" : ""}`} />
-                        <span>{isSubmitting ? "Judging..." : "Submit"}</span>
-                      </button>
+                      submittedProblems[currentProblem?.id] ? (
+                        <div className="px-3.5 py-1.5 rounded-lg bg-emerald-700 text-white font-mono font-bold text-xs flex items-center gap-1.5 shadow-sm">
+                          <CheckCircle className="w-3.5 h-3.5" />
+                          <span>Submitted & Locked</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={handleSubmitCode}
+                          disabled={isRunning || isSubmitting}
+                          className="px-4 py-1.5 rounded-lg bg-[#2cbb5d] hover:bg-[#269f4f] text-white font-mono font-black text-xs uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-md disabled:opacity-40"
+                        >
+                          <Rocket className={`w-3.5 h-3.5 ${isSubmitting ? "animate-spin" : ""}`} />
+                          <span>{isSubmitting ? "Judging..." : "Submit"}</span>
+                        </button>
+                      )
                     )}
                   </div>
                 </div>
@@ -1471,13 +1739,63 @@ export default function RoundWorkspacePage() {
         </div>
       )}
 
-      {/* Dedicated AI Assistant Drawer (AI Chat + AI Code) */}
-      <AIAssistantDrawer
-        roundId={roundId}
-        problemId={currentProblem?.id ?? null}
-        isOpen={isAIOpen}
-        onClose={() => setIsAIOpen(false)}
-      />
+      {/* Dedicated AI Assistant Drawer (Suppressed in Round 5) */}
+      {!isRound5 && (
+        <AIAssistantDrawer
+          roundId={roundId}
+          problemId={currentProblem?.id ?? null}
+          isOpen={isAIOpen}
+          onClose={() => setIsAIOpen(false)}
+        />
+      )}
+
+      {/* Round 5 7-Dimension Code Analysis Report Modal */}
+      {isRound5 && (
+        <Round5AnalysisModal
+          isOpen={showAnalysisModal}
+          onClose={() => setShowAnalysisModal(false)}
+          report={round5LatestReport}
+          machineReport={currentProblem?.aiAnalysisReport}
+          runsRemaining={round5RunsRemaining}
+          isLocked={isRound5Locked}
+        />
+      )}
+
+      {/* Round 5 Final Lock Confirmation Modal */}
+      {showLockConfirmModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in zoom-in-95">
+          <div className="max-w-md w-full bg-white border-4 border-[#1E1B4B] rounded-3xl p-6 sm:p-8 shadow-[8px_8px_0px_0px_#1E1B4B] space-y-5 text-center font-sans">
+            <div className="w-14 h-14 rounded-2xl bg-rose-100 border-2 border-rose-600 mx-auto flex items-center justify-center text-rose-600 shadow-[3px_3px_0px_0px_#E11D48]">
+              <ShieldAlert className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="font-display font-black text-2xl text-[#0F172A] tracking-tight uppercase">
+                Lock Final Solution?
+              </h3>
+              <p className="text-xs text-[#6E6E6E] font-mono leading-relaxed">
+                Once locked, your solution is permanently scored for Round 5. You will not be able to edit code or run further analyses.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={() => setShowLockConfirmModal(false)}
+                className="flex-1 py-3 rounded-xl bg-[#F0F2F8] hover:bg-[#E2E8F0] text-[#0F172A] font-mono font-bold text-xs border-2 border-[#1E1B4B] transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleRound5Analysis(true)}
+                disabled={isAnalyzingR5}
+                className="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+              >
+                {isAnalyzingR5 ? "Locking..." : "Yes, Lock & Submit"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── End Round Early Confirmation Modal ── */}
       {showEndRoundModal && (
