@@ -25,11 +25,11 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const FIXED_EVENT_SCHEDULE = [
-  { sequence: 1, label: "12:00 PM – 12:20 PM", durationMin: 20 },
-  { sequence: 2, label: "12:25 PM – 12:50 PM", durationMin: 25 },
-  { sequence: 3, label: "12:55 PM – 01:30 PM", durationMin: 35 },
-  { sequence: 4, label: "01:35 PM – 02:20 PM", durationMin: 45 },
-  { sequence: 5, label: "02:25 PM – 03:00 PM", durationMin: 35 },
+  { sequence: 1, label: "12:30 PM – 12:50 PM", durationMin: 20 },
+  { sequence: 2, label: "12:55 PM – 01:20 PM", durationMin: 25 },
+  { sequence: 3, label: "01:25 PM – 02:00 PM", durationMin: 35 },
+  { sequence: 4, label: "02:05 PM – 02:50 PM", durationMin: 45 },
+  { sequence: 5, label: "02:55 PM – 03:30 PM", durationMin: 35 },
 ] as const;
 
 function getScheduleForRound(sequence: number) {

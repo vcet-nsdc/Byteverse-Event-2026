@@ -41,11 +41,11 @@ import {
 import { FormattedStatement } from "@/components/problem/formatted-statement";
 
 const ROUND_TIMETABLE: Record<number, { window: string; start: string; end: string; duration: string; name: string }> = {
-  1: { window: "12:00 PM - 12:20 PM", start: "12:00 PM", end: "12:20 PM", duration: "20 mins duration", name: "Code Logic" },
-  2: { window: "12:25 PM - 12:50 PM", start: "12:25 PM", end: "12:50 PM", duration: "25 mins duration", name: "Code Optimization" },
-  3: { window: "12:55 PM - 01:30 PM", start: "12:55 PM", end: "01:30 PM", duration: "35 mins duration", name: "Algorithmic Efficiency" },
-  4: { window: "01:35 PM - 02:20 PM", start: "01:35 PM", end: "02:20 PM", duration: "45 mins duration", name: "Deep Problem Solving" },
-  5: { window: "02:25 PM - 03:00 PM", start: "02:25 PM", end: "03:00 PM", duration: "35 mins duration", name: "AI vs Human Grand Finale" },
+  1: { window: "12:30 PM - 12:50 PM", start: "12:30 PM", end: "12:50 PM", duration: "20 mins duration", name: "Code Logic" },
+  2: { window: "12:55 PM - 01:20 PM", start: "12:55 PM", end: "01:20 PM", duration: "25 mins duration", name: "Code Optimization" },
+  3: { window: "01:25 PM - 02:00 PM", start: "01:25 PM", end: "02:00 PM", duration: "35 mins duration", name: "Algorithmic Efficiency" },
+  4: { window: "02:05 PM - 02:50 PM", start: "02:05 PM", end: "02:50 PM", duration: "45 mins duration", name: "Deep Problem Solving" },
+  5: { window: "02:55 PM - 03:30 PM", start: "02:55 PM", end: "03:30 PM", duration: "35 mins duration", name: "AI vs Human Grand Finale" },
 };
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), { ssr: false });
