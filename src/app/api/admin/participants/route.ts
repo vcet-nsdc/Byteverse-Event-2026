@@ -84,18 +84,30 @@ export async function GET(req: NextRequest) {
       roundSeqMap.set(rs.roundId, rs.round.sequence);
     }
 
-    let aiChatPenalty = 0;
-    let aiCodePenalty = 0;
+    let rawChatPenalty = 0;
+    let rawCodePenalty = 0;
     for (const u of p.aiUsages) {
       const seq = roundSeqMap.get(u.roundId) ?? 1;
       const qPoints = ROUND_QUESTION_POINTS[seq] ?? 25;
       if (u.type === "EXPLAIN") {
-        aiChatPenalty += qPoints * 0.25;
+        rawChatPenalty += qPoints * 0.25;
       } else if (u.type === "CODE") {
-        aiCodePenalty += qPoints * 0.50;
+        rawCodePenalty += qPoints * 0.50;
       }
     }
-    const totalAIPenalty = aiChatPenalty + aiCodePenalty;
+
+    // Actual AI penalty deducted from the participant's score across all rounds
+    const actualAIPenaltyDeducted = Math.max(0, totalRawScore - totalScore);
+    const rawTotalPenalty = rawChatPenalty + rawCodePenalty;
+
+    // Proportionally distribute actual penalty between chat and code for column display
+    let aiChatPenalty = 0;
+    let aiCodePenalty = 0;
+    if (actualAIPenaltyDeducted > 0 && rawTotalPenalty > 0) {
+      aiChatPenalty = parseFloat(((rawChatPenalty / rawTotalPenalty) * actualAIPenaltyDeducted).toFixed(2));
+      aiCodePenalty = parseFloat(((rawCodePenalty / rawTotalPenalty) * actualAIPenaltyDeducted).toFixed(2));
+    }
+    const totalAIPenalty = parseFloat(actualAIPenaltyDeducted.toFixed(2));
 
     const violations = p.auditLogs.map((log) => {
       const meta = (log.metadata as Record<string, unknown>) ?? {};
@@ -127,7 +139,6 @@ export async function GET(req: NextRequest) {
       0
     );
 
-    const calculatedFinalScore = Math.max(0, totalRawScore - totalAIPenalty);
     const isDisqualified = !!p.disqualification || p.teamMember?.team.status === "DISQUALIFIED";
 
     return {
@@ -146,7 +157,7 @@ export async function GET(req: NextRequest) {
       totalAIPenalty,
       totalRawScore: parseFloat(totalRawScore.toFixed(1)),
       totalSubmissions: p._count.submissions,
-      pointsEarned: parseFloat(calculatedFinalScore.toFixed(1)),
+      pointsEarned: isDisqualified ? 0 : parseFloat(totalScore.toFixed(1)),
       isDisqualified,
       hasCheated,
       violationCount,

@@ -68,7 +68,7 @@ export default function Round5ProblemSelector({
           Select Your Arena Challenge
         </h1>
         <p className="text-xs sm:text-sm text-[#6E6E6E] font-mono max-w-2xl mx-auto leading-relaxed">
-          Choose <strong>1 of the 3 challenges</strong> below. You will compete without AI assistance against the Machine Rival&apos;s baseline. Your code will be evaluated across <strong>7 dimensions</strong> including edge-case resilience, clean naming, and asymptotic efficiency.
+          Choose <strong>1 challenge</strong> below. You will compete without AI assistance against the Machine Rival&apos;s baseline. Your code will be evaluated across <strong>7 dimensions</strong> including edge-case resilience, clean naming, and asymptotic efficiency.
         </p>
 
         {error && (
@@ -78,8 +78,8 @@ export default function Round5ProblemSelector({
         )}
       </div>
 
-      {/* 3 Challenge Selection Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Challenge Selection Cards */}
+      <div className={`grid grid-cols-1 gap-6 ${problems.length >= 4 ? "md:grid-cols-2 lg:grid-cols-4" : "md:grid-cols-3"}`}>
         {problems.map((p, idx) => {
           const isBusy = selectingId === p.id;
           const totalCases = p.sampleCount + p.hiddenCount + p.edgeCount;

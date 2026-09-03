@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import SystemReadinessGate from "@/components/participant/SystemReadinessGate";
 import AntiCheatShield from "@/components/participant/AntiCheatShield";
 import AIAssistantDrawer from "@/components/participant/AIAssistantDrawer";
+import Round4ProblemSelector from "@/components/participant/Round4ProblemSelector";
 import Round5ProblemSelector from "@/components/participant/Round5ProblemSelector";
 import Round5AnalysisModal from "@/components/participant/Round5AnalysisModal";
 import { 
@@ -170,6 +171,10 @@ export default function RoundWorkspacePage() {
   const [showEndRoundModal, setShowEndRoundModal] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
 
+  // Round 4 Challenge Selection State
+  const [isRound4Selected, setIsRound4Selected] = useState(false);
+  const [round4Problems, setRound4Problems] = useState<any[]>([]);
+
   // Round 5 Human vs Machine Duel State
   const [isRound5Selected, setIsRound5Selected] = useState(false);
   const [round5Problems, setRound5Problems] = useState<any[]>([]);
@@ -268,6 +273,12 @@ export default function RoundWorkspacePage() {
           setRound5RunsRemaining(data.analysisRunsRemaining ?? 10);
           setIsRound5Locked(Boolean(data.isLocked));
           setRound5LatestReport(data.latestReport ?? null);
+          if (data.hasSelected && Array.isArray(data.problems) && data.problems.length > 0) {
+            setProblems(data.problems);
+          }
+        } else if (data.isRound4) {
+          setIsRound4Selected(Boolean(data.hasSelected));
+          setRound4Problems(data.problems || []);
           if (data.hasSelected && Array.isArray(data.problems) && data.problems.length > 0) {
             setProblems(data.problems);
           }
@@ -986,6 +997,23 @@ export default function RoundWorkspacePage() {
     );
   }
 
+  // ── ROUND 4 CHALLENGE SELECTION SCREEN (PICK 1 OF 3) ──
+  if (currentRoundSequence === 4 && !isRound4Selected && (roundState.phase === "ACTIVE" || hasEnteredArena)) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FD] flex flex-col font-sans relative">
+        <AntiCheatShield
+          roundId={roundId}
+          isActive={!isRoundFinished}
+        />
+        <Round4ProblemSelector
+          roundId={roundId}
+          problems={round4Problems}
+          onSelectSuccess={fetchProblems}
+        />
+      </div>
+    );
+  }
+
   // ── ROUND 5 CHALLENGE SELECTION SCREEN (PICK 1 OF 3) ──
   if (isRound5 && !isRound5Selected && (roundState.phase === "ACTIVE" || hasEnteredArena)) {
     return (
@@ -1256,54 +1284,56 @@ export default function RoundWorkspacePage() {
         /* ── ROUNDS 2–5: ADVANCED CODING & OPTIMIZATION WORKSPACE ── */
         <div className="flex-1 flex flex-col p-4 gap-4 max-w-[1700px] w-full mx-auto overflow-hidden">
           {/* Question Selector Palette Bar */}
-          <div className="bg-white px-5 py-3 rounded-2xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-mono font-black text-[#0F172A] uppercase">
-                Challenge Problems:
-              </span>
-              <div className="flex items-center gap-2 flex-wrap">
-                {problems.map((p, idx) => {
-                  const isCurrent = idx === currentProblemIdx;
-                  const isSubmitted = !!submittedProblems[p.id];
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => setCurrentProblemIdx(idx)}
-                      className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-2 ${
-                        isCurrent
-                          ? "bg-[#7F45DB] text-white border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] scale-105"
-                          : isSubmitted
-                          ? "bg-emerald-50 text-emerald-950 border-emerald-500 hover:border-[#1E1B4B]"
-                          : "bg-[#F8F9FD] text-[#0F172A] border-[#1E1B4B]/30 hover:border-[#1E1B4B]"
-                      }`}
-                    >
-                      <span>Q{idx + 1}</span>
-                      {isSubmitted && (
-                        <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
-                      )}
-                    </button>
-                  );
-                })}
+          {problems.length > 1 && (
+            <div className="bg-white px-5 py-3 rounded-2xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <span className="text-xs font-mono font-black text-[#0F172A] uppercase">
+                  Challenge Problems:
+                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {problems.map((p, idx) => {
+                    const isCurrent = idx === currentProblemIdx;
+                    const isSubmitted = !!submittedProblems[p.id];
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => setCurrentProblemIdx(idx)}
+                        className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-2 ${
+                          isCurrent
+                            ? "bg-[#7F45DB] text-white border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] scale-105"
+                            : isSubmitted
+                            ? "bg-emerald-50 text-emerald-950 border-emerald-500 hover:border-[#1E1B4B]"
+                            : "bg-[#F8F9FD] text-[#0F172A] border-[#1E1B4B]/30 hover:border-[#1E1B4B]"
+                        }`}
+                      >
+                        <span>Q{idx + 1}</span>
+                        {isSubmitted && (
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentProblemIdx((prev) => Math.max(0, prev - 1))}
+                  disabled={currentProblemIdx === 0}
+                  className="px-3.5 py-1.5 rounded-xl bg-white text-[#0F172A] font-mono font-bold text-xs border border-[#1E1B4B]/30 hover:border-[#1E1B4B] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 cursor-pointer"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" /> Prev
+                </button>
+                <button
+                  onClick={() => setCurrentProblemIdx((prev) => Math.min(problems.length - 1, prev + 1))}
+                  disabled={currentProblemIdx === problems.length - 1}
+                  className="px-3.5 py-1.5 rounded-xl bg-white text-[#0F172A] font-mono font-bold text-xs border border-[#1E1B4B]/30 hover:border-[#1E1B4B] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 cursor-pointer"
+                >
+                  Next <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentProblemIdx((prev) => Math.max(0, prev - 1))}
-                disabled={currentProblemIdx === 0}
-                className="px-3.5 py-1.5 rounded-xl bg-white text-[#0F172A] font-mono font-bold text-xs border border-[#1E1B4B]/30 hover:border-[#1E1B4B] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 cursor-pointer"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" /> Prev
-              </button>
-              <button
-                onClick={() => setCurrentProblemIdx((prev) => Math.min(problems.length - 1, prev + 1))}
-                disabled={currentProblemIdx === problems.length - 1}
-                className="px-3.5 py-1.5 rounded-xl bg-white text-[#0F172A] font-mono font-bold text-xs border border-[#1E1B4B]/30 hover:border-[#1E1B4B] disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 cursor-pointer"
-              >
-                Next <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* Main Coding Workspace Grid: Left (Problem Narrative) | Right (Monaco Editor + Console) */}
           <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[600px]">
@@ -1314,7 +1344,7 @@ export default function RoundWorkspacePage() {
                 <div className="border-b-2 border-[#1E1B4B]/10 pb-4 space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-mono font-black px-2.5 py-0.5 rounded-lg bg-[#7F45DB]/10 text-[#4A2293] border border-[#7F45DB]/30">
-                      Problem {currentProblemIdx + 1} of {problems.length}
+                      {problems.length === 1 ? "Selected Challenge" : `Problem ${currentProblemIdx + 1} of ${problems.length}`}
                     </span>
                     <span className="text-xs font-mono text-[#6E6E6E] ml-auto">
                       Time Limit: {currentProblem?.timeLimitMs ?? 1000}ms

@@ -56,15 +56,24 @@ export async function GET(
     const selectedProblemId = user?.round5ProblemId || team?.round5ProblemId;
 
     if (!selectedProblemId) {
-      // Participant has not picked their question yet: return 3 choices
-      const problems = await db.problem.findMany({
-        where: { roundId, isPublished: true },
+      // Participant has not picked their question yet: return choices for their set
+      let problems = await db.problem.findMany({
+        where: { roundId, set: targetSet, isPublished: true },
         include: {
           testCases: { select: { isHidden: true, isEdgeCase: true } },
         },
         orderBy: { sequence: "asc" },
-        take: 3,
       });
+
+      if (problems.length === 0) {
+        problems = await db.problem.findMany({
+          where: { roundId, isPublished: true },
+          include: {
+            testCases: { select: { isHidden: true, isEdgeCase: true } },
+          },
+          orderBy: { sequence: "asc" },
+        });
+      }
 
       return NextResponse.json({
         isRound5: true,
@@ -159,7 +168,93 @@ export async function GET(
     });
   }
 
-  // ─── ROUNDS 1 - 4 STANDARD HANDLING ──────────────────────────────────────
+  // ─── ROUND 4 SPECIAL HANDLING (SELECT 1 OF 3 CHALLENGES) ───────────────────
+  if (round.sequence === 4) {
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { round4ProblemId: true },
+    });
+
+    const existingSub = await db.submission.findFirst({
+      where: { userId: session.user.id, roundId },
+      select: { problemId: true },
+    });
+
+    const selectedProblemId = user?.round4ProblemId || existingSub?.problemId;
+
+    if (!selectedProblemId) {
+      // Participant has not picked their question yet: return 3 choices
+      let choices = await db.problem.findMany({
+        where: { roundId, set: targetSet, isPublished: true },
+        orderBy: { sequence: "asc" },
+        take: 3,
+      });
+
+      if (choices.length === 0) {
+        choices = await db.problem.findMany({
+          where: { roundId, isPublished: true },
+          orderBy: { sequence: "asc" },
+          take: 3,
+        });
+      }
+
+      return NextResponse.json({
+        isRound4: true,
+        hasSelected: false,
+        isLeader,
+        problems: choices.map((p) => ({
+          id: p.id,
+          sequence: p.sequence,
+          title: p.title,
+          statement: p.statement,
+          difficulty: p.difficulty,
+          constraints: p.constraints,
+          sampleInput: p.sampleInput,
+          sampleOutput: p.sampleOutput,
+          inputFormat: p.inputFormat,
+          outputFormat: p.outputFormat,
+          timeLimitMs: p.timeLimitMs,
+          starterCodes: p.starterCodes,
+        })),
+      });
+    }
+
+    // Participant has already selected their problem
+    const problem = await db.problem.findFirst({
+      where: { id: selectedProblemId, roundId },
+    });
+
+    if (!problem) {
+      return NextResponse.json({ error: "Selected problem could not be found" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      isRound4: true,
+      hasSelected: true,
+      selectedProblemId,
+      isLeader,
+      problems: [
+        {
+          id: problem.id,
+          sequence: 1,
+          title: problem.title,
+          statement: problem.statement,
+          difficulty: problem.difficulty,
+          constraints: problem.constraints,
+          sampleInput: problem.sampleInput,
+          sampleOutput: problem.sampleOutput,
+          inputFormat: problem.inputFormat,
+          outputFormat: problem.outputFormat,
+          timeLimitMs: problem.timeLimitMs,
+          memoryLimitMb: problem.memoryLimitMb,
+          allowedLangs: problem.allowedLangs,
+          starterCodes: problem.starterCodes,
+        },
+      ],
+    });
+  }
+
+  // ─── ROUNDS 1 - 3 STANDARD HANDLING ──────────────────────────────────────
   // Fetch all problems in this round for the participant's assigned set
   let problems = await db.problem.findMany({
     where: { roundId, set: targetSet, isPublished: true },

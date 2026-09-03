@@ -138,6 +138,21 @@ export async function calculateRoundScoreForUser(userId: string, roundId: string
     });
   }
 
+  // If Round 4 or Round 5, participant chooses 1 problem out of 3
+  if (round.sequence === 4 || round.sequence === 5) {
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: { round4ProblemId: true, round5ProblemId: true },
+    });
+    const selectedId = round.sequence === 4 ? user?.round4ProblemId : user?.round5ProblemId;
+    if (selectedId) {
+      const selected = problems.filter((p) => p.id === selectedId);
+      if (selected.length > 0) {
+        problems = selected;
+      }
+    }
+  }
+
   const isMCQ = round.type === "CODE_LOGIC";
   const maxProblemPoints = ROUND_QUESTION_POINTS[round.sequence] ?? (isMCQ ? 10 : Math.round(100 / Math.max(1, problems.length)));
 
@@ -175,24 +190,29 @@ export async function calculateRoundScoreForUser(userId: string, roundId: string
     // Chat: 0.25 penalty factor on question points; Code: 0.50 penalty factor on question points
     const questionDeduction = (chatCalls * 0.25 * maxProblemPoints) + (codeCalls * 0.50 * maxProblemPoints);
 
+    // Apply deduction strictly to THIS question's earned points (cannot exceed earned points or drop below 0)
+    const effectiveQuestionDeduction = Math.min(problemRaw, questionDeduction);
+    const problemFinal = Math.max(0, problemRaw - effectiveQuestionDeduction);
+
     totalRawScore += problemRaw;
-    totalAIDeductions += questionDeduction;
+    totalAIDeductions += effectiveQuestionDeduction;
+    totalFinalScore += problemFinal;
   }
 
-  // Account for any AI calls without explicit problemId
+  // Account for any unassigned AI calls without explicit problemId
   const unassignedAI = aiUsages.filter(
     (u) => !u.problemId && problems.length > 1
   );
   for (const u of unassignedAI) {
     const deduction = u.type === "EXPLAIN" ? maxProblemPoints * 0.25 : maxProblemPoints * 0.50;
-    totalAIDeductions += deduction;
+    const effective = Math.min(totalFinalScore, deduction);
+    totalAIDeductions += effective;
+    totalFinalScore = Math.max(0, totalFinalScore - effective);
   }
-
-  const calculatedFinalScore = Math.max(0, totalRawScore - totalAIDeductions);
 
   return {
     rawScore: Math.round(totalRawScore * 100) / 100,
-    finalScore: Math.round(calculatedFinalScore * 100) / 100,
+    finalScore: Math.round(totalFinalScore * 100) / 100,
     aiDeductions: Math.round(totalAIDeductions * 100) / 100,
   };
 }
