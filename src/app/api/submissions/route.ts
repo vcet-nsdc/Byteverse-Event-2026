@@ -31,13 +31,14 @@ function getJudgeHeaders(): Record<string, string> {
 
 const schema = z.object({
   problemId: z.string(),
-  roundId: z.string(),
+  roundId: z.string().optional().nullable(),
+  contestId: z.string().optional().nullable(),
   language: z.string(),
   sourceCode: z.string().min(1).max(65536),
-  idempotencyKey: z.string().uuid(),
+  idempotencyKey: z.string(),
 });
 
-// GET /api/submissions?roundId=... -> fetch existing submissions for the participant
+// GET /api/submissions?roundId=...&problemId=... -> fetch submissions for participant
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -46,30 +47,34 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const roundId = searchParams.get("roundId");
-  if (!roundId) {
-    return NextResponse.json({ error: "roundId is required" }, { status: 400 });
-  }
+  const problemId = searchParams.get("problemId");
+
+  const whereClause: any = { userId: session.user.id };
+  if (roundId) whereClause.roundId = roundId;
+  if (problemId) whereClause.problemId = problemId;
 
   const submissions = await db.submission.findMany({
-    where: {
-      userId: session.user.id,
-      roundId,
-    },
+    where: whereClause,
     select: {
       id: true,
       problemId: true,
+      roundId: true,
+      language: true,
       status: true,
       rawScore: true,
       finalScore: true,
+      executionTimeMs: true,
+      memoryUsedMb: true,
       submittedAt: true,
     },
     orderBy: { submittedAt: "desc" },
+    take: 50,
   });
 
   return NextResponse.json(submissions);
 }
 
-// POST /api/submissions -> Instant synchronous evaluation against test cases + Instant Score Update
+// POST /api/submissions -> Universal synchronous evaluation via Judge0
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -86,39 +91,41 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
 
-  const { problemId, roundId, language, sourceCode, idempotencyKey } = parsed.data;
+  const { problemId, roundId, contestId, language, sourceCode, idempotencyKey } = parsed.data;
   const userId = session.user.id;
 
-  // Prevent re-submitting an already submitted problem
-  const existingSub = await db.submission.findFirst({
-    where: { userId, problemId, roundId },
-    orderBy: { submittedAt: "desc" },
-  });
-  if (existingSub) {
-    return NextResponse.json(
-      {
-        error: "You have already submitted a solution for this problem. You cannot submit again.",
-        alreadySubmitted: true,
-        submissionId: existingSub.id,
-        status: existingSub.status,
-        rawScore: existingSub.rawScore,
-      },
-      { status: 400 }
-    );
+  // Tournament-specific restrictions: only 1 submission allowed during round
+  if (roundId) {
+    const existingSub = await db.submission.findFirst({
+      where: { userId, problemId, roundId },
+      orderBy: { submittedAt: "desc" },
+    });
+    if (existingSub) {
+      return NextResponse.json(
+        {
+          error: "You have already submitted a solution for this problem in this round. You cannot submit again.",
+          alreadySubmitted: true,
+          submissionId: existingSub.id,
+          status: existingSub.status,
+          rawScore: existingSub.rawScore,
+        },
+        { status: 400 }
+      );
+    }
+
+    const round = await db.round.findUnique({ where: { id: roundId }, include: { event: true } });
+    if (round?.status !== "ACTIVE" && process.env.NODE_ENV === "production") {
+      return NextResponse.json({ error: "Round is not active" }, { status: 403 });
+    }
   }
 
   const problem = await db.problem.findUnique({
     where: { id: problemId },
-    include: { testCases: true },
+    include: { testCases: { orderBy: { sequence: "asc" } } },
   });
   if (!problem) return NextResponse.json({ error: "Problem not found" }, { status: 404 });
   if (!problem.allowedLangs.includes(language)) {
     return NextResponse.json({ error: "Language not allowed" }, { status: 400 });
-  }
-
-  const round = await db.round.findUnique({ where: { id: roundId }, include: { event: true } });
-  if (round?.status !== "ACTIVE" && process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Round is not active" }, { status: 403 });
   }
 
   const langId = LANG_IDS[language];
@@ -227,7 +234,8 @@ export async function POST(req: NextRequest) {
       data: {
         userId,
         problemId,
-        roundId,
+        roundId: roundId || undefined,
+        contestId: contestId || undefined,
         language,
         sourceCode,
         idempotencyKey,
@@ -242,32 +250,35 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Recalculate participant's total round score across all problems
-    const allUserSubmissions = await db.submission.findMany({
-      where: { userId, roundId },
-      select: { problemId: true, finalScore: true },
-    });
+    let totalRoundScore = 0;
+    if (roundId) {
+      // Recalculate participant's total round score across all problems
+      const allUserSubmissions = await db.submission.findMany({
+        where: { userId, roundId },
+        select: { problemId: true, finalScore: true },
+      });
 
-    const bestScores = new Map<string, number>();
-    for (const sub of allUserSubmissions) {
-      const cur = bestScores.get(sub.problemId) ?? 0;
-      if ((sub.finalScore ?? 0) > cur) {
-        bestScores.set(sub.problemId, sub.finalScore ?? 0);
+      const bestScores = new Map<string, number>();
+      for (const sub of allUserSubmissions) {
+        const cur = bestScores.get(sub.problemId) ?? 0;
+        if ((sub.finalScore ?? 0) > cur) {
+          bestScores.set(sub.problemId, sub.finalScore ?? 0);
+        }
       }
-    }
-    const totalRoundScore = Array.from(bestScores.values()).reduce((sum, val) => sum + val, 0);
+      totalRoundScore = Array.from(bestScores.values()).reduce((sum, val) => sum + val, 0);
 
-    // Instant update to RoundScore with question-level AI deductions
-    await updateRoundScore(userId, roundId);
+      // Instant update to RoundScore with question-level AI deductions
+      await updateRoundScore(userId, roundId);
 
-    // Instant update to TeamScore if user is in a team
-    try {
-      const membership = await db.teamMember.findFirst({ where: { userId } });
-      if (membership) {
-        await calculateTeamScore(membership.teamId, roundId);
+      // Instant update to TeamScore if user is in a team
+      try {
+        const membership = await db.teamMember.findFirst({ where: { userId } });
+        if (membership) {
+          await calculateTeamScore(membership.teamId, roundId);
+        }
+      } catch (teamErr) {
+        console.error("[Team Score Update Error]:", teamErr);
       }
-    } catch (teamErr) {
-      console.error("[Team Score Update Error]:", teamErr);
     }
 
     return NextResponse.json({
@@ -280,6 +291,8 @@ export async function POST(req: NextRequest) {
       compile_output: lastCompileOutput,
       stderr: lastStderr,
       stdout: lastStdout,
+      executionTimeMs: Math.round(maxTime * 1000),
+      memoryUsedMb: Math.round((maxMemoryKb / 1024) * 100) / 100,
       message: finalStatus === "ACCEPTED"
         ? "Solution Accepted! All test cases passed."
         : `${passedCount}/${totalCases} test cases passed (${finalStatus.replace(/_/g, " ")}).`,

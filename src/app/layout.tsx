@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "@/styles/globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import Navbar from "@/components/layout/navbar";
 
 export const metadata: Metadata = {
   title: "ByteVerse 2026 | NSDC",
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="min-h-screen antialiased">
+        <Navbar />
         {children}
         <Toaster />
       </body>

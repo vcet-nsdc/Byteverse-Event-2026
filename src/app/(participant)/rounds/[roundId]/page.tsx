@@ -9,21 +9,21 @@ import AIAssistantDrawer from "@/components/participant/AIAssistantDrawer";
 import Round4ProblemSelector from "@/components/participant/Round4ProblemSelector";
 import Round5ProblemSelector from "@/components/participant/Round5ProblemSelector";
 import Round5AnalysisModal from "@/components/participant/Round5AnalysisModal";
-import { 
-  Play, 
-  Send, 
-  Terminal, 
-  CheckCircle2, 
-  FileQuestion, 
-  ArrowLeft, 
-  ArrowRight, 
-  Sparkles, 
-  Rocket, 
-  ShieldCheck, 
-  Clock, 
-  Coffee, 
-  Trophy, 
-  Timer, 
+import {
+  Play,
+  Send,
+  Terminal,
+  CheckCircle2,
+  FileQuestion,
+  ArrowLeft,
+  ArrowRight,
+  Sparkles,
+  Rocket,
+  ShieldCheck,
+  Clock,
+  Coffee,
+  Trophy,
+  Timer,
   Users,
   RotateCcw,
   AlertCircle,
@@ -534,7 +534,7 @@ export default function RoundWorkspacePage() {
     if (isTournamentConcluded) {
       try {
         if (typeof document !== "undefined" && document.fullscreenElement) {
-          document.exitFullscreen().catch(() => {});
+          document.exitFullscreen().catch(() => { });
         }
       } catch {
         // ignore
@@ -691,7 +691,7 @@ export default function RoundWorkspacePage() {
     }
     try {
       if (document.documentElement.requestFullscreen) {
-        await document.documentElement.requestFullscreen().catch(() => {});
+        await document.documentElement.requestFullscreen().catch(() => { });
       }
     } catch {
       // ignore
@@ -835,13 +835,12 @@ export default function RoundWorkspacePage() {
                     return (
                       <div
                         key={seq}
-                        className={`p-3 rounded-2xl border-2 transition-all ${
-                          isCurrentUpcoming
+                        className={`p-3 rounded-2xl border-2 transition-all ${isCurrentUpcoming
                             ? "bg-[#7F45DB]/10 border-[#7F45DB] shadow-[2px_2px_0px_0px_#7F45DB]"
                             : isDone
-                            ? "bg-emerald-50/80 border-emerald-300"
-                            : "bg-[#F8F9FD] border-[#E2E8F0]"
-                        }`}
+                              ? "bg-emerald-50/80 border-emerald-300"
+                              : "bg-[#F8F9FD] border-[#E2E8F0]"
+                          }`}
                       >
                         <div className="flex items-center justify-between text-[11px] font-black">
                           <span className={isCurrentUpcoming ? "text-[#7F45DB]" : isDone ? "text-emerald-800" : "text-[#0F172A]"}>
@@ -914,7 +913,7 @@ export default function RoundWorkspacePage() {
                 <button
                   onClick={() => {
                     if (typeof document !== "undefined" && document.fullscreenElement) {
-                      document.exitFullscreen().catch(() => {});
+                      document.exitFullscreen().catch(() => { });
                     }
                     router.push("/");
                   }}
@@ -951,11 +950,10 @@ export default function RoundWorkspacePage() {
           </div>
 
           <div className="space-y-1.5">
-            <div className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider border ${
-              isReadyToStart
+            <div className={`inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider border ${isReadyToStart
                 ? "bg-emerald-100 text-emerald-900 border-emerald-400"
                 : "bg-amber-100 text-amber-900 border-amber-400"
-            }`}>
+              }`}>
               <span className={`w-2 h-2 rounded-full ${isReadyToStart ? "bg-emerald-600" : "bg-amber-600"} animate-pulse`} />
               Round {currentRoundSequence} · {isReadyToStart ? "Live in Progress" : "Scheduled"}
             </div>
@@ -1061,9 +1059,8 @@ export default function RoundWorkspacePage() {
         {/* Center Timer */}
         <div className="flex items-center gap-3 bg-[#F0F2F8] px-4 py-2 rounded-xl border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B]">
           <span className="text-xs text-[#6E6E6E] font-mono uppercase font-black">Time Remaining:</span>
-          <span className={`font-mono text-base sm:text-lg font-black tabular-nums ${
-            roundState.phase === "PAUSED" ? "text-amber-600" : timeLeft !== null && timeLeft < 300 ? "text-destructive animate-pulse" : "text-[#7F45DB]"
-          }`}>
+          <span className={`font-mono text-base sm:text-lg font-black tabular-nums ${roundState.phase === "PAUSED" ? "text-amber-600" : timeLeft !== null && timeLeft < 300 ? "text-destructive animate-pulse" : "text-[#7F45DB]"
+            }`}>
             {roundState.phase === "PAUSED" ? "⏸️ PAUSED" : timeLeft !== null ? formatTime(timeLeft) : "--:--"}
           </span>
         </div>
@@ -1138,13 +1135,12 @@ export default function RoundWorkspacePage() {
                   <button
                     key={p.id}
                     onClick={() => setCurrentProblemIdx(idx)}
-                    className={`w-8 h-8 rounded-xl font-mono text-xs font-black transition-all cursor-pointer flex items-center justify-center border-2 ${
-                      isCurrent
+                    className={`w-8 h-8 rounded-xl font-mono text-xs font-black transition-all cursor-pointer flex items-center justify-center border-2 ${isCurrent
                         ? "bg-[#7F45DB] text-white border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] scale-105"
                         : isAnswered
-                        ? "bg-[#7F45DB]/20 text-[#4A2293] border-[#7F45DB]/50"
-                        : "bg-[#F0F2F8] text-[#6E6E6E] border-[#E2E8F0] hover:border-[#1E1B4B]"
-                    }`}
+                          ? "bg-[#7F45DB]/20 text-[#4A2293] border-[#7F45DB]/50"
+                          : "bg-[#F0F2F8] text-[#6E6E6E] border-[#E2E8F0] hover:border-[#1E1B4B]"
+                      }`}
                     title={`Go to Question ${idx + 1}`}
                   >
                     {idx + 1}
@@ -1203,18 +1199,16 @@ export default function RoundWorkspacePage() {
                       <div
                         key={opt}
                         onClick={() => handleSelectOption(opt)}
-                        className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                          isSelected
+                        className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${isSelected
                             ? "bg-[#7F45DB]/10 border-[#7F45DB] shadow-[3px_3px_0px_0px_#7F45DB] translate-x-0.5 translate-y-0.5"
                             : "bg-white border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] hover:border-[#7F45DB] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B]"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className={`text-xs font-mono font-black px-2.5 py-0.5 rounded-lg border ${
-                            isSelected
+                          <span className={`text-xs font-mono font-black px-2.5 py-0.5 rounded-lg border ${isSelected
                               ? "bg-[#7F45DB] text-white border-[#1E1B4B]"
                               : "bg-[#F0F2F8] text-[#0F172A] border-[#1E1B4B]"
-                          }`}>
+                            }`}>
                             Option {opt}
                           </span>
                           {isSelected && <CheckCircle2 className="w-4 h-4 text-[#7F45DB]" />}
@@ -1298,13 +1292,12 @@ export default function RoundWorkspacePage() {
                       <button
                         key={p.id}
                         onClick={() => setCurrentProblemIdx(idx)}
-                        className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-2 ${
-                          isCurrent
+                        className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 border-2 ${isCurrent
                             ? "bg-[#7F45DB] text-white border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] scale-105"
                             : isSubmitted
-                            ? "bg-emerald-50 text-emerald-950 border-emerald-500 hover:border-[#1E1B4B]"
-                            : "bg-[#F8F9FD] text-[#0F172A] border-[#1E1B4B]/30 hover:border-[#1E1B4B]"
-                        }`}
+                              ? "bg-emerald-50 text-emerald-950 border-emerald-500 hover:border-[#1E1B4B]"
+                              : "bg-[#F8F9FD] text-[#0F172A] border-[#1E1B4B]/30 hover:border-[#1E1B4B]"
+                          }`}
                       >
                         <span>Q{idx + 1}</span>
                         {isSubmitted && (
@@ -1609,31 +1602,28 @@ export default function RoundWorkspacePage() {
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => setActiveConsoleTab("input")}
-                      className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
-                        activeConsoleTab === "input"
+                      className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${activeConsoleTab === "input"
                           ? "bg-[#333333] text-emerald-400 shadow-sm"
                           : "text-gray-400 hover:text-gray-200"
-                      }`}
+                        }`}
                     >
                       Testcase (Input)
                     </button>
                     <button
                       onClick={() => setActiveConsoleTab("output")}
-                      className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
-                        activeConsoleTab === "output"
+                      className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${activeConsoleTab === "output"
                           ? "bg-[#333333] text-emerald-400 shadow-sm"
                           : "text-gray-400 hover:text-gray-200"
-                      }`}
+                        }`}
                     >
                       Test Result
                     </button>
                     <button
                       onClick={() => setActiveConsoleTab("verdict")}
-                      className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${
-                        activeConsoleTab === "verdict"
+                      className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-all cursor-pointer ${activeConsoleTab === "verdict"
                           ? "bg-[#333333] text-emerald-400 shadow-sm"
                           : "text-gray-400 hover:text-gray-200"
-                      }`}
+                        }`}
                     >
                       Test Cases
                     </button>

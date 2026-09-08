@@ -19,7 +19,7 @@ const LANG_IDS: Record<string, number> = {
 
 const runSchema = z.object({
   problemId: z.string(),
-  roundId: z.string(),
+  roundId: z.string().optional().nullable(),
   language: z.enum(["cpp", "c", "java", "python"]),
   sourceCode: z.string().max(65536),
   customInput: z.string().max(32768).optional().default(""),
@@ -49,9 +49,11 @@ export async function POST(req: NextRequest) {
   const { problemId, roundId, language, sourceCode, customInput } = parsed.data;
   const userId = session.user.id;
 
-  const round = await db.round.findUnique({ where: { id: roundId } });
-  if (round && round.status !== "ACTIVE" && process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Round is not active" }, { status: 403 });
+  if (roundId) {
+    const round = await db.round.findUnique({ where: { id: roundId } });
+    if (round && round.status !== "ACTIVE" && process.env.NODE_ENV === "production") {
+      return NextResponse.json({ error: "Round is not active" }, { status: 403 });
+    }
   }
 
   const trackingKey = `compile:${userId}:${problemId}`;

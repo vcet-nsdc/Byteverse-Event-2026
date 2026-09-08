@@ -14,6 +14,7 @@ async function cleanProblemStatements() {
   });
 
   for (const p of problems) {
+    if (!p.round) continue;
     const roundSeq = p.round.sequence;
     let newStatement = p.statement;
     let newStarterCodes: any = p.starterCodes;

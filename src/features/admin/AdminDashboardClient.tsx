@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, UserCheck, Code2, MessageSquare, Terminal, Trophy } from "lucide-react";
+import { Users, UserCheck, Code2, MessageSquare, Terminal, Trophy, Calendar, ArrowRight } from "lucide-react";
 
 interface ActiveRound {
   id: string;
@@ -228,6 +228,71 @@ export default function AdminDashboardClient() {
           <div className="text-xs text-[#6E6E6E] mt-2 font-mono">
             Code review & optimization queries
           </div>
+        </div>
+      </div>
+
+      {/* Quick Management Hub */}
+      <div className="pt-4 space-y-4">
+        <h2 className="text-xl font-extrabold font-mono text-[#0F172A]">
+          Administrative Management Hub
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Contests Hub */}
+          <Link
+            href="/admin/contests"
+            className="p-5 rounded-2xl border-2 border-[#1E1B4B] bg-white shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#1E1B4B] transition-all group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-[#7F45DB]">
+                <Trophy className="w-5 h-5" />
+              </div>
+              <ArrowRight className="w-4 h-4 text-[#6E6E6E] group-hover:translate-x-1 transition-transform" />
+            </div>
+            <h3 className="font-extrabold font-mono text-base text-[#0F172A]">
+              Contest Manager
+            </h3>
+            <p className="text-xs text-[#6E6E6E] mt-1 font-sans">
+              Publish weekly contests, assign challenge problems, and toggle live status.
+            </p>
+          </Link>
+
+          {/* Events Hub */}
+          <Link
+            href="/admin/events"
+            className="p-5 rounded-2xl border-2 border-[#1E1B4B] bg-white shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#1E1B4B] transition-all group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <ArrowRight className="w-4 h-4 text-[#6E6E6E] group-hover:translate-x-1 transition-transform" />
+            </div>
+            <h3 className="font-extrabold font-mono text-base text-[#0F172A]">
+              Events Manager
+            </h3>
+            <p className="text-xs text-[#6E6E6E] mt-1 font-sans">
+              Manage ongoing collegiate championships, add upcoming events, and set venues.
+            </p>
+          </Link>
+
+          {/* Registered Users Hub */}
+          <Link
+            href="/admin/users"
+            className="p-5 rounded-2xl border-2 border-[#1E1B4B] bg-white shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#1E1B4B] transition-all group"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-600">
+                <Users className="w-5 h-5" />
+              </div>
+              <ArrowRight className="w-4 h-4 text-[#6E6E6E] group-hover:translate-x-1 transition-transform" />
+            </div>
+            <h3 className="font-extrabold font-mono text-base text-[#0F172A]">
+              Registered Users
+            </h3>
+            <p className="text-xs text-[#6E6E6E] mt-1 font-sans">
+              Inspect all registered members, roles, contest registrations, and export data.
+            </p>
+          </Link>
         </div>
       </div>
     </div>

@@ -39,21 +39,26 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    return updateRoundScore(submission.userId, submission.roundId);
+    if (submission.roundId) {
+      return updateRoundScore(submission.userId, submission.roundId);
+    }
+    return rawScore;
   });
 
-  const eventId = submission.problem.round.eventId;
-  await redisClient.publish(
-    `scores:${eventId}`,
-    JSON.stringify({
-      type: "SCORE_UPDATE",
-      userId: submission.userId,
-      roundId: submission.roundId,
-      finalScore,
-      submissionId: submission.id,
-      status: mappedStatus,
-    })
-  );
+  const eventId = submission.problem?.round?.eventId || (process.env.NEXT_PUBLIC_EVENT_ID ?? "byteverse-2026");
+  if (submission.roundId) {
+    await redisClient.publish(
+      `scores:${eventId}`,
+      JSON.stringify({
+        type: "SCORE_UPDATE",
+        userId: submission.userId,
+        roundId: submission.roundId,
+        finalScore,
+        submissionId: submission.id,
+        status: mappedStatus,
+      })
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

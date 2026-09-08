@@ -73,12 +73,16 @@ model User {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  teamMember       TeamMember?
-  submissions      Submission[]
-  aiUsages         AIUsage[]
-  roundScores      RoundScore[]
-  disqualification Disqualification?
-  auditLogs        AuditLog[]
+  teamMember          TeamMember?
+  submissions         Submission[]
+  aiUsages            AIUsage[]
+  roundScores         RoundScore[]
+  disqualification    Disqualification?
+  auditLogs           AuditLog[]
+  discussions         Discussion[]
+  discussionComments  DiscussionComment[]
+  discussionVotes     DiscussionVote[]
+  contestParticipants ContestParticipant[]
 
   @@index([email])
   @@map("users")
@@ -124,6 +128,9 @@ model Event {
   id                   String              @id @default(cuid())
   name                 String
   description          String?
+  bannerUrl            String?
+  venue                String?             @default("Campus Auditorium & Labs")
+  category             String?             @default("Championship")
   startsAt             DateTime?
   endsAt               DateTime?
   registrationOpen     Boolean             @default(true)
@@ -136,6 +143,7 @@ model Event {
   rounds        Round[]
   teams         Team[]
   announcements Announcement[]
+  contests      Contest[]
 
   @@map("events")
 }
@@ -158,6 +166,7 @@ model Round {
 
   event       Event        @relation(fields: [eventId], references: [id])
   problems    Problem[]
+  submissions Submission[]
   roundScores RoundScore[]
   teamScores  TeamScore[]
 
@@ -168,7 +177,8 @@ model Round {
 
 model Problem {
   id                 String   @id @default(cuid())
-  roundId            String
+  roundId            String?
+  contestId          String?
   title              String
   statement          String
   inputFormat        String?
@@ -176,11 +186,12 @@ model Problem {
   constraints        String?
   sampleInput        String?
   sampleOutput       String?
-  difficulty         String?
+  difficulty         String?  @default("Easy")
+  tags               String[] @default([])
   timeLimitMs        Int      @default(2000)
   memoryLimitMb      Int      @default(256)
   allowedLangs       String[] @default(["cpp", "c", "java", "python"])
-  isPublished        Boolean  @default(false)
+  isPublished        Boolean  @default(true)
   set                String   @default("A")
   starterCodes       Json?
   options            Json?
@@ -190,11 +201,14 @@ model Problem {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
-  round       Round        @relation(fields: [roundId], references: [id])
+  round       Round?       @relation(fields: [roundId], references: [id])
+  contest     Contest?     @relation(fields: [contestId], references: [id])
   testCases   TestCase[]
   submissions Submission[]
+  discussions Discussion[]
 
   @@index([roundId])
+  @@index([contestId])
   @@map("problems")
 }
 
@@ -219,7 +233,8 @@ model Submission {
   id              String           @id @default(cuid())
   userId          String
   problemId       String
-  roundId         String
+  roundId         String?
+  contestId       String?
   language        String
   sourceCode      String
   status          SubmissionStatus @default(QUEUED)
@@ -235,12 +250,15 @@ model Submission {
   submittedAt     DateTime         @default(now())
   judgedAt        DateTime?
 
-  user    User    @relation(fields: [userId], references: [id])
-  problem Problem @relation(fields: [problemId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  problem Problem  @relation(fields: [problemId], references: [id])
+  round   Round?   @relation(fields: [roundId], references: [id])
+  contest Contest? @relation(fields: [contestId], references: [id])
 
   @@index([userId, roundId])
   @@index([problemId])
   @@index([roundId])
+  @@index([contestId])
   @@index([judgeToken])
   @@map("submissions")
 }
@@ -346,3 +364,101 @@ model AuditLog {
   @@index([createdAt])
   @@map("audit_logs")
 }
+
+model Contest {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  type        String      @default("WEEKLY") // "WEEKLY", "BIWEEKLY", "COLLEGE", "CHALLENGE"
+  status      RoundStatus @default(SCHEDULED)
+  startsAt    DateTime
+  endsAt      DateTime
+  bannerUrl   String?
+  difficulty  String?     @default("Mixed")
+  eventId     String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  event        Event?               @relation(fields: [eventId], references: [id])
+  problems     Problem[]
+  submissions  Submission[]
+  participants ContestParticipant[]
+
+  @@index([eventId])
+  @@index([status])
+  @@map("contests")
+}
+
+model ContestParticipant {
+  id           String   @id @default(cuid())
+  contestId    String
+  userId       String
+  score        Float    @default(0)
+  rank         Int?
+  registeredAt DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, userId])
+  @@index([contestId])
+  @@index([userId])
+  @@map("contest_participants")
+}
+
+model Discussion {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  authorId  String
+  problemId String?
+  tags      String[] @default([])
+  views     Int      @default(0)
+  upvotes   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author   User                @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  problem  Problem?            @relation(fields: [problemId], references: [id], onDelete: SetNull)
+  comments DiscussionComment[]
+  votes    DiscussionVote[]
+
+  @@index([authorId])
+  @@index([problemId])
+  @@index([createdAt])
+  @@index([upvotes])
+  @@map("discussions")
+}
+
+model DiscussionComment {
+  id           String   @id @default(cuid())
+  content      String
+  discussionId String
+  authorId     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  discussion Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  author     User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([discussionId])
+  @@index([authorId])
+  @@map("discussion_comments")
+}
+
+model DiscussionVote {
+  id           String   @id @default(cuid())
+  discussionId String
+  userId       String
+  value        Int      // 1 for upvote, -1 for downvote
+  createdAt    DateTime @default(now())
+
+  discussion Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([discussionId, userId])
+  @@index([discussionId])
+  @@index([userId])
+  @@map("discussion_votes")
+}
+
