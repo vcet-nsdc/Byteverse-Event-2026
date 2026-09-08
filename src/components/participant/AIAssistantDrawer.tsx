@@ -158,7 +158,7 @@ export default function AIAssistantDrawer({ roundId, problemId, isOpen, onClose 
     {
       id: "welcome-1",
       sender: "ai",
-      text: `Hello! I am Navigator, your AI Tutor for ByteVerse 2026.
+      text: `Hello! I am Navigator, your AI Tutor for ByteClash 2026.
 
 To recommend the best algorithmic pattern or explain logic, please specify:
 • Problem Goal: What are you trying to find or compute?
@@ -175,7 +175,7 @@ Once you provide these details, I will guide you toward an appropriate high-leve
     {
       id: "welcome-2",
       sender: "ai",
-      text: `Hello! I am Forge, your AI Code Advisor for ByteVerse 2026.
+      text: `Hello! I am Forge, your AI Code Advisor for ByteClash 2026.
 
 To get help with debugging, syntax, or code optimization, please specify:
 • Language: C, C++, Java, or Python.
@@ -343,7 +343,7 @@ I will point out logical bugs and explain syntax gotchas without writing the ful
           </div>
           <div>
             <div className="font-display font-extrabold text-sm text-[#0F172A] flex items-center gap-1.5">
-              <span>ByteVerse AI Assistant</span>
+              <span>ByteClash AI Assistant</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#7F45DB]/10 text-[#7F45DB] font-mono font-bold">
                 Socratic
               </span>

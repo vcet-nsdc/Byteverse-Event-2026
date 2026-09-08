@@ -83,12 +83,12 @@ export default function Navbar() {
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2.5 group">
               <div className="w-9 h-9 rounded-xl bg-[#7F45DB] border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] flex items-center justify-center text-white font-mono font-black text-base group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-none transition-all">
-                BV
+                BC
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
                   <span className="font-mono font-black text-lg text-[#0F172A] tracking-tight uppercase">
-                    BYTE<span className="text-[#7F45DB]">VERSE</span>
+                    BYTE<span className="text-[#7F45DB]">CLASH</span>
                   </span>
                   <span className="px-1.5 py-0.5 text-[9px] font-mono font-black uppercase rounded bg-[#7F45DB]/10 text-[#7F45DB] border border-[#7F45DB]/30">
                     2026

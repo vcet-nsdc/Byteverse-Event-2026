@@ -84,7 +84,7 @@ export default function ContestHubPage() {
           <div className="relative z-10 max-w-2xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7F45DB]/10 text-[#7F45DB] border border-[#7F45DB]/30 text-xs font-mono font-black uppercase tracking-wider">
               <Trophy className="w-3.5 h-3.5" />
-              <span>ByteVerse Competitive Arena</span>
+              <span>ByteClash Competitive Arena</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-display font-black text-[#0F172A] tracking-tight">
               Programming Contests

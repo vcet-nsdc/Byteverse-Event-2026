@@ -57,7 +57,7 @@ export default function AdminNavbar({ userRole, userEmail }: AdminNavbarProps) {
         <Link href="/admin" className="flex items-center gap-2.5 shrink-0">
           <span className="w-3 h-3 rounded-full bg-[#7F45DB] animate-pulse" />
           <span className="font-extrabold font-mono text-base sm:text-lg text-[#0F172A] tracking-tight uppercase">
-            BYTEVERSE <span className="text-[#7F45DB]">ADMIN</span>
+            BYTECLASH <span className="text-[#7F45DB]">ADMIN</span>
           </span>
         </Link>
 

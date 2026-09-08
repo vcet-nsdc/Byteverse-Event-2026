@@ -157,7 +157,7 @@ export default function HomeActiveContest() {
           </div>
           <h3 className="text-base font-bold text-[#0F172A]">No contest actively in progress</h3>
           <p className="text-xs font-mono text-[#6E6E6E] max-w-md mx-auto">
-            Weekly Contest 101 and the ByteVerse Speed Duels will go live soon. In the meantime, hone your skills in the Practice Arena!
+            Weekly Contest 101 and the ByteClash Speed Duels will go live soon. In the meantime, hone your skills in the Practice Arena!
           </p>
           <div className="pt-2">
             <Link

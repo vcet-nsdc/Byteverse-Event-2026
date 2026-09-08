@@ -1,13 +1,102 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "@/styles/globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/layout/navbar";
+import JsonLd from "@/components/seo/JsonLd";
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://byteclash.dev";
+
+export const viewport: Viewport = {
+  themeColor: "#7F45DB",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
-  title: "ByteVerse 2026 | NSDC",
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: "NSDC ByteClash 2026 — Premier Collegiate Competitive Programming Platform",
+    template: "%s | NSDC ByteClash",
+  },
   description:
-    "ByteVerse is a competitive coding platform featuring 5 rounds of programming challenges, AI integration, team battles, and live leaderboards.",
-  icons: { icon: "/favicon.ico" },
+    "NSDC ByteClash (formerly ByteVerse) is the premier collegiate competitive programming platform and tournament arena. Compete in weekly coding contests, practice algorithms in C++, Python, Java, and C, climb live leaderboards, and battle in real-time speed duels.",
+  applicationName: "NSDC ByteClash",
+  authors: [
+    { name: "NSDC Technical Committee", url: baseUrl },
+    { name: "NSDC ByteClash Board" },
+  ],
+  generator: "Next.js",
+  keywords: [
+    "NSDC ByteClash",
+    "ByteClash",
+    "ByteClash 2026",
+    "nsdc byteclash",
+    "byteclash nsdc",
+    "NSDC coding contest",
+    "NSDC competitive programming",
+    "NSDC College",
+    "algorithm challenges",
+    "collegiate coding tournament",
+    "online judge",
+    "LeetCode college alternative",
+    "competitive programming India",
+    "ByteVerse",
+    "college hackathon 2026",
+    "data structures and algorithms practice",
+  ],
+  referrer: "origin-when-cross-origin",
+  creator: "NSDC Committee",
+  publisher: "NSDC ByteClash",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "NSDC ByteClash 2026 — Premier Collegiate Competitive Programming Platform",
+    description:
+      "Join NSDC ByteClash, the flagship collegiate coding arena. Compete in algorithmic challenges, weekly contests, AI code optimization, and live speed duels.",
+    url: baseUrl,
+    siteName: "NSDC ByteClash",
+    locale: "en_US",
+    type: "website",
+    images: [
+      {
+        url: "/assets/byteverse-title.png",
+        width: 1200,
+        height: 630,
+        alt: "NSDC ByteClash 2026 Championship Arena",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "NSDC ByteClash 2026 — Premier Collegiate Coding Arena",
+    description:
+      "Compete in weekly algorithmic contests, practice problems, and live tournament battles on NSDC ByteClash.",
+    images: ["/assets/byteverse-title.png"],
+    creator: "@NSDC_Official",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  category: "technology",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -16,6 +105,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <JsonLd />
       </head>
       <body className="min-h-screen antialiased">
         <Navbar />

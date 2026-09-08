@@ -40,12 +40,17 @@ export default function LandingPage() {
       {/* Main Content Layout */}
       <div className="relative z-10 text-center max-w-4xl mx-auto space-y-8 w-full">
 
+        {/* Primary SEO Heading targeting 'NSDC ByteClash' */}
+        <h1 className="sr-only">
+          NSDC ByteClash 2026 — Premier Collegiate Competitive Programming Platform & Online Judge
+        </h1>
+
         {/* 1. Large NSDC Committee Logo on High-Contrast Dark Card */}
         <div className="flex flex-col items-center justify-center gap-3">
           <div className="relative w-64 sm:w-72 md:w-80 h-[85px] sm:h-[100px] md:h-[115px] rounded-2xl bg-[#0F172A] border-3 border-[#1E1B4B] shadow-[6px_6px_0px_0px_#1E1B4B] px-5 py-3 flex items-center justify-center hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[4px_4px_0px_0px_#1E1B4B] transition-all overflow-hidden">
             <Image
               src="/assets/nsdc-logo.png"
-              alt="NSDC Committee Logo"
+              alt="NSDC Logo - National Skill Development Committee"
               width={260}
               height={90}
               className="object-contain w-full h-full drop-shadow-sm"
@@ -60,7 +65,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* 3. ByteVerse Event Title Artwork */}
+        {/* 3. ByteClash Event Title Artwork */}
         <div className="space-y-6">
           <div className="relative max-w-2xl w-full mx-auto p-4 sm:p-6 bg-white border-3 border-[#1E1B4B] rounded-3xl shadow-[8px_8px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[6px_6px_0px_0px_#1E1B4B] transition-all overflow-hidden flex items-center justify-center">
             {/* Subtle background glow */}
@@ -68,7 +73,7 @@ export default function LandingPage() {
             <div className="relative w-full h-[140px] sm:h-[180px] md:h-[210px] flex items-center justify-center overflow-hidden">
               <Image
                 src="/assets/byteverse-title.png"
-                alt="ByteVerse 2026 Title"
+                alt="NSDC ByteClash 2026 Official Logo & Title Artwork"
                 fill
                 className="object-contain object-center drop-shadow-md scale-[2.7] sm:scale-[3.0] md:scale-[3.3]"
                 priority
@@ -85,7 +90,7 @@ export default function LandingPage() {
             </div>
 
             <p className="text-sm sm:text-base md:text-lg text-[#6E6E6E] max-w-2xl mx-auto font-medium leading-relaxed">
-              Ready to put your coding skills to the test? Welcome to our official college coding tournament! Team up with a partner to tackle tough algorithmic puzzles, optimize AI models, and debug complex logic on the fly. The clock is ticking, the arena timer is perfectly synced, and every single second counts.
+              Welcome to <strong className="text-[#0F172A] font-bold">NSDC ByteClash 2026</strong> — the official collegiate competitive programming championship and online arena! Compete in weekly coding contests, solve curated algorithmic challenges in C++, Python, Java, and C, and climb the live leaderboards.
             </p>
           </div>
         </div>

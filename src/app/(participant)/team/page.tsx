@@ -215,7 +215,7 @@ export default function TeamPage() {
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border-2 border-[#1E1B4B] bg-[#7F45DB]/10 text-[#4A2293] text-xs font-mono font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#1E1B4B]">
             <span className="w-2 h-2 rounded-full bg-[#7F45DB] animate-pulse" />
-            ByteVerse 2026 · Registration Portal
+            ByteClash 2026 · Registration Portal
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold text-[#0F172A] uppercase tracking-tight font-display">
             Assemble Your Team
@@ -245,7 +245,7 @@ export default function TeamPage() {
                     TEAM VERIFIED ✓
                   </div>
                   <div className="text-xs sm:text-sm font-extrabold text-[#0F172A] font-display mt-0.5">
-                    Your team is verified & authorized for ByteVerse 2026!
+                    Your team is verified & authorized for ByteClash 2026!
                   </div>
                 </div>
               </div>

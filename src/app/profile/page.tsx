@@ -199,7 +199,7 @@ export default function ProfilePage() {
                 </span>
               </div>
               <p className="text-xs font-mono text-[#6E6E6E]">
-                Aggregated from official ByteVerse tournament rounds & duels
+                Aggregated from official ByteClash tournament rounds & duels
               </p>
             </div>
 

@@ -13,9 +13,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   serverExternalPackages: ["@prisma/client"],
-  output: "standalone",
   experimental: {
-    workerThreads: false,
     cpus: 1,
   },
   images: {
