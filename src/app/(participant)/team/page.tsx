@@ -199,7 +199,7 @@ export default function TeamPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-[#F8F9FD] font-mono text-[#7F45DB] font-bold">
+      <main className="min-h-screen flex items-center justify-center bg-transparent font-mono text-[#7F45DB] font-bold">
         Loading team registration portal...
       </main>
     );
@@ -209,7 +209,7 @@ export default function TeamPage() {
   const isComplete = memberCount >= 2;
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#F8F9FD] font-sans">
+    <main className="min-h-screen flex flex-col items-center justify-center p-6 bg-transparent text-[#0F172A] dark:text-[#F8FAFC] font-sans transition-colors duration-500">
       <div className="max-w-3xl w-full space-y-8">
         {/* Header */}
         <div className="text-center space-y-3">

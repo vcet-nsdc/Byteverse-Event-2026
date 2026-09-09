@@ -11,6 +11,11 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#7F45DB",
     icons: [
       {
+        src: "/assets/byteclash-logo.png",
+        sizes: "any",
+        type: "image/png",
+      },
+      {
         src: "/favicon.ico",
         sizes: "any",
         type: "image/x-icon",

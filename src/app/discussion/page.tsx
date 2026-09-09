@@ -134,26 +134,26 @@ export default function DiscussionPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F8F9FD] text-[#0F172A] py-10 px-4 sm:px-6 lg:px-8 font-sans">
+    <main className="min-h-screen bg-transparent text-[#0F172A] dark:text-[#F8FAFC] py-10 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-500">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Banner */}
-        <div className="bg-white border-2 border-[#1E1B4B] rounded-3xl p-6 sm:p-10 shadow-[6px_6px_0px_0px_#1E1B4B] flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="bg-white dark:bg-[#111726]/90 border-2 border-[#1E1B4B] dark:border-[#7F45DB]/60 rounded-3xl p-6 sm:p-10 shadow-[6px_6px_0px_0px_#1E1B4B] dark:shadow-[6px_6px_0px_0px_#7F45DB]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-6 relative overflow-hidden transition-all duration-300">
           <div className="relative z-10 max-w-xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7F45DB]/10 text-[#7F45DB] border border-[#7F45DB]/30 text-xs font-mono font-black uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7F45DB]/10 text-[#7F45DB] dark:text-[#A472F7] border border-[#7F45DB]/30 text-xs font-mono font-black uppercase tracking-wider">
               <MessageSquare className="w-3.5 h-3.5" />
               <span>Developer Community</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-display font-black text-[#0F172A] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-display font-black text-[#0F172A] dark:text-white tracking-tight">
               Discussions & Insights
             </h1>
-            <p className="text-sm sm:text-base text-[#6E6E6E] font-medium leading-relaxed">
+            <p className="text-sm sm:text-base text-[#6E6E6E] dark:text-[#94A3B8] font-medium leading-relaxed">
               Exchange algorithmic approaches, interview strategies, complexity trade-offs, and tournament tips with peers and mentors.
             </p>
           </div>
 
           <button
             onClick={() => setShowCreateModal(true)}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[#7F45DB] text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all shrink-0"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-[#7F45DB] text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-[#1E1B4B] dark:border-[#A472F7] shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#A472F7] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>New Discussion</span>
@@ -161,21 +161,21 @@ export default function DiscussionPage() {
         </div>
 
         {/* Search and Sort Bar */}
-        <div className="bg-white border-2 border-[#1E1B4B] rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#1E1B4B] space-y-4">
+        <div className="bg-white dark:bg-[#111726]/90 border-2 border-[#1E1B4B] dark:border-[#7F45DB]/60 rounded-2xl p-4 sm:p-5 shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#7F45DB]/50 space-y-4 transition-all duration-300">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#6E6E6E] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#6E6E6E] dark:text-[#94A3B8] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search topics, questions, solutions..."
-                className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#F8F9FD] border-2 border-[#1E1B4B]/20 text-xs font-mono text-[#0F172A] placeholder:text-[#6E6E6E] focus:outline-none focus:border-[#7F45DB]"
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#F8F9FD] dark:bg-[#1A2035] border-2 border-[#1E1B4B]/20 dark:border-[#382F60] text-xs font-mono text-[#0F172A] dark:text-white placeholder:text-[#6E6E6E] dark:placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7F45DB]"
               />
             </div>
 
             {/* Sorting Tabs */}
-            <div className="flex items-center gap-1 bg-[#F8F9FD] p-1 rounded-xl border border-[#1E1B4B]/20 shrink-0">
+            <div className="flex items-center gap-1 bg-[#F8F9FD] dark:bg-[#1A2035] p-1 rounded-xl border border-[#1E1B4B]/20 dark:border-[#382F60] shrink-0">
               {[
                 { key: "newest", label: "Newest" },
                 { key: "upvotes", label: "Top Rated" },
@@ -187,7 +187,7 @@ export default function DiscussionPage() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
                     sort === s.key
                       ? "bg-[#7F45DB] text-white font-black"
-                      : "text-[#6E6E6E] hover:text-[#0F172A]"
+                      : "text-[#6E6E6E] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white"
                   }`}
                 >
                   {s.label}
@@ -197,16 +197,16 @@ export default function DiscussionPage() {
           </div>
 
           {/* Tag filters */}
-          <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#1E1B4B]/10">
-            <span className="text-[11px] font-mono text-[#6E6E6E] uppercase font-bold mr-1">
+          <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#1E1B4B]/10 dark:border-[#2D2755]">
+            <span className="text-[11px] font-mono text-[#6E6E6E] dark:text-[#94A3B8] uppercase font-bold mr-1">
               Category:
             </span>
             <button
               onClick={() => setTag("All")}
               className={`px-2.5 py-1 rounded-lg text-xs font-mono border ${
                 tag === "All"
-                  ? "bg-[#0F172A] text-white border-[#0F172A] font-bold"
-                  : "bg-[#F8F9FD] text-[#6E6E6E] border-[#1E1B4B]/15 hover:text-[#0F172A]"
+                  ? "bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] border-[#0F172A] dark:border-white font-bold"
+                  : "bg-[#F8F9FD] dark:bg-[#1A2035] text-[#6E6E6E] dark:text-[#94A3B8] border-[#1E1B4B]/15 dark:border-[#382F60] hover:text-[#0F172A] dark:hover:text-white"
               }`}
             >
               All
@@ -218,7 +218,7 @@ export default function DiscussionPage() {
                 className={`px-2.5 py-1 rounded-lg text-xs font-mono border ${
                   tag === t
                     ? "bg-[#7F45DB] text-white border-[#7F45DB] font-bold"
-                    : "bg-[#F8F9FD] text-[#6E6E6E] border-[#1E1B4B]/15 hover:text-[#0F172A]"
+                    : "bg-[#F8F9FD] dark:bg-[#1A2035] text-[#6E6E6E] dark:text-[#94A3B8] border-[#1E1B4B]/15 dark:border-[#382F60] hover:text-[#0F172A] dark:hover:text-white"
                 }`}
               >
                 #{t}
@@ -229,7 +229,7 @@ export default function DiscussionPage() {
 
         {/* Discussion List */}
         {loading ? (
-          <div className="py-16 text-center font-mono text-sm text-[#6E6E6E] animate-pulse">
+          <div className="py-16 text-center font-mono text-sm text-[#6E6E6E] dark:text-[#94A3B8] animate-pulse">
             Loading developer discussions...
           </div>
         ) : discussions.length > 0 ? (
@@ -238,29 +238,29 @@ export default function DiscussionPage() {
               <Link
                 key={d.id}
                 href={`/discussion/${d.id}`}
-                className="block bg-white border-2 border-[#1E1B4B] rounded-3xl p-5 sm:p-6 shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#1E1B4B] transition-all group"
+                className="block bg-white dark:bg-[#111726]/90 border-2 border-[#1E1B4B] dark:border-[#7F45DB]/60 rounded-3xl p-5 sm:p-6 shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#7F45DB]/50 hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#1E1B4B] dark:hover:shadow-[2px_2px_0px_0px_#7F45DB] transition-all group"
               >
                 <div className="flex items-start gap-4">
                   {/* Upvote Pill */}
-                  <div className="flex flex-col items-center justify-center p-2 rounded-2xl bg-[#F8F9FD] border-2 border-[#1E1B4B] min-w-[50px] shrink-0">
+                  <div className="flex flex-col items-center justify-center p-2 rounded-2xl bg-[#F8F9FD] dark:bg-[#1A2035] border-2 border-[#1E1B4B] dark:border-[#382F60] min-w-[50px] shrink-0">
                     <button
                       onClick={(e) => handleVote(d.id, 1, e)}
-                      className={`p-1 rounded hover:bg-[#EAEAEA] transition-colors ${
-                        d.userVote === 1 ? "text-[#7F45DB]" : "text-[#6E6E6E]"
+                      className={`p-1 rounded hover:bg-[#EAEAEA] dark:hover:bg-[#232946] transition-colors ${
+                        d.userVote === 1 ? "text-[#7F45DB] dark:text-[#A472F7]" : "text-[#6E6E6E] dark:text-[#94A3B8]"
                       }`}
                     >
-                      <ArrowBigUp className={`w-5 h-5 ${d.userVote === 1 ? "fill-[#7F45DB]" : ""}`} />
+                      <ArrowBigUp className={`w-5 h-5 ${d.userVote === 1 ? "fill-[#7F45DB] dark:fill-[#A472F7]" : ""}`} />
                     </button>
-                    <span className="text-xs font-mono font-black text-[#0F172A]">
+                    <span className="text-xs font-mono font-black text-[#0F172A] dark:text-white">
                       {d.upvotes}
                     </span>
                     <button
                       onClick={(e) => handleVote(d.id, -1, e)}
-                      className={`p-1 rounded hover:bg-[#EAEAEA] transition-colors ${
-                        d.userVote === -1 ? "text-rose-600" : "text-[#6E6E6E]"
+                      className={`p-1 rounded hover:bg-[#EAEAEA] dark:hover:bg-[#232946] transition-colors ${
+                        d.userVote === -1 ? "text-rose-600 dark:text-rose-400" : "text-[#6E6E6E] dark:text-[#94A3B8]"
                       }`}
                     >
-                      <ArrowBigDown className={`w-5 h-5 ${d.userVote === -1 ? "fill-rose-600" : ""}`} />
+                      <ArrowBigDown className={`w-5 h-5 ${d.userVote === -1 ? "fill-rose-600 dark:fill-rose-400" : ""}`} />
                     </button>
                   </div>
 
@@ -270,29 +270,29 @@ export default function DiscussionPage() {
                       {d.tags.map((t) => (
                         <span
                           key={t}
-                          className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#7F45DB]/10 text-[#7F45DB] border border-[#7F45DB]/20"
+                          className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#7F45DB]/10 text-[#7F45DB] dark:text-[#A472F7] border border-[#7F45DB]/20"
                         >
                           #{t}
                         </span>
                       ))}
                       {d.problem && (
-                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-700/50">
                           Problem: {d.problem.title}
                         </span>
                       )}
                     </div>
 
-                    <h2 className="text-lg font-bold text-[#0F172A] group-hover:text-[#7F45DB] transition-colors">
+                    <h2 className="text-lg font-bold text-[#0F172A] dark:text-white group-hover:text-[#7F45DB] dark:group-hover:text-[#A472F7] transition-colors">
                       {d.title}
                     </h2>
 
-                    <p className="text-xs sm:text-sm text-[#6E6E6E] font-medium line-clamp-2 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-[#6E6E6E] dark:text-[#94A3B8] font-medium line-clamp-2 leading-relaxed">
                       {d.content.replace(/```[\s\S]*?```/g, "[code snippet]").slice(0, 200)}
                     </p>
 
-                    <div className="flex items-center justify-between pt-2 text-[11px] font-mono text-[#6E6E6E]">
+                    <div className="flex items-center justify-between pt-2 text-[11px] font-mono text-[#6E6E6E] dark:text-[#94A3B8]">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-[#0F172A]">{d.author.name}</span>
+                        <span className="font-bold text-[#0F172A] dark:text-white">{d.author.name}</span>
                         <span>·</span>
                         <span>{d.author.college}</span>
                         <span>·</span>
@@ -302,8 +302,8 @@ export default function DiscussionPage() {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-[#0F172A] font-bold">
-                        <MessageSquare className="w-3.5 h-3.5 text-[#7F45DB]" />
+                      <div className="flex items-center gap-1.5 text-[#0F172A] dark:text-white font-bold">
+                        <MessageSquare className="w-3.5 h-3.5 text-[#7F45DB] dark:text-[#A472F7]" />
                         <span>{d.commentCount} comments</span>
                       </div>
                     </div>
@@ -313,13 +313,13 @@ export default function DiscussionPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white border-2 border-[#1E1B4B] rounded-3xl p-12 text-center shadow-[4px_4px_0px_0px_#1E1B4B] space-y-3">
+          <div className="bg-white dark:bg-[#111726]/90 border-2 border-[#1E1B4B] dark:border-[#7F45DB]/60 rounded-3xl p-12 text-center shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#7F45DB]/50 space-y-3">
             <MessageSquare className="w-10 h-10 text-[#7F45DB] mx-auto" />
-            <h3 className="text-lg font-bold text-[#0F172A]">No discussions found</h3>
-            <p className="text-xs font-mono text-[#6E6E6E]">Be the first to share an algorithm insight or ask a question!</p>
+            <h3 className="text-lg font-bold text-[#0F172A] dark:text-white">No discussions found</h3>
+            <p className="text-xs font-mono text-[#6E6E6E] dark:text-[#94A3B8]">Be the first to share an algorithm insight or ask a question!</p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-5 py-2.5 rounded-xl bg-[#7F45DB] text-white font-mono font-bold text-xs uppercase border-2 border-[#1E1B4B]"
+              className="px-5 py-2.5 rounded-xl bg-[#7F45DB] text-white font-mono font-bold text-xs uppercase border-2 border-[#1E1B4B] dark:border-[#A472F7] shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#A472F7]"
             >
               Start Discussion
             </button>
@@ -328,23 +328,23 @@ export default function DiscussionPage() {
 
         {/* Create Discussion Modal */}
         {showCreateModal && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white border-3 border-[#1E1B4B] rounded-3xl max-w-xl w-full p-6 shadow-[8px_8px_0px_0px_#1E1B4B] space-y-4 animate-in fade-in zoom-in-95">
-              <div className="flex items-center justify-between border-b-2 border-[#1E1B4B]/10 pb-3">
-                <h2 className="text-xl font-display font-black text-[#0F172A]">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-[#111726] border-3 border-[#1E1B4B] dark:border-[#7F45DB] rounded-3xl max-w-xl w-full p-6 shadow-[8px_8px_0px_0px_#1E1B4B] dark:shadow-[8px_8px_0px_0px_#7F45DB] space-y-4 animate-in fade-in zoom-in-95">
+              <div className="flex items-center justify-between border-b-2 border-[#1E1B4B]/10 dark:border-[#2D2755] pb-3">
+                <h2 className="text-xl font-display font-black text-[#0F172A] dark:text-white">
                   New Community Discussion
                 </h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="p-1.5 rounded-xl hover:bg-[#F0F2F8] border border-[#1E1B4B]/20"
+                  className="p-1.5 rounded-xl hover:bg-[#F0F2F8] dark:hover:bg-[#1A2035] border border-[#1E1B4B]/20 dark:border-[#382F60]"
                 >
-                  <X className="w-5 h-5 text-[#6E6E6E]" />
+                  <X className="w-5 h-5 text-[#6E6E6E] dark:text-[#94A3B8]" />
                 </button>
               </div>
 
               <form onSubmit={handleCreateDiscussion} className="space-y-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-mono font-black uppercase text-[#6E6E6E]">
+                  <label className="text-xs font-mono font-black uppercase text-[#6E6E6E] dark:text-[#94A3B8]">
                     Title
                   </label>
                   <input
@@ -353,12 +353,12 @@ export default function DiscussionPage() {
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     placeholder="e.g. Optimal approach for sliding window edge cases..."
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#F8F9FD] border-2 border-[#1E1B4B]/20 font-mono text-xs text-[#0F172A] focus:outline-none focus:border-[#7F45DB]"
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#F8F9FD] dark:bg-[#1A2035] border-2 border-[#1E1B4B]/20 dark:border-[#382F60] font-mono text-xs text-[#0F172A] dark:text-white focus:outline-none focus:border-[#7F45DB]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-mono font-black uppercase text-[#6E6E6E]">
+                  <label className="text-xs font-mono font-black uppercase text-[#6E6E6E] dark:text-[#94A3B8]">
                     Body (Markdown & Code blocks supported)
                   </label>
                   <textarea
@@ -367,7 +367,7 @@ export default function DiscussionPage() {
                     value={newContent}
                     onChange={(e) => setNewContent(e.target.value)}
                     placeholder="Describe your approach, complexity analysis, or question..."
-                    className="w-full px-4 py-2.5 rounded-xl bg-[#F8F9FD] border-2 border-[#1E1B4B]/20 font-mono text-xs text-[#0F172A] focus:outline-none focus:border-[#7F45DB]"
+                    className="w-full px-4 py-2.5 rounded-xl bg-[#F8F9FD] dark:bg-[#1A2035] border-2 border-[#1E1B4B]/20 dark:border-[#382F60] font-mono text-xs text-[#0F172A] dark:text-white focus:outline-none focus:border-[#7F45DB]"
                   />
                 </div>
 
@@ -375,14 +375,14 @@ export default function DiscussionPage() {
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 rounded-xl border border-[#1E1B4B]/20 font-mono font-bold text-xs"
+                    className="px-4 py-2 rounded-xl border border-[#1E1B4B]/20 dark:border-[#382F60] font-mono font-bold text-xs text-[#6E6E6E] dark:text-[#94A3B8] hover:bg-[#F0F2F8] dark:hover:bg-[#1A2035]"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={creating}
-                    className="px-6 py-2.5 rounded-xl bg-[#7F45DB] text-white border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] font-mono font-black text-xs uppercase tracking-wider hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none disabled:opacity-50"
+                    className="px-6 py-2.5 rounded-xl bg-[#7F45DB] text-white border-2 border-[#1E1B4B] dark:border-[#A472F7] shadow-[3px_3px_0px_0px_#1E1B4B] dark:shadow-[3px_3px_0px_0px_#A472F7] font-mono font-black text-xs uppercase tracking-wider hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none disabled:opacity-50"
                   >
                     {creating ? "Posting..." : "Publish Post"}
                   </button>

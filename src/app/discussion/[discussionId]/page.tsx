@@ -187,7 +187,7 @@ export default function DiscussionDetailPage({
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F8F9FD] flex items-center justify-center font-mono text-sm text-[#6E6E6E]">
+      <main className="min-h-screen bg-transparent flex items-center justify-center font-mono text-sm text-[#6E6E6E] dark:text-[#94A3B8]">
         Loading discussion thread...
       </main>
     );
@@ -195,8 +195,8 @@ export default function DiscussionDetailPage({
 
   if (!discussion) {
     return (
-      <main className="min-h-screen bg-[#F8F9FD] flex flex-col items-center justify-center p-6 space-y-4">
-        <h1 className="text-2xl font-black text-[#0F172A]">Discussion Not Found</h1>
+      <main className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 space-y-4">
+        <h1 className="text-2xl font-black text-[#0F172A] dark:text-white">Discussion Not Found</h1>
         <Link href="/discussion" className="px-5 py-2.5 rounded-xl bg-[#7F45DB] text-white font-mono font-bold text-xs uppercase">
           Back to Discussions
         </Link>
@@ -205,7 +205,7 @@ export default function DiscussionDetailPage({
   }
 
   return (
-    <main className="min-h-screen bg-[#F8F9FD] text-[#0F172A] py-10 px-4 sm:px-6 lg:px-8 font-sans">
+    <main className="min-h-screen bg-transparent text-[#0F172A] dark:text-[#F8FAFC] py-10 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-500">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Back Link */}
         <Link

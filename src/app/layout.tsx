@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/assets/byteverse-title.png",
+        url: "/assets/byteclash-logo.png",
         width: 1200,
         height: 630,
         alt: "NSDC ByteClash 2026 Championship Arena",
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
     title: "NSDC ByteClash 2026 — Premier Collegiate Coding Arena",
     description:
       "Compete in weekly algorithmic contests, practice problems, and live tournament battles on NSDC ByteClash.",
-    images: ["/assets/byteverse-title.png"],
+    images: ["/assets/byteclash-logo.png"],
     creator: "@NSDC_Official",
   },
   robots: {
@@ -93,24 +93,39 @@ export const metadata: Metadata = {
   },
   category: "technology",
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
+    icon: [
+      { url: "/assets/byteclash-logo.png", type: "image/png" },
+      { url: "/favicon.png", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
+    shortcut: "/assets/byteclash-logo.png",
+    apple: "/assets/byteclash-logo.png",
   },
 };
 
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import StarrySkyBackground from "@/components/theme/StarrySkyBackground";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="icon" type="image/png" href="/assets/byteclash-logo.png" />
+        <link rel="shortcut icon" href="/assets/byteclash-logo.png" />
+        <link rel="apple-touch-icon" href="/assets/byteclash-logo.png" />
         <JsonLd />
       </head>
-      <body className="min-h-screen antialiased">
-        <Navbar />
-        {children}
-        <Toaster />
+      <body className="min-h-screen antialiased relative">
+        <ThemeProvider>
+          <StarrySkyBackground />
+          <div className="relative z-10 flex flex-col min-h-screen">
+            <Navbar />
+            <div className="flex-1">{children}</div>
+          </div>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

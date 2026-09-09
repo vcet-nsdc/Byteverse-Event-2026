@@ -88,7 +88,7 @@ export default function ContestDetailPage({
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F8F9FD] flex items-center justify-center font-mono text-sm text-[#6E6E6E]">
+      <main className="min-h-screen bg-transparent flex items-center justify-center font-mono text-sm text-[#6E6E6E] dark:text-[#94A3B8]">
         Loading contest arena...
       </main>
     );
@@ -96,9 +96,9 @@ export default function ContestDetailPage({
 
   if (!contest) {
     return (
-      <main className="min-h-screen bg-[#F8F9FD] flex flex-col items-center justify-center font-sans p-6 text-center space-y-4">
-        <h1 className="text-2xl font-black text-[#0F172A]">Contest Not Found</h1>
-        <p className="text-sm font-mono text-[#6E6E6E]">The requested contest could not be found or has concluded.</p>
+      <main className="min-h-screen bg-transparent flex flex-col items-center justify-center font-sans p-6 text-center space-y-4">
+        <h1 className="text-2xl font-black text-[#0F172A] dark:text-white">Contest Not Found</h1>
+        <p className="text-sm font-mono text-[#6E6E6E] dark:text-[#94A3B8]">The requested contest could not be found or has concluded.</p>
         <Link
           href="/contest"
           className="px-6 py-2.5 rounded-xl bg-[#7F45DB] text-white font-mono font-bold text-xs uppercase"
@@ -112,7 +112,7 @@ export default function ContestDetailPage({
   const isActive = contest.status === "ACTIVE";
 
   return (
-    <main className="min-h-screen bg-[#F8F9FD] text-[#0F172A] py-10 px-4 sm:px-6 lg:px-8 font-sans">
+    <main className="min-h-screen bg-transparent text-[#0F172A] dark:text-[#F8FAFC] py-10 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-500">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Contest Header Card */}
         <div className="bg-white border-2 border-[#1E1B4B] rounded-3xl p-6 sm:p-8 shadow-[6px_6px_0px_0px_#1E1B4B] space-y-6">

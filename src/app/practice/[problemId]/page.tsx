@@ -232,7 +232,7 @@ export default function PracticeWorkspacePage({
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F8F9FD] flex items-center justify-center font-mono text-sm text-[#6E6E6E]">
+      <main className="min-h-screen bg-transparent flex items-center justify-center font-mono text-sm text-[#6E6E6E] dark:text-[#94A3B8]">
         Loading problem workspace...
       </main>
     );
@@ -240,8 +240,8 @@ export default function PracticeWorkspacePage({
 
   if (!problem) {
     return (
-      <main className="min-h-screen bg-[#F8F9FD] flex flex-col items-center justify-center p-6 space-y-4">
-        <h1 className="text-2xl font-black text-[#0F172A]">Problem Not Found</h1>
+      <main className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 space-y-4">
+        <h1 className="text-2xl font-black text-[#0F172A] dark:text-white">Problem Not Found</h1>
         <Link href="/practice" className="px-5 py-2.5 rounded-xl bg-[#7F45DB] text-white font-mono font-bold text-xs uppercase">
           Back to Practice Library
         </Link>
@@ -250,7 +250,7 @@ export default function PracticeWorkspacePage({
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-[#F8F9FD] text-[#0F172A] overflow-hidden font-sans">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-transparent text-[#0F172A] dark:text-[#F8FAFC] overflow-hidden font-sans">
       {/* Top Header Bar */}
       <div className="h-12 bg-white border-b-2 border-[#1E1B4B] px-4 flex items-center justify-between shrink-0 z-10">
         <div className="flex items-center gap-3">

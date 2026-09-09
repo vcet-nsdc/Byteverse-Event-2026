@@ -76,27 +76,27 @@ export default function ContestHubPage() {
       : contests.past;
 
   return (
-    <main className="min-h-screen bg-[#F8F9FD] text-[#0F172A] py-10 px-4 sm:px-6 lg:px-8 font-sans">
+    <main className="min-h-screen bg-transparent text-[#0F172A] dark:text-[#F8FAFC] py-10 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-500">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header Banner */}
-        <div className="bg-white border-2 border-[#1E1B4B] rounded-3xl p-6 sm:p-10 shadow-[6px_6px_0px_0px_#1E1B4B] relative overflow-hidden">
+        <div className="bg-white dark:bg-[#111726]/90 border-2 border-[#1E1B4B] dark:border-[#7F45DB]/60 rounded-3xl p-6 sm:p-10 shadow-[6px_6px_0px_0px_#1E1B4B] dark:shadow-[6px_6px_0px_0px_#7F45DB]/50 relative overflow-hidden transition-all duration-300">
           <div className="absolute top-0 right-0 w-80 h-80 bg-[#7F45DB]/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
           <div className="relative z-10 max-w-2xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7F45DB]/10 text-[#7F45DB] border border-[#7F45DB]/30 text-xs font-mono font-black uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7F45DB]/10 text-[#7F45DB] dark:text-[#A472F7] border border-[#7F45DB]/30 text-xs font-mono font-black uppercase tracking-wider">
               <Trophy className="w-3.5 h-3.5" />
               <span>ByteClash Competitive Arena</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-display font-black text-[#0F172A] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-display font-black text-[#0F172A] dark:text-white tracking-tight">
               Programming Contests
             </h1>
-            <p className="text-sm sm:text-base text-[#6E6E6E] font-medium leading-relaxed">
+            <p className="text-sm sm:text-base text-[#6E6E6E] dark:text-[#94A3B8] font-medium leading-relaxed">
               Test your algorithmic speed, strategic problem decomposition, and debugging prowess under real contest conditions. Compete for global rating points, badges, and tournament supremacy.
             </p>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-3 border-b-2 border-[#1E1B4B]/10 pb-4 overflow-x-auto">
+        <div className="flex items-center gap-3 border-b-2 border-[#1E1B4B]/10 dark:border-[#2D2755] pb-4 overflow-x-auto">
           {[
             { key: "active", label: "Active Contests", count: contests.active.length, icon: Zap },
             { key: "weekly", label: "Weekly Contests", count: contests.weekly.length, icon: Trophy },
@@ -110,15 +110,15 @@ export default function ContestHubPage() {
                 onClick={() => setActiveTab(tab.key as any)}
                 className={`px-5 py-2.5 rounded-2xl font-mono text-xs uppercase tracking-wider transition-all flex items-center gap-2 border-2 whitespace-nowrap ${
                   isSelected
-                    ? "bg-[#7F45DB] text-white border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] font-black"
-                    : "bg-white text-[#6E6E6E] border-[#1E1B4B] hover:text-[#0F172A] hover:bg-[#F0F2F8] font-bold shadow-[2px_2px_0px_0px_#1E1B4B]"
+                    ? "bg-[#7F45DB] text-white border-[#1E1B4B] dark:border-[#A472F7] shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#A472F7] font-black"
+                    : "bg-white dark:bg-[#1A2035] text-[#6E6E6E] dark:text-[#94A3B8] border-[#1E1B4B] dark:border-[#382F60] hover:text-[#0F172A] dark:hover:text-white hover:bg-[#F0F2F8] dark:hover:bg-[#232946] font-bold shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#382F60]"
                 }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-black ${
-                    isSelected ? "bg-white text-[#7F45DB]" : "bg-[#F0F2F8] text-[#0F172A]"
+                    isSelected ? "bg-white text-[#7F45DB]" : "bg-[#F0F2F8] dark:bg-[#0B0F19] text-[#0F172A] dark:text-[#94A3B8]"
                   }`}
                 >
                   {tab.count}
@@ -130,7 +130,7 @@ export default function ContestHubPage() {
 
         {/* Contest Cards Grid */}
         {loading ? (
-          <div className="py-16 text-center font-mono text-sm text-[#6E6E6E] animate-pulse">
+          <div className="py-16 text-center font-mono text-sm text-[#6E6E6E] dark:text-[#94A3B8] animate-pulse">
             Loading contest arena telemetry...
           </div>
         ) : currentList.length > 0 ? (
@@ -144,17 +144,17 @@ export default function ContestHubPage() {
               return (
                 <div
                   key={contest.id}
-                  className="bg-white border-2 border-[#1E1B4B] rounded-3xl p-6 sm:p-7 shadow-[5px_5px_0px_0px_#1E1B4B] flex flex-col justify-between hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#1E1B4B] transition-all space-y-6"
+                  className="bg-white dark:bg-[#111726]/90 border-2 border-[#1E1B4B] dark:border-[#7F45DB]/60 rounded-3xl p-6 sm:p-7 shadow-[5px_5px_0px_0px_#1E1B4B] dark:shadow-[5px_5px_0px_0px_#7F45DB]/50 flex flex-col justify-between hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[3px_3px_0px_0px_#1E1B4B] dark:hover:shadow-[3px_3px_0px_0px_#7F45DB] transition-all space-y-6"
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between gap-2">
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-black uppercase tracking-wider border ${
                           isActive
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                            ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-600/50"
                             : isEnded
-                            ? "bg-slate-100 text-slate-700 border-slate-300"
-                            : "bg-blue-50 text-blue-700 border-blue-300"
+                            ? "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600"
+                            : "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-600/50"
                         }`}
                       >
                         <span
@@ -169,36 +169,36 @@ export default function ContestHubPage() {
                         <span>{contest.status}</span>
                       </span>
 
-                      <span className="text-xs font-mono font-bold text-[#7F45DB] bg-[#7F45DB]/10 px-3 py-1 rounded-xl border border-[#7F45DB]/20">
+                      <span className="text-xs font-mono font-bold text-[#7F45DB] dark:text-[#A472F7] bg-[#7F45DB]/10 px-3 py-1 rounded-xl border border-[#7F45DB]/20">
                         {contest.difficulty}
                       </span>
                     </div>
 
                     <div>
-                      <h3 className="text-xl font-display font-black text-[#0F172A] hover:text-[#7F45DB] transition-colors">
+                      <h3 className="text-xl font-display font-black text-[#0F172A] dark:text-white hover:text-[#7F45DB] dark:hover:text-[#A472F7] transition-colors">
                         <Link href={`/contest/${contest.id}`}>{contest.title}</Link>
                       </h3>
-                      <p className="text-xs sm:text-sm text-[#6E6E6E] font-medium mt-1 line-clamp-2">
+                      <p className="text-xs sm:text-sm text-[#6E6E6E] dark:text-[#94A3B8] font-medium mt-1 line-clamp-2">
                         {contest.description || "Official competitive challenge with synchronized scoring and live leaderboard."}
                       </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 pt-2 text-xs font-mono">
-                      <div className="p-2.5 rounded-xl bg-[#F8F9FD] border border-[#1E1B4B]/20 flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-[#7F45DB]" />
+                      <div className="p-2.5 rounded-xl bg-[#F8F9FD] dark:bg-[#1A2035] border border-[#1E1B4B]/20 dark:border-[#382F60] flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-[#7F45DB] dark:text-[#A472F7]" />
                         <div>
-                          <span className="text-[10px] text-[#6E6E6E] block">Schedule</span>
-                          <span className="font-bold text-[#0F172A]">
+                          <span className="text-[10px] text-[#6E6E6E] dark:text-[#94A3B8] block">Schedule</span>
+                          <span className="font-bold text-[#0F172A] dark:text-white">
                             {startDate.toLocaleDateString([], { month: "short", day: "numeric" })} · {startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </span>
                         </div>
                       </div>
 
-                      <div className="p-2.5 rounded-xl bg-[#F8F9FD] border border-[#1E1B4B]/20 flex items-center gap-2">
-                        <Users className="w-4 h-4 text-[#7F45DB]" />
+                      <div className="p-2.5 rounded-xl bg-[#F8F9FD] dark:bg-[#1A2035] border border-[#1E1B4B]/20 dark:border-[#382F60] flex items-center gap-2">
+                        <Users className="w-4 h-4 text-[#7F45DB] dark:text-[#A472F7]" />
                         <div>
-                          <span className="text-[10px] text-[#6E6E6E] block">Coders</span>
-                          <span className="font-bold text-[#0F172A]">
+                          <span className="text-[10px] text-[#6E6E6E] dark:text-[#94A3B8] block">Coders</span>
+                          <span className="font-bold text-[#0F172A] dark:text-white">
                             {contest.participantCount} Registered
                           </span>
                         </div>
@@ -206,18 +206,18 @@ export default function ContestHubPage() {
                     </div>
                   </div>
 
-                  <div className="border-t-2 border-[#1E1B4B]/10 pt-4 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-xs font-mono text-[#6E6E6E]">
-                      <BookOpen className="w-4 h-4 text-[#7F45DB]" />
+                  <div className="border-t-2 border-[#1E1B4B]/10 dark:border-[#2D2755] pt-4 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-mono text-[#6E6E6E] dark:text-[#94A3B8]">
+                      <BookOpen className="w-4 h-4 text-[#7F45DB] dark:text-[#A472F7]" />
                       <span>{contest.problemCount} Problems</span>
                     </div>
 
                     <Link
                       href={`/contest/${contest.id}`}
-                      className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-mono text-xs uppercase tracking-wider border-2 border-[#1E1B4B] transition-all ${
+                      className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-mono text-xs uppercase tracking-wider border-2 border-[#1E1B4B] dark:border-[#382F60] transition-all ${
                         isActive
-                          ? "bg-[#7F45DB] text-white font-black shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none"
-                          : "bg-white text-[#0F172A] font-bold shadow-[3px_3px_0px_0px_#1E1B4B] hover:bg-[#F0F2F8]"
+                          ? "bg-[#7F45DB] text-white font-black shadow-[3px_3px_0px_0px_#1E1B4B] dark:shadow-[3px_3px_0px_0px_#A472F7] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none"
+                          : "bg-white dark:bg-[#1A2035] text-[#0F172A] dark:text-white font-bold shadow-[3px_3px_0px_0px_#1E1B4B] dark:shadow-[3px_3px_0px_0px_#382F60] hover:bg-[#F0F2F8] dark:hover:bg-[#232946]"
                       }`}
                     >
                       <span>{isActive ? "Enter Contest" : isEnded ? "View Standings" : "View Details"}</span>
@@ -229,16 +229,16 @@ export default function ContestHubPage() {
             })}
           </div>
         ) : (
-          <div className="bg-white border-2 border-[#1E1B4B] rounded-3xl p-12 text-center shadow-[4px_4px_0px_0px_#1E1B4B] space-y-3">
+          <div className="bg-white dark:bg-[#111726]/90 border-2 border-[#1E1B4B] dark:border-[#7F45DB]/60 rounded-3xl p-12 text-center shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#7F45DB]/50 space-y-3">
             <Trophy className="w-10 h-10 text-[#7F45DB] mx-auto" />
-            <h3 className="text-lg font-display font-black text-[#0F172A]">No contests in this category right now</h3>
-            <p className="text-xs font-mono text-[#6E6E6E] max-w-sm mx-auto">
+            <h3 className="text-lg font-display font-black text-[#0F172A] dark:text-white">No contests in this category right now</h3>
+            <p className="text-xs font-mono text-[#6E6E6E] dark:text-[#94A3B8] max-w-sm mx-auto">
               Check back shortly or explore practice problems to prepare for the upcoming weekly rounds!
             </p>
             <div className="pt-2">
               <Link
                 href="/practice"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#7F45DB] text-white border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] text-xs font-mono font-black uppercase"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#7F45DB] text-white border-2 border-[#1E1B4B] dark:border-[#A472F7] shadow-[3px_3px_0px_0px_#1E1B4B] dark:shadow-[3px_3px_0px_0px_#A472F7] text-xs font-mono font-black uppercase"
               >
                 Browse Practice Library
               </Link>

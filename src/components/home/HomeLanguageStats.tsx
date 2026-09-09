@@ -36,29 +36,29 @@ export default function HomeLanguageStats() {
   }, []);
 
   return (
-    <div className="bg-white border-2 border-[#1E1B4B] rounded-2xl p-6 sm:p-8 shadow-[5px_5px_0px_0px_#1E1B4B] text-left transition-all">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#1E1B4B]/10 pb-4 mb-6">
+    <div className="bg-white dark:bg-[#111726]/90 border-2 border-[#1E1B4B] dark:border-[#7F45DB]/60 rounded-2xl p-6 sm:p-8 shadow-[5px_5px_0px_0px_#1E1B4B] dark:shadow-[5px_5px_0px_0px_#7F45DB]/50 text-left transition-all duration-300">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#1E1B4B]/10 dark:border-[#2D2755] pb-4 mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#4A2293] text-white flex items-center justify-center border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B]">
+          <div className="w-10 h-10 rounded-xl bg-[#4A2293] text-white flex items-center justify-center border-2 border-[#1E1B4B] dark:border-[#A472F7] shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#A472F7]">
             <Terminal className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xs font-mono font-black tracking-widest text-[#7F45DB] uppercase">
+            <span className="text-xs font-mono font-black tracking-widest text-[#7F45DB] dark:text-[#A472F7] uppercase">
               ECOSYSTEM TELEMETRY
             </span>
-            <h2 className="text-xl sm:text-2xl font-display font-black text-[#0F172A]">
+            <h2 className="text-xl sm:text-2xl font-display font-black text-[#0F172A] dark:text-white">
               Most Used Languages
             </h2>
           </div>
         </div>
 
-        <div className="text-xs font-mono text-[#6E6E6E]">
-          Total Evaluated: <span className="font-bold text-[#0F172A]">{totalSubmissions.toLocaleString()}</span> submissions
+        <div className="text-xs font-mono text-[#6E6E6E] dark:text-[#94A3B8]">
+          Total Evaluated: <span className="font-bold text-[#0F172A] dark:text-white">{totalSubmissions.toLocaleString()}</span> submissions
         </div>
       </div>
 
       {loading ? (
-        <div className="py-6 text-center font-mono text-sm text-[#6E6E6E] animate-pulse">
+        <div className="py-6 text-center font-mono text-sm text-[#6E6E6E] dark:text-[#94A3B8] animate-pulse">
           Computing real-time execution statistics...
         </div>
       ) : languages.length > 0 ? (
@@ -67,7 +67,7 @@ export default function HomeLanguageStats() {
             {languages.map((lang) => (
               <div
                 key={lang.key}
-                className="p-4 rounded-xl bg-[#F8F9FD] border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] space-y-2"
+                className="p-4 rounded-xl bg-[#F8F9FD] dark:bg-[#1A2035] border-2 border-[#1E1B4B] dark:border-[#382F60] shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#382F60] space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -75,17 +75,17 @@ export default function HomeLanguageStats() {
                       className="w-3 h-3 rounded-full"
                       style={{ backgroundColor: lang.color }}
                     />
-                    <span className="font-mono font-bold text-sm text-[#0F172A]">
+                    <span className="font-mono font-bold text-sm text-[#0F172A] dark:text-white">
                       {lang.name}
                     </span>
                   </div>
-                  <span className="text-sm font-mono font-black text-[#7F45DB]">
+                  <span className="text-sm font-mono font-black text-[#7F45DB] dark:text-[#A472F7]">
                     {lang.percentage}%
                   </span>
                 </div>
 
                 {/* Progress bar */}
-                <div className="w-full h-2.5 bg-white rounded-full overflow-hidden border border-[#1E1B4B]/20">
+                <div className="w-full h-2.5 bg-white dark:bg-[#0B0F19] rounded-full overflow-hidden border border-[#1E1B4B]/20 dark:border-[#382F60]">
                   <div
                     className="h-full rounded-full transition-all duration-700"
                     style={{
@@ -95,7 +95,7 @@ export default function HomeLanguageStats() {
                   />
                 </div>
 
-                <div className="flex justify-between text-[11px] font-mono text-[#6E6E6E]">
+                <div className="flex justify-between text-[11px] font-mono text-[#6E6E6E] dark:text-[#94A3B8]">
                   <span>{lang.count.toLocaleString()} submissions</span>
                   <span>Formula: count / total × 100</span>
                 </div>
@@ -105,10 +105,10 @@ export default function HomeLanguageStats() {
 
           {/* Unified bar */}
           <div className="pt-2">
-            <div className="text-[11px] font-mono uppercase text-[#6E6E6E] font-bold mb-1.5">
+            <div className="text-[11px] font-mono uppercase text-[#6E6E6E] dark:text-[#94A3B8] font-bold mb-1.5">
               Aggregate Share
             </div>
-            <div className="w-full h-4 rounded-xl border-2 border-[#1E1B4B] bg-white overflow-hidden flex shadow-[2px_2px_0px_0px_#1E1B4B]">
+            <div className="w-full h-4 rounded-xl border-2 border-[#1E1B4B] dark:border-[#382F60] bg-white dark:bg-[#0B0F19] overflow-hidden flex shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#382F60]">
               {languages.map((l) => (
                 <div
                   key={l.key}
@@ -124,7 +124,7 @@ export default function HomeLanguageStats() {
           </div>
         </div>
       ) : (
-        <div className="py-6 text-center text-xs font-mono text-[#6E6E6E]">
+        <div className="py-6 text-center text-xs font-mono text-[#6E6E6E] dark:text-[#94A3B8]">
           No submission telemetry available yet.
         </div>
       )}
