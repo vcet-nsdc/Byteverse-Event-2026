@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { signIn, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Shield,
-  ShieldAlert,
   ShieldCheck,
   Lock,
   Mail,
@@ -15,44 +13,28 @@ import {
   AlertTriangle,
   CheckCircle2,
   KeyRound,
-  Radio,
-  ExternalLink,
-  Users,
-  Trophy,
-  Terminal,
+  Shield,
+  ShieldAlert,
 } from "lucide-react";
-
-type PortalType = "admin" | "superadmin";
 
 function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialPortal = searchParams.get("portal") === "superadmin" ? "superadmin" : "admin";
 
-  const [portal, setPortal] = useState<PortalType>(initialPortal);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (searchParams.get("portal") === "superadmin") {
-      setPortal("superadmin");
-    } else if (searchParams.get("portal") === "admin") {
-      setPortal("admin");
-    }
-  }, [searchParams]);
-
-  // Set default credentials helper based on active portal
-  const fillPresetCredentials = (type: PortalType) => {
+  const fillCredentials = (role: "admin" | "superadmin") => {
     setError(null);
-    if (type === "admin") {
-      setEmail("admin@byteverse.dev");
-      setPassword("admin2026");
-    } else {
+    if (role === "superadmin") {
       setEmail("superadmin@byteverse.dev");
       setPassword("superadmin2026");
+    } else {
+      setEmail("admin@byteverse.dev");
+      setPassword("admin2026");
     }
   };
 
@@ -71,9 +53,9 @@ function AdminLoginForm() {
 
       if (res?.error) {
         if (res.error.includes("DATABASE_OFFLINE") || res.code === "DATABASE_OFFLINE") {
-          setError("Database Server Offline: Cannot reach the backend database container.");
+          setError("Database Server Offline: Backend database container is unreachable.");
         } else {
-          setError("Authentication failed: Invalid credentials for this administrative gateway.");
+          setError("Authentication failed: Invalid credentials for the administrative console.");
         }
         setLoading(false);
         return;
@@ -85,47 +67,37 @@ function AdminLoginForm() {
       const userRole = sessionData?.user?.role;
 
       if (!userRole) {
-        setError("Could not verify administrative privileges. Please try again.");
+        setError("Could not verify administrative authority. Please try again.");
         setLoading(false);
         return;
       }
 
-      // Strict Role Gates
-      if (portal === "superadmin") {
-        if (userRole !== "SUPER_ADMIN") {
-          // Sign out immediately to prevent session escalation
-          await signOut({ redirect: false });
-          setError(
-            `Access Denied: Your account role is "${userRole}". Root SuperAdmin authority is strictly required to enter this command gateway.`
-          );
-          setLoading(false);
-          return;
-        }
-
-        setSuccessMsg("SuperAdmin clearance verified. Directing to Platform Command Center...");
-        setTimeout(() => {
-          router.push("/admin/superadmin");
-        }, 800);
-        return;
-      }
-
-      // Portal === "admin"
-      if (!["ADMIN", "SUPER_ADMIN", "ORGANIZER"].includes(userRole)) {
+      // Verify Administrative Role (Strictly ADMIN or SUPER_ADMIN)
+      const allowedRoles = ["ADMIN", "SUPER_ADMIN"];
+      if (!allowedRoles.includes(userRole)) {
         await signOut({ redirect: false });
         setError(
-          `Access Denied: Your account role is "${userRole}". This section is restricted to Event Admins and Organizers. Please log in via the Participant Arena.`
+          `Access Denied: Your account role is "${userRole}". This gateway is reserved exclusively for Admin and SuperAdmin.`
         );
         setLoading(false);
         return;
       }
 
-      const callbackUrl = searchParams.get("callbackUrl") || "/admin";
-      setSuccessMsg(`Clearance verified as ${userRole}. Directing to Administration Console...`);
-      setTimeout(() => {
-        router.push(callbackUrl);
-      }, 800);
+      const callbackUrl = searchParams.get("callbackUrl");
+
+      if (userRole === "SUPER_ADMIN") {
+        setSuccessMsg("SuperAdmin clearance verified. Directing to SuperAdmin Command Center...");
+        setTimeout(() => {
+          router.push(callbackUrl || "/admin/superadmin");
+        }, 700);
+      } else {
+        setSuccessMsg("Admin clearance verified. Directing to Administration Console...");
+        setTimeout(() => {
+          router.push(callbackUrl || "/admin");
+        }, 700);
+      }
     } catch {
-      setError("An unexpected network or server error occurred. Please try again.");
+      setError("An unexpected network error occurred. Please try again.");
       setLoading(false);
     }
   };
@@ -133,9 +105,9 @@ function AdminLoginForm() {
   return (
     <div className="w-full max-w-lg space-y-6 font-sans">
       {/* Header Badge */}
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-2.5">
         <Link href="/" className="inline-block hover:scale-105 transition-transform mb-1">
-          <div className="relative h-12 w-40 mx-auto">
+          <div className="relative h-12 w-44 mx-auto">
             <Image
               src="/assets/byteverse-logo.png"
               alt="ByteVerse Logo"
@@ -146,85 +118,39 @@ function AdminLoginForm() {
           </div>
         </Link>
 
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border-2 border-[#1E1B4B] bg-[#0F172A] text-white text-[11px] font-mono font-black uppercase tracking-wider shadow-[3px_3px_0px_0px_#1E1B4B]">
-          <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-          <span>RESTRICTED ACCESS • SECURITY LEVEL 4</span>
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border-2 border-[#1E1B4B] bg-[#7F45DB]/10 text-[#4A2293] text-[11px] font-mono font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#1E1B4B]">
+          <ShieldAlert className="w-3.5 h-3.5 text-[#7F45DB]" />
+          <span>ADMINISTRATIVE COMMAND GATEWAY</span>
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] uppercase tracking-tight font-display">
+        <h1 className="text-3xl sm:text-4xl font-black text-[#0F172A] tracking-tight font-display">
           Staff Authentication
         </h1>
-        <p className="text-xs font-mono text-[#6E6E6E]">
-          Dedicated login gateway for platform administrators, contest leads, and superadmins
+        <p className="text-xs font-mono text-[#6E6E6E] max-w-sm mx-auto">
+          Unified administration portal for Admins, SuperAdmins, and Event Organizers
         </p>
       </div>
 
-      {/* Portal Switcher Tabs */}
-      <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#0F172A] rounded-2xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B]">
-        <button
-          type="button"
-          onClick={() => {
-            setPortal("admin");
-            setError(null);
-            setSuccessMsg(null);
-          }}
-          className={`py-3 px-3 rounded-xl font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-            portal === "admin"
-              ? "bg-[#7F45DB] text-white shadow-[2px_2px_0px_0px_#1E1B4B] border border-white/20"
-              : "text-slate-400 hover:text-white"
-          }`}
-        >
-          <Shield className="w-4 h-4" />
-          <span>Admin Portal</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            setPortal("superadmin");
-            setError(null);
-            setSuccessMsg(null);
-          }}
-          className={`py-3 px-3 rounded-xl font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-            portal === "superadmin"
-              ? "bg-rose-600 text-white shadow-[2px_2px_0px_0px_#1E1B4B] border border-white/20"
-              : "text-slate-400 hover:text-white"
-          }`}
-        >
-          <ShieldAlert className="w-4 h-4 text-amber-300" />
-          <span>SuperAdmin Master</span>
-        </button>
-      </div>
-
       {/* Main Authentication Card */}
-      <div className="bg-white border-4 border-[#1E1B4B] rounded-3xl p-6 sm:p-8 shadow-[8px_8px_0px_0px_#1E1B4B]">
-        {/* Portal Information Banner */}
-        {portal === "admin" ? (
-          <div className="mb-6 p-4 rounded-2xl border-2 border-[#7F45DB]/30 bg-violet-50 space-y-1">
-            <div className="flex items-center gap-2 text-[#7F45DB] font-mono font-bold text-xs">
-              <ShieldCheck className="w-4 h-4 shrink-0" />
-              <span>EVENT & CONTEST ADMINISTRATOR</span>
+      <div className="bg-white border-2 border-[#1E1B4B] rounded-3xl p-6 sm:p-8 shadow-[6px_6px_0px_0px_#1E1B4B]">
+        <div className="mb-6 p-4 rounded-2xl border-2 border-[#7F45DB]/20 bg-[#7F45DB]/5 flex items-start gap-3">
+          <div className="p-2 rounded-xl bg-[#7F45DB] text-white shrink-0 shadow-[1px_1px_0px_0px_#1E1B4B]">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <div className="space-y-0.5">
+            <div className="text-xs font-mono font-bold text-[#0F172A]">
+              Single Unified Console
             </div>
-            <p className="text-[11px] font-mono text-[#4A2293] leading-relaxed">
-              Provides authority to activate/pause contests, configure event venues, release problem sets, and monitor round timing.
+            <p className="text-[11px] font-mono text-[#6E6E6E] leading-relaxed">
+              Sign in with your administrative credentials. Role permissions (Admin vs. SuperAdmin) are validated automatically.
             </p>
           </div>
-        ) : (
-          <div className="mb-6 p-4 rounded-2xl border-2 border-rose-300 bg-rose-50 space-y-1">
-            <div className="flex items-center gap-2 text-rose-700 font-mono font-bold text-xs">
-              <KeyRound className="w-4 h-4 shrink-0" />
-              <span>SUPERADMIN ROOT COMMAND GATEWAY</span>
-            </div>
-            <p className="text-[11px] font-mono text-rose-900 leading-relaxed">
-              Full platform sovereignty: live surveillance telemetry, participant activity auditing, and admin role governance.
-            </p>
-          </div>
-        )}
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-xs text-[#0F172A] font-extrabold uppercase tracking-wider block mb-1.5 font-mono">
-              Staff Email Address
+              Administrator Email
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
@@ -233,9 +159,7 @@ function AdminLoginForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={
-                  portal === "admin" ? "admin@byteverse.dev" : "superadmin@byteverse.dev"
-                }
+                placeholder="admin@byteverse.dev"
                 className="w-full bg-[#F8F9FD] text-[#0F172A] rounded-xl pl-10 pr-4 py-3 text-xs font-mono border-2 border-[#1E1B4B] focus:outline-none focus:border-[#7F45DB] transition-all"
               />
             </div>
@@ -243,7 +167,7 @@ function AdminLoginForm() {
 
           <div>
             <label className="text-xs text-[#0F172A] font-extrabold uppercase tracking-wider block mb-1.5 font-mono">
-              Master Access Passphrase
+              Access Passphrase
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
@@ -258,16 +182,30 @@ function AdminLoginForm() {
             </div>
           </div>
 
-          {/* Quick Preset Credentials Button for Dev/Testing */}
-          <div className="flex items-center justify-between text-[11px] font-mono pt-1">
-            <span className="text-[#6E6E6E]">Demo Environment?</span>
-            <button
-              type="button"
-              onClick={() => fillPresetCredentials(portal)}
-              className="text-[#7F45DB] hover:text-[#4A2293] font-bold underline cursor-pointer"
-            >
-              Autofill {portal === "admin" ? "Admin" : "SuperAdmin"} Credentials
-            </button>
+          {/* Preset Buttons for Quick Testing */}
+          <div className="p-3.5 rounded-2xl bg-[#F8F9FD] border-2 border-[#1E1B4B]/20 space-y-2">
+            <div className="flex items-center justify-between text-[10px] font-mono uppercase text-[#6E6E6E] font-extrabold">
+              <span>Quick Test Access:</span>
+              <span className="text-[#7F45DB]">Admin &amp; SuperAdmin Only</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => fillCredentials("superadmin")}
+                className="py-2 px-3 rounded-xl bg-white border-2 border-[#1E1B4B] hover:bg-[#F0F2F8] text-[11px] font-mono font-black text-[#0F172A] transition-all flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_0px_#1E1B4B] active:translate-x-0.5 active:translate-y-0.5"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-[#7F45DB]" />
+                <span>Super Admin</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => fillCredentials("admin")}
+                className="py-2 px-3 rounded-xl bg-white border-2 border-[#1E1B4B] hover:bg-[#F0F2F8] text-[11px] font-mono font-black text-[#0F172A] transition-all flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_0px_#1E1B4B] active:translate-x-0.5 active:translate-y-0.5"
+              >
+                <Shield className="w-3.5 h-3.5 text-purple-700" />
+                <span>Admin</span>
+              </button>
+            </div>
           </div>
 
           {/* Status Notifications */}
@@ -292,18 +230,10 @@ function AdminLoginForm() {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3.5 text-xs font-mono font-black uppercase tracking-wider text-white rounded-xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#1E1B4B] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2 ${
-              portal === "superadmin"
-                ? "bg-rose-600 hover:bg-rose-700"
-                : "bg-[#7F45DB] hover:bg-[#6D35C7]"
-            }`}
+            className="w-full py-3.5 text-xs font-mono font-black uppercase tracking-wider text-white rounded-xl border-2 border-[#1E1B4B] bg-[#7F45DB] hover:bg-[#6D35C7] shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#1E1B4B] transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
           >
             <span>
-              {loading
-                ? "Verifying Administrative Clearance..."
-                : portal === "superadmin"
-                ? "Authenticate as SuperAdmin"
-                : "Enter Admin Dashboard"}
+              {loading ? "Verifying Administrative Clearance..." : "Access Administrative Console"}
             </span>
             <ArrowRight className="w-4 h-4" />
           </button>
@@ -313,8 +243,8 @@ function AdminLoginForm() {
       {/* Cross Navigation Footers */}
       <div className="p-4 rounded-2xl border-2 border-[#1E1B4B] bg-white shadow-[4px_4px_0px_0px_#1E1B4B] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
         <div>
-          <div className="font-bold text-[#0F172A]">Not an Administrator?</div>
-          <div className="text-[#6E6E6E] text-[11px]">Looking to compete or practice coding?</div>
+          <div className="font-bold text-[#0F172A]">Contestant or Participant?</div>
+          <div className="text-[#6E6E6E] text-[11px]">Go to the public tournament and practice arena</div>
         </div>
         <Link
           href="/login"
@@ -329,11 +259,11 @@ function AdminLoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <div className="min-h-screen bg-[#F0F2F8] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F8F9FD] flex items-center justify-center p-4">
       <Suspense
         fallback={
           <div className="text-center font-mono text-xs text-[#6E6E6E] animate-pulse">
-            Loading Staff Security Portal...
+            Loading Administrative Portal...
           </div>
         }
       >

@@ -95,7 +95,7 @@ services:
       JUDGE0_WEBHOOK_SECRET: ${JUDGE0_WEBHOOK_SECRET}
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:?NEXTAUTH_SECRET is required}
       NEXTAUTH_URL: ${NEXTAUTH_URL:?NEXTAUTH_URL is required}
-      ADMIN_PIN: ${ADMIN_PIN:?ADMIN_PIN is required}
+      ADMIN_PIN: ${ADMIN_PIN:-2026}
     depends_on:
       postgres:
         condition: service_healthy

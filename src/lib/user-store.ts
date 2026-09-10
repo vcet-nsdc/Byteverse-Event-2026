@@ -18,42 +18,6 @@ const globalStore = (globalThis as any).__bv_fallback_users || ((globalThis as a
 
 const STORE_PATH = path.resolve(process.cwd(), "prisma", "fallback-users.json");
 
-// Pre-computed bcrypt hashes for fast deterministic initialization
-// "admin2026"
-const ADMIN_HASH = "$2a$12$R.u77fV5YqV4qZqM8fF5w.lKj7k19bW7m4tB7pQ4xV2m6sN8rT1e.";
-// "coder2026"
-const CODER_HASH = "$2a$12$q7O8mK1rW9yZ8bC2dE3f.gH4iJ5kL6mN7oP8qR9sT0uV1wX2yZ3a.";
-
-const DEFAULT_USERS: FallbackUser[] = [
-  {
-    id: "user_admin_root",
-    email: "admin@byteverse.dev",
-    name: "ByteVerse Admin",
-    passwordHash: "$2a$12$KkQ1b8U4d3d7c7U7c9Q8Xe8Y9bC2dE3f.gH4iJ5kL6mN7oP8qR9sT", // replaced on init with actual bcrypt
-    role: "SUPER_ADMIN",
-    college: "NSDC Technical University",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "user_organizer_head",
-    email: "organizer@byteverse.dev",
-    name: "Lead Event Organizer",
-    passwordHash: "$2a$12$KkQ1b8U4d3d7c7U7c9Q8Xe8Y9bC2dE3f.gH4iJ5kL6mN7oP8qR9sT",
-    role: "ORGANIZER",
-    college: "NSDC Technical University",
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "user_participant_aryan",
-    email: "coder@byteverse.dev",
-    name: "Aryan Sharma",
-    passwordHash: "$2a$12$KkQ1b8U4d3d7c7U7c9Q8Xe8Y9bC2dE3f.gH4iJ5kL6mN7oP8qR9sT",
-    role: "PARTICIPANT",
-    college: "NSDC Engineering Institute",
-    createdAt: new Date().toISOString(),
-  },
-];
-
 let isInitialized = false;
 
 function loadFromDisk() {
@@ -83,34 +47,34 @@ export async function ensureInitialized() {
   if (isInitialized) return;
   loadFromDisk();
 
-  // Ensure default accounts exist with valid bcrypt hash
+  // Generate valid bcrypt hashes for the accounts
   const adminHash = await bcrypt.hash("admin2026", 10);
+  const superAdminHash = await bcrypt.hash("superadmin2026", 10);
   const coderHash = await bcrypt.hash("coder2026", 10);
 
-  if (!globalStore.has("admin@byteverse.dev")) {
-    globalStore.set("admin@byteverse.dev", {
-      id: "user_admin_root",
-      email: "admin@byteverse.dev",
-      name: "ByteVerse Admin",
-      passwordHash: adminHash,
-      role: "SUPER_ADMIN",
-      college: "NSDC Technical University",
-      createdAt: new Date().toISOString(),
-    });
-  }
+  // 1. Admin Account (Sole Event Admin)
+  globalStore.set("admin@byteverse.dev", {
+    id: "user_admin_primary",
+    email: "admin@byteverse.dev",
+    name: "ByteVerse Admin",
+    passwordHash: adminHash,
+    role: "ADMIN",
+    college: "NSDC Technical University",
+    createdAt: "2026-09-10T00:00:00.000Z",
+  });
 
-  if (!globalStore.has("organizer@byteverse.dev")) {
-    globalStore.set("organizer@byteverse.dev", {
-      id: "user_organizer_head",
-      email: "organizer@byteverse.dev",
-      name: "Lead Event Organizer",
-      passwordHash: adminHash,
-      role: "ORGANIZER",
-      college: "NSDC Technical University",
-      createdAt: new Date().toISOString(),
-    });
-  }
+  // 2. SuperAdmin Account (Sole SuperAdmin)
+  globalStore.set("superadmin@byteverse.dev", {
+    id: "user_superadmin_root",
+    email: "superadmin@byteverse.dev",
+    name: "ByteVerse Super Admin",
+    passwordHash: superAdminHash,
+    role: "SUPER_ADMIN",
+    college: "NSDC ByteVerse Board",
+    createdAt: "2026-09-10T00:00:00.000Z",
+  });
 
+  // 3. Public Participant Test Account
   if (!globalStore.has("coder@byteverse.dev")) {
     globalStore.set("coder@byteverse.dev", {
       id: "user_participant_coder",
@@ -119,9 +83,13 @@ export async function ensureInitialized() {
       passwordHash: coderHash,
       role: "PARTICIPANT",
       college: "NSDC Engineering Institute",
-      createdAt: new Date().toISOString(),
+      createdAt: "2026-09-10T00:00:00.000Z",
     });
   }
+
+  // Purge any legacy deprecated accounts
+  globalStore.delete("organizer@byteverse.dev");
+  globalStore.delete("events@byteverse.dev");
 
   saveToDisk();
   isInitialized = true;

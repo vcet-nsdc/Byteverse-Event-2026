@@ -18,21 +18,39 @@ const db = new PrismaClient({ adapter });
 async function main() {
   console.log("🚀 Starting ByteVerse Production Database Seeding...");
 
-  // 1. Seed Super Admin
+  // 1. Seed Admin and SuperAdmin accounts
   const adminHash = await bcrypt.hash("admin2026", 12);
+  const superAdminHash = await bcrypt.hash("superadmin2026", 12);
+
   const admin = await db.user.upsert({
     where: { email: "admin@byteverse.dev" },
     update: {
       passwordHash: adminHash,
+      role: "ADMIN",
     },
     create: {
       email: "admin@byteverse.dev",
-      name: "admin",
+      name: "ByteVerse Admin",
       passwordHash: adminHash,
-      role: "SUPER_ADMIN",
+      role: "ADMIN",
     },
   });
   console.log("✅ Admin seeded:", admin.email);
+
+  const superAdmin = await db.user.upsert({
+    where: { email: "superadmin@byteverse.dev" },
+    update: {
+      passwordHash: superAdminHash,
+      role: "SUPER_ADMIN",
+    },
+    create: {
+      email: "superadmin@byteverse.dev",
+      name: "ByteVerse Super Admin",
+      passwordHash: superAdminHash,
+      role: "SUPER_ADMIN",
+    },
+  });
+  console.log("✅ Super Admin seeded:", superAdmin.email);
 
   // Load master seed data payload
   const seedDataPath = path.resolve(__dirname, "seed-data.json");

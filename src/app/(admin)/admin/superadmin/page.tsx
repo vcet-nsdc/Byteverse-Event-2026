@@ -59,24 +59,26 @@ interface UserItem {
   name: string;
   email: string;
   college?: string;
-  role: "PARTICIPANT" | "ORGANIZER" | "ADMIN" | "SUPER_ADMIN";
+  role: string;
   createdAt: string;
-  submissionsCount?: number;
 }
 
 export default function SuperAdminPage() {
-  const [activeTab, setActiveTab] = useState<"surveillance" | "roles" | "audit">("surveillance");
+  const [activeTab, setActiveTab] = useState<"surveillance" | "roles">("surveillance");
   const [activityData, setActivityData] = useState<{
     submissions: ActivitySubmission[];
     auditLogs: any[];
-    registrations: any[];
-  }>({ submissions: [], auditLogs: [], registrations: [] });
-
+    disqualifications: any[];
+  }>({
+    submissions: [],
+    auditLogs: [],
+    disqualifications: [],
+  });
   const [users, setUsers] = useState<UserItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [userSearch, setUserSearch] = useState("");
-  const [statusMsg, setStatusMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [statusMsg, setStatusMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
 
   // 1. Fetch live activity stream
   const fetchActivity = async () => {
@@ -155,25 +157,24 @@ export default function SuperAdminPage() {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 font-sans">
-      {/* Top Banner */}
-      <div className="bg-slate-900 border-2 border-indigo-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden text-white">
-        <div className="absolute -right-10 -top-10 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Top Banner (Light Theme) */}
+      <div className="bg-white border-2 border-[#1E1B4B] rounded-3xl p-6 sm:p-8 shadow-[4px_4px_0px_0px_#1E1B4B] relative overflow-hidden text-[#0F172A]">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-mono font-black uppercase tracking-wider flex items-center gap-1.5">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-3 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-300 text-[10px] font-mono font-black uppercase tracking-wider flex items-center gap-1.5">
                 <ShieldAlert className="w-3.5 h-3.5" />
                 <span>SuperAdmin Authority</span>
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold flex items-center gap-1">
-                <Radio className="w-3 h-3 animate-pulse" />
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-300 text-[10px] font-mono font-bold flex items-center gap-1">
+                <Radio className="w-3 h-3 text-emerald-600 animate-pulse" />
                 <span>Live Platform Surveillance</span>
               </span>
             </div>
-            <h1 className="text-3xl font-display font-black tracking-tight text-white">
+            <h1 className="text-3xl font-display font-black tracking-tight text-[#0F172A]">
               SuperAdmin Command Center
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#6E6E6E] font-medium max-w-2xl leading-relaxed">
               Complete surveillance over all user activities, submissions, and contest attempts. Manage platform administrators, promote or demote roles, and maintain system integrity.
             </p>
           </div>
@@ -184,9 +185,9 @@ export default function SuperAdminPage() {
                 fetchActivity();
                 fetchUsers();
               }}
-              className="px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-200 hover:text-white font-mono text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
+              className="px-4 py-2.5 rounded-xl border-2 border-[#1E1B4B] bg-white text-[#0F172A] hover:bg-[#F0F2F8] font-mono text-xs font-bold flex items-center gap-2 transition-all shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
+              <RefreshCw className="w-3.5 h-3.5 text-[#7F45DB]" />
               <span>Refresh Feed</span>
             </button>
           </div>
@@ -196,58 +197,58 @@ export default function SuperAdminPage() {
       {/* Alert status notification */}
       {statusMsg && (
         <div
-          className={`p-4 rounded-xl border font-mono text-xs flex items-center justify-between shadow-md ${
+          className={`p-4 rounded-xl border-2 font-mono text-xs flex items-center justify-between shadow-[2px_2px_0px_0px_#1E1B4B] ${
             statusMsg.type === "success"
-              ? "bg-emerald-950/80 border-emerald-600 text-emerald-300"
-              : "bg-rose-950/80 border-rose-600 text-rose-300"
+              ? "bg-emerald-50 border-emerald-600 text-emerald-900"
+              : "bg-rose-50 border-rose-600 text-rose-900"
           }`}
         >
           <span>{statusMsg.text}</span>
-          <button onClick={() => setStatusMsg(null)} className="underline text-[11px]">
+          <button onClick={() => setStatusMsg(null)} className="underline text-[11px] font-bold">
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Quick Stats Grid */}
+      {/* Quick Stats Grid (Light Theme) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-[#111726] border border-[#382F60] p-5 rounded-2xl">
-          <div className="text-[11px] font-mono uppercase text-slate-400 font-bold">Total Platform Users</div>
-          <div className="text-3xl font-black font-mono text-white mt-1">{users.length}</div>
-          <div className="text-[10px] font-mono text-slate-500 mt-1">Across all registered accounts</div>
+        <div className="bg-white border-2 border-[#1E1B4B] p-5 rounded-2xl shadow-[4px_4px_0px_0px_#1E1B4B]">
+          <div className="text-[11px] font-mono uppercase text-[#6E6E6E] font-bold">Total Platform Users</div>
+          <div className="text-3xl font-black font-mono text-[#0F172A] mt-1">{users.length}</div>
+          <div className="text-[10px] font-mono text-[#8A8A8A] mt-1">Across all registered accounts</div>
         </div>
 
-        <div className="bg-[#111726] border border-[#382F60] p-5 rounded-2xl">
-          <div className="text-[11px] font-mono uppercase text-slate-400 font-bold">Active Administrators</div>
-          <div className="text-3xl font-black font-mono text-amber-400 mt-1">{adminUsers.length}</div>
-          <div className="text-[10px] font-mono text-slate-500 mt-1">Authorized event & contest hosts</div>
+        <div className="bg-white border-2 border-[#1E1B4B] p-5 rounded-2xl shadow-[4px_4px_0px_0px_#1E1B4B]">
+          <div className="text-[11px] font-mono uppercase text-[#6E6E6E] font-bold">Active Administrators</div>
+          <div className="text-3xl font-black font-mono text-[#7F45DB] mt-1">{adminUsers.length}</div>
+          <div className="text-[10px] font-mono text-[#8A8A8A] mt-1">Authorized event & contest hosts</div>
         </div>
 
-        <div className="bg-[#111726] border border-[#382F60] p-5 rounded-2xl">
-          <div className="text-[11px] font-mono uppercase text-slate-400 font-bold">Recent Submissions</div>
-          <div className="text-3xl font-black font-mono text-[#A472F7] mt-1">
+        <div className="bg-white border-2 border-[#1E1B4B] p-5 rounded-2xl shadow-[4px_4px_0px_0px_#1E1B4B]">
+          <div className="text-[11px] font-mono uppercase text-[#6E6E6E] font-bold">Recent Submissions</div>
+          <div className="text-3xl font-black font-mono text-blue-600 mt-1">
             {activityData.submissions.length}
           </div>
-          <div className="text-[10px] font-mono text-slate-500 mt-1">Tracked in surveillance stream</div>
+          <div className="text-[10px] font-mono text-[#8A8A8A] mt-1">Tracked in surveillance stream</div>
         </div>
 
-        <div className="bg-[#111726] border border-[#382F60] p-5 rounded-2xl">
-          <div className="text-[11px] font-mono uppercase text-slate-400 font-bold">Audit Records</div>
-          <div className="text-3xl font-black font-mono text-emerald-400 mt-1">
+        <div className="bg-white border-2 border-[#1E1B4B] p-5 rounded-2xl shadow-[4px_4px_0px_0px_#1E1B4B]">
+          <div className="text-[11px] font-mono uppercase text-[#6E6E6E] font-bold">Audit Records</div>
+          <div className="text-3xl font-black font-mono text-emerald-600 mt-1">
             {activityData.auditLogs.length}
           </div>
-          <div className="text-[10px] font-mono text-slate-500 mt-1">Logged security events</div>
+          <div className="text-[10px] font-mono text-[#8A8A8A] mt-1">Logged security events</div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-3 border-b border-slate-800 pb-3 font-mono text-xs">
+      <div className="flex items-center gap-3 border-b-2 border-[#1E1B4B]/15 pb-3 font-mono text-xs flex-wrap">
         <button
           onClick={() => setActiveTab("surveillance")}
-          className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all ${
+          className={`px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all border-2 border-[#1E1B4B] ${
             activeTab === "surveillance"
-              ? "bg-[#7F45DB] text-white shadow-md font-black"
-              : "bg-slate-800 text-slate-400 hover:text-white"
+              ? "bg-[#7F45DB] text-white shadow-[2px_2px_0px_0px_#1E1B4B] font-black"
+              : "bg-white text-[#0F172A] hover:bg-[#F0F2F8]"
           }`}
         >
           <Activity className="w-4 h-4" />
@@ -256,10 +257,10 @@ export default function SuperAdminPage() {
 
         <button
           onClick={() => setActiveTab("roles")}
-          className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all ${
+          className={`px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all border-2 border-[#1E1B4B] ${
             activeTab === "roles"
-              ? "bg-[#7F45DB] text-white shadow-md font-black"
-              : "bg-slate-800 text-slate-400 hover:text-white"
+              ? "bg-[#7F45DB] text-white shadow-[2px_2px_0px_0px_#1E1B4B] font-black"
+              : "bg-white text-[#0F172A] hover:bg-[#F0F2F8]"
           }`}
         >
           <ShieldCheck className="w-4 h-4" />
@@ -270,72 +271,72 @@ export default function SuperAdminPage() {
       {/* TAB 1: SURVEILLANCE FEED */}
       {activeTab === "surveillance" && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
-              <Eye className="w-5 h-5 text-emerald-400" />
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h2 className="text-lg font-bold text-[#0F172A] font-display flex items-center gap-2">
+              <Eye className="w-5 h-5 text-[#7F45DB]" />
               <span>Real-Time User Code & Submission Surveillance</span>
             </h2>
-            <span className="text-xs font-mono text-slate-400">
+            <span className="text-xs font-mono text-[#6E6E6E]">
               Auto-syncs every 15s • Last checked {new Date().toLocaleTimeString()}
             </span>
           </div>
 
           {activityData.submissions.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 font-mono text-xs bg-[#111726] border border-[#382F60] rounded-2xl">
+            <div className="p-12 text-center text-[#6E6E6E] font-mono text-xs bg-white border-2 border-[#1E1B4B] rounded-2xl shadow-[4px_4px_0px_0px_#1E1B4B]">
               No live submissions recorded in this window. When participants run or submit code, it will stream here in real time.
             </div>
           ) : (
-            <div className="bg-[#111726] border border-[#382F60] rounded-2xl overflow-hidden">
+            <div className="bg-white border-2 border-[#1E1B4B] rounded-2xl overflow-hidden shadow-[4px_4px_0px_0px_#1E1B4B]">
               <div className="overflow-x-auto">
                 <table className="w-full text-left font-mono text-xs">
                   <thead>
-                    <tr className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase text-[10px]">
-                      <th className="py-3 px-4">User</th>
-                      <th className="py-3 px-4">Problem / Challenge</th>
-                      <th className="py-3 px-4">Contest / Event</th>
-                      <th className="py-3 px-4">Language</th>
-                      <th className="py-3 px-4 text-center">Status</th>
-                      <th className="py-3 px-4 text-right">Score</th>
-                      <th className="py-3 px-4 text-right">Time</th>
+                    <tr className="bg-[#F8F9FD] border-b-2 border-[#1E1B4B]/20 text-[#6E6E6E] uppercase text-[10px]">
+                      <th className="py-3.5 px-4">User</th>
+                      <th className="py-3.5 px-4">Problem / Challenge</th>
+                      <th className="py-3.5 px-4">Contest / Event</th>
+                      <th className="py-3.5 px-4">Language</th>
+                      <th className="py-3.5 px-4 text-center">Status</th>
+                      <th className="py-3.5 px-4 text-right">Score</th>
+                      <th className="py-3.5 px-4 text-right">Time</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/60">
+                  <tbody className="divide-y divide-[#1E1B4B]/10">
                     {activityData.submissions.map((sub) => (
-                      <tr key={sub.id} className="hover:bg-slate-800/40 transition-colors">
-                        <td className="py-3 px-4">
-                          <div className="font-bold text-white">{sub.user.name}</div>
-                          <div className="text-[11px] text-slate-400">{sub.user.email}</div>
+                      <tr key={sub.id} className="hover:bg-[#F8F9FD] transition-colors">
+                        <td className="py-3.5 px-4">
+                          <div className="font-bold text-[#0F172A]">{sub.user.name}</div>
+                          <div className="text-[11px] text-[#6E6E6E]">{sub.user.email}</div>
                           {sub.user.college && (
-                            <div className="text-[10px] text-slate-500">{sub.user.college}</div>
+                            <div className="text-[10px] text-[#8A8A8A]">{sub.user.college}</div>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-slate-300">
+                        <td className="py-3.5 px-4 text-[#0F172A]">
                           <div className="font-bold">{sub.problem?.title || sub.problemId}</div>
                           {sub.problem?.difficulty && (
-                            <span className="text-[10px] text-slate-500">{sub.problem.difficulty}</span>
+                            <span className="text-[10px] text-[#6E6E6E]">{sub.problem.difficulty}</span>
                           )}
                         </td>
-                        <td className="py-3 px-4 text-slate-400">
+                        <td className="py-3.5 px-4 text-[#6E6E6E]">
                           {sub.contest?.title || sub.contestId || sub.roundId || "Practice Arena"}
                         </td>
-                        <td className="py-3 px-4 uppercase text-slate-400 font-bold">{sub.language}</td>
-                        <td className="py-3 px-4 text-center">
+                        <td className="py-3.5 px-4 uppercase text-[#0F172A] font-bold">{sub.language}</td>
+                        <td className="py-3.5 px-4 text-center">
                           <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            className={`px-2.5 py-1 rounded-md text-[10px] font-bold ${
                               sub.status === "ACCEPTED"
-                                ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                                ? "bg-emerald-50 text-emerald-700 border border-emerald-300"
                                 : sub.status === "WRONG_ANSWER"
-                                ? "bg-rose-950 text-rose-400 border border-rose-800"
-                                : "bg-amber-950 text-amber-400 border border-amber-800"
+                                ? "bg-rose-50 text-rose-700 border border-rose-300"
+                                : "bg-amber-50 text-amber-700 border border-amber-300"
                             }`}
                           >
                             {sub.status}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right font-bold text-amber-400">
+                        <td className="py-3.5 px-4 text-right font-bold text-[#7F45DB]">
                           {sub.finalScore ?? sub.rawScore} pts
                         </td>
-                        <td className="py-3 px-4 text-right text-slate-400 text-[11px]">
+                        <td className="py-3.5 px-4 text-right text-[#6E6E6E] text-[11px]">
                           {new Date(sub.submittedAt).toLocaleTimeString()}
                         </td>
                       </tr>
@@ -353,64 +354,64 @@ export default function SuperAdminPage() {
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-bold text-white font-display">
+              <h2 className="text-lg font-bold text-[#0F172A] font-display">
                 Administrator & Role Authority
               </h2>
-              <p className="text-xs font-mono text-slate-400">
+              <p className="text-xs font-mono text-[#6E6E6E]">
                 Grant or revoke Admin access. Admins can host events, activate/pause contests, and toggle problems.
               </p>
             </div>
 
             <div className="relative w-full sm:w-72">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#8A8A8A] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search user name or email..."
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs font-mono text-white focus:outline-none focus:ring-1 focus:ring-[#7F45DB]"
+                className="w-full pl-9 pr-3 py-2 bg-white border-2 border-[#1E1B4B] rounded-xl text-xs font-mono text-[#0F172A] focus:outline-none focus:border-[#7F45DB] shadow-[2px_2px_0px_0px_#1E1B4B]"
               />
             </div>
           </div>
 
-          <div className="bg-[#111726] border border-[#382F60] rounded-2xl overflow-hidden">
+          <div className="bg-white border-2 border-[#1E1B4B] rounded-2xl overflow-hidden shadow-[4px_4px_0px_0px_#1E1B4B]">
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-xs">
                 <thead>
-                  <tr className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase text-[10px]">
-                    <th className="py-3 px-4">User</th>
-                    <th className="py-3 px-4">Current Role</th>
-                    <th className="py-3 px-4">College</th>
-                    <th className="py-3 px-4 text-right">SuperAdmin Authority Actions</th>
+                  <tr className="bg-[#F8F9FD] border-b-2 border-[#1E1B4B]/20 text-[#6E6E6E] uppercase text-[10px]">
+                    <th className="py-3.5 px-4">User</th>
+                    <th className="py-3.5 px-4">Current Role</th>
+                    <th className="py-3.5 px-4">College</th>
+                    <th className="py-3.5 px-4 text-right">SuperAdmin Authority Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60">
+                <tbody className="divide-y divide-[#1E1B4B]/10">
                   {filteredUsers.map((u) => {
                     const isWorking = actionLoadingId === u.id;
                     return (
-                      <tr key={u.id} className="hover:bg-slate-800/40 transition-colors">
+                      <tr key={u.id} className="hover:bg-[#F8F9FD] transition-colors">
                         <td className="py-3.5 px-4">
-                          <div className="font-bold text-white">{u.name}</div>
-                          <div className="text-[11px] text-slate-400">{u.email}</div>
+                          <div className="font-bold text-[#0F172A]">{u.name}</div>
+                          <div className="text-[11px] text-[#6E6E6E]">{u.email}</div>
                         </td>
 
                         <td className="py-3.5 px-4">
                           <span
                             className={`px-2.5 py-1 rounded-md text-[11px] font-bold ${
                               u.role === "SUPER_ADMIN"
-                                ? "bg-rose-950 text-rose-300 border border-rose-800"
+                                ? "bg-rose-50 text-rose-700 border border-rose-300 font-black"
                                 : u.role === "ADMIN"
-                                ? "bg-purple-950 text-purple-300 border border-purple-800"
+                                ? "bg-purple-50 text-purple-700 border border-purple-300 font-bold"
                                 : u.role === "ORGANIZER"
-                                ? "bg-amber-950 text-amber-300 border border-amber-800"
-                                : "bg-slate-800 text-slate-300"
+                                ? "bg-amber-50 text-amber-700 border border-amber-300 font-bold"
+                                : "bg-slate-100 text-slate-700 border border-slate-300 font-medium"
                             }`}
                           >
                             {u.role}
                           </span>
                         </td>
 
-                        <td className="py-3.5 px-4 text-slate-400">{u.college || "—"}</td>
+                        <td className="py-3.5 px-4 text-[#6E6E6E]">{u.college || "—"}</td>
 
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -418,7 +419,7 @@ export default function SuperAdminPage() {
                               <button
                                 onClick={() => handleRoleChange(u.id, "ADMIN")}
                                 disabled={isWorking}
-                                className="px-3 py-1.5 rounded-lg bg-purple-900/60 text-purple-200 border border-purple-700 hover:bg-purple-800 font-bold text-[11px] transition-all disabled:opacity-50"
+                                className="px-3 py-1.5 rounded-lg bg-[#7F45DB] text-white hover:bg-[#6D35C7] border border-[#1E1B4B] font-bold text-[11px] transition-all disabled:opacity-50 shadow-[1px_1px_0px_0px_#1E1B4B]"
                               >
                                 Promote to Admin
                               </button>
@@ -428,7 +429,7 @@ export default function SuperAdminPage() {
                               <button
                                 onClick={() => handleRoleChange(u.id, "PARTICIPANT")}
                                 disabled={isWorking}
-                                className="px-3 py-1.5 rounded-lg bg-rose-950 text-rose-300 border border-rose-800 hover:bg-rose-900 font-bold text-[11px] transition-all disabled:opacity-50"
+                                className="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 border border-rose-300 hover:bg-rose-100 font-bold text-[11px] transition-all disabled:opacity-50"
                               >
                                 Demote to Participant
                               </button>
@@ -438,7 +439,7 @@ export default function SuperAdminPage() {
                               <button
                                 onClick={() => handleRoleChange(u.id, "ORGANIZER")}
                                 disabled={isWorking}
-                                className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white text-[11px] transition-all disabled:opacity-50"
+                                className="px-3 py-1.5 rounded-lg bg-white border border-[#1E1B4B] text-[#0F172A] hover:bg-[#F0F2F8] text-[11px] font-bold transition-all disabled:opacity-50 shadow-[1px_1px_0px_0px_#1E1B4B]"
                               >
                                 Set Organizer
                               </button>

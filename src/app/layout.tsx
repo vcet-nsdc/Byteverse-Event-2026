@@ -113,7 +113,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://api.fontshare.com" />
+        <link rel="preconnect" href="https://cdn.fontshare.com" crossOrigin="anonymous" />
+        <link
+          rel="preload"
+          href="https://cdn.fontshare.com/wf/2D4THMSKJGRDCBT6A6VWG4SNWKTAS3I2/KYTPQO6L7FPQHAZ4NUY6LX3ZE4BITSGS/2QZ2ZOKTT7SJC5TJNAK23KA3JCADVWDL.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="https://cdn.fontshare.com/wf/RZYHTNGMAM277HHQBAANMAMZAK2RASOJ/ZMFNEW255W5MH35ANX3VS4OA2VGPLJ6V/MRUFJCB2XBGJKEWAZRVXWUXXFT2Z7TDZ.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=technor@400,500,600,700,800,900&display=swap" />
+        <meta
+          name="description"
+          content="NSDC ByteVerse (formerly ByteVerse) is the premier collegiate competitive programming platform and tournament arena. Compete in weekly coding contests, practice algorithms in C++, Python, Java, and C, climb live leaderboards, and battle in real-time speed duels."
+        />
         <link rel="icon" type="image/png" href="/favicon.png?v=3" />
         <link rel="shortcut icon" href="/favicon.ico?v=3" />
         <link rel="apple-touch-icon" href="/assets/byteverse-logo.png?v=3" />

@@ -1,12 +1,34 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { motion } from "framer-motion";
+import { usePathname } from "next/navigation";
 import { useTheme } from "./ThemeProvider";
 import { Starfield } from "@/components/ui/starfield-1";
 
 export default function StarrySkyBackground() {
+  const pathname = usePathname();
   const { isNight } = useTheme();
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    // Defer canvas startup until critical path hydration is complete
+    if (typeof window !== "undefined") {
+      if ("requestIdleCallback" in window) {
+        (window as any).requestIdleCallback(() => setIsMounted(true));
+      } else {
+        setTimeout(() => setIsMounted(true), 200);
+      }
+    }
+  }, []);
+
+  // Hide cosmic starfield and animated nebulae on admin interfaces to enforce a clean light dashboard
+  if (
+    pathname?.startsWith("/admin") ||
+    pathname === "/admin-login" ||
+    pathname === "/superadmin-login"
+  ) {
+    return null;
+  }
 
   // Day vs Night palette
   const themeConfig = useMemo(() => {
@@ -34,38 +56,30 @@ export default function StarrySkyBackground() {
       aria-hidden="true"
       className={`fixed inset-0 pointer-events-none z-0 overflow-hidden transition-colors duration-700 ${themeConfig.skyGradient}`}
     >
-      {/* 1. Hardware-Accelerated 60fps Starfield Canvas */}
+      {/* 1. Hardware-Accelerated 60fps Starfield Canvas (Deferred post-hydration) */}
       <div className="absolute inset-0 w-full h-full pointer-events-none">
-        <Starfield
-          key={isNight ? "night-starfield" : "day-starfield"}
-          starColor={themeConfig.starfieldColor}
-          bgColor="transparent"
-          speed={0.4}
-          quantity={420}
-          mouseAdjust={false}
-          tiltAdjust={false}
-          clickToWarp={false}
-          hyperspace={false}
-        />
+        {isMounted && (
+          <Starfield
+            key={isNight ? "night-starfield" : "day-starfield"}
+            starColor={themeConfig.starfieldColor}
+            bgColor="transparent"
+            speed={0.4}
+            quantity={140}
+            mouseAdjust={false}
+            tiltAdjust={false}
+            clickToWarp={false}
+            hyperspace={false}
+          />
+        )}
       </div>
 
-      {/* 2. Ambient Nebula Backdrops */}
-      <motion.div
-        animate={{
-          scale: [1, 1.05, 1],
-          opacity: isNight ? [0.45, 0.6, 0.45] : [0.2, 0.35, 0.2],
-        }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute -top-32 left-1/4 w-[700px] h-[500px] rounded-full blur-[140px] pointer-events-none"
+      {/* 2. Hardware-Accelerated CSS Ambient Nebula Backdrops (Zero Main-Thread Overhead) */}
+      <div
+        className="absolute -top-32 left-1/4 w-[700px] h-[500px] rounded-full blur-[140px] pointer-events-none animate-nebula-1"
         style={{ backgroundColor: themeConfig.nebulaPrimary }}
       />
-      <motion.div
-        animate={{
-          scale: [1, 1.06, 1],
-          opacity: isNight ? [0.35, 0.5, 0.35] : [0.15, 0.28, 0.15],
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        className="absolute -bottom-24 right-1/4 w-[600px] h-[450px] rounded-full blur-[130px] pointer-events-none"
+      <div
+        className="absolute -bottom-24 right-1/4 w-[600px] h-[450px] rounded-full blur-[130px] pointer-events-none animate-nebula-2"
         style={{ backgroundColor: themeConfig.nebulaSecondary }}
       />
     </div>

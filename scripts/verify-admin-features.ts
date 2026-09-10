@@ -3,12 +3,12 @@ import bcrypt from "bcryptjs";
 
 async function verifyAdminFeatures() {
   console.log("=== 1. Verifying Admin Accounts ===");
-  const eventAdmin = await db.user.findUnique({
-    where: { email: "events@byteverse.dev" },
+  const admin = await db.user.findUnique({
+    where: { email: "admin@byteverse.dev" },
   });
-  console.log("Event Admin exists:", !!eventAdmin, "Role:", eventAdmin?.role);
-  if (!eventAdmin || eventAdmin.role !== "ORGANIZER") {
-    throw new Error("Event Admin verification failed!");
+  console.log("Admin exists:", !!admin, "Role:", admin?.role);
+  if (!admin || admin.role !== "ADMIN") {
+    throw new Error("Admin verification failed!");
   }
 
   const superAdmin = await db.user.findUnique({
@@ -20,12 +20,12 @@ async function verifyAdminFeatures() {
   }
 
   // Verify bcrypt passwords
-  const eventAdminPassValid = await bcrypt.compare("events2026", eventAdmin.passwordHash || "");
-  console.log("Event Admin password valid:", eventAdminPassValid);
+  const adminPassValid = await bcrypt.compare("admin2026", admin.passwordHash || "");
+  console.log("Admin password valid:", adminPassValid);
   const superAdminPassValid = await bcrypt.compare("superadmin2026", superAdmin.passwordHash || "");
   console.log("Super Admin password valid:", superAdminPassValid);
 
-  if (!eventAdminPassValid || !superAdminPassValid) {
+  if (!adminPassValid || !superAdminPassValid) {
     throw new Error("Admin credentials verification failed!");
   }
 

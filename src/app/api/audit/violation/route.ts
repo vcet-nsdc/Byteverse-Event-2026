@@ -104,8 +104,16 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ success: true, localOnly: true });
 }
 
-// Endpoint to verify Admin PIN and unlock — allows participant to submit proctor PIN
+// Admin & SuperAdmin Disqualification Reinstatement / Action Endpoint
 export async function PUT(req: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
+    return NextResponse.json(
+      { error: "Forbidden: Administrative authority required to manage disqualification states." },
+      { status: 403 }
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -113,17 +121,37 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { pin } = (body || {}) as { pin?: string };
-  if (!pin) {
-    return NextResponse.json({ error: "PIN is required" }, { status: 400 });
+  const { userId, teamId, action } = (body || {}) as {
+    userId?: string;
+    teamId?: string;
+    action?: "REINSTATE" | "DISQUALIFY";
+  };
+
+  if (!userId && !teamId) {
+    return NextResponse.json({ error: "userId or teamId is required" }, { status: 400 });
   }
 
-  const adminPin = (process.env.ADMIN_PIN || "123456").trim();
-  const validPins = [adminPin, "123456", "2026", "admin2026"].filter(Boolean);
-
-  if (!validPins.includes(pin.trim())) {
-    return NextResponse.json({ error: "Invalid Proctor Master PIN" }, { status: 403 });
+  try {
+    if (action === "REINSTATE") {
+      if (teamId) {
+        await db.team.update({
+          where: { id: teamId },
+          data: { status: "ACTIVE" },
+        }).catch(() => {});
+      }
+      return NextResponse.json({ success: true, message: "Participant reinstated by administrator" });
+    } else {
+      if (userId) recordDisqualifiedParticipant(userId);
+      if (teamId) {
+        recordDisqualifiedParticipant(teamId);
+        await db.team.update({
+          where: { id: teamId },
+          data: { status: "DISQUALIFIED" },
+        }).catch(() => {});
+      }
+      return NextResponse.json({ success: true, message: "Participant marked disqualified by administrator" });
+    }
+  } catch (err) {
+    return NextResponse.json({ error: "Failed to update participant status" }, { status: 500 });
   }
-
-  return NextResponse.json({ success: true, message: "Station unlocked by proctor" });
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Play,
   Send,
@@ -18,6 +19,7 @@ import {
   Copy,
   Check,
   Zap,
+  ShieldAlert,
 } from "lucide-react";
 import { FormattedStatement } from "@/components/problem/formatted-statement";
 
@@ -58,6 +60,32 @@ export default function PracticeWorkspacePage({
   params: Promise<{ problemId: string }>;
 }) {
   const { problemId } = use(params);
+  const router = useRouter();
+
+  // Mandatory Authentication Gate
+  const [sessionUser, setSessionUser] = useState<any>(null);
+  const [authChecking, setAuthChecking] = useState(true);
+
+  useEffect(() => {
+    async function verifyAuth() {
+      try {
+        const res = await fetch("/api/auth/session");
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.user?.id) {
+            setSessionUser(data.user);
+            setAuthChecking(false);
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
+      setAuthChecking(false);
+      router.replace(`/login?callbackUrl=${encodeURIComponent(`/practice/${problemId}`)}`);
+    }
+    verifyAuth();
+  }, [problemId, router]);
 
   const [problem, setProblem] = useState<ProblemData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -238,6 +266,38 @@ export default function PracticeWorkspacePage({
       setIsSubmitting(false);
     }
   };
+
+  if (authChecking) {
+    return (
+      <main className="min-h-screen bg-transparent flex flex-col items-center justify-center font-mono text-sm space-y-3">
+        <div className="w-7 h-7 border-2 border-[#7F45DB] border-t-transparent rounded-full animate-spin" />
+        <div className="text-center space-y-1">
+          <p className="font-bold text-[#0F172A] dark:text-white">Verifying Contestant Authorization...</p>
+          <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">Authenticating session for Practice Arena</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!sessionUser) {
+    return (
+      <main className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 space-y-4 font-sans text-center">
+        <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
+          <ShieldAlert className="w-7 h-7" />
+        </div>
+        <h1 className="text-2xl font-black text-[#0F172A] dark:text-white">Login Required</h1>
+        <p className="text-xs font-mono text-[#6B7280] dark:text-[#9CA3AF] max-w-md">
+          You must be logged in to compile code on Judge0, test algorithmic solutions, and track problem submissions. Redirecting to login...
+        </p>
+        <Link
+          href={`/login?callbackUrl=${encodeURIComponent(`/practice/${problemId}`)}`}
+          className="px-6 py-2.5 rounded-xl bg-[#7F45DB] hover:bg-[#6D34C9] text-white font-mono font-bold text-xs uppercase tracking-wider"
+        >
+          Log In to Practice
+        </Link>
+      </main>
+    );
+  }
 
   if (loading) {
     return (

@@ -170,6 +170,31 @@ export default function ContestArenaPage({
   const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasEverBeenFullscreen = useRef(false);
 
+  // Mandatory Contestant Authentication Gate
+  const [sessionUser, setSessionUser] = useState<any>(null);
+  const [authChecking, setAuthChecking] = useState(true);
+
+  useEffect(() => {
+    async function verifyAuth() {
+      try {
+        const res = await fetch("/api/auth/session");
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.user?.id) {
+            setSessionUser(data.user);
+            setAuthChecking(false);
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
+      setAuthChecking(false);
+      router.replace(`/login?callbackUrl=${encodeURIComponent(`/contest/${contestId}/arena/${activeProblemId}`)}`);
+    }
+    verifyAuth();
+  }, [contestId, activeProblemId, router]);
+
   // If already disqualified, immediately kick outside to contest overview
   useEffect(() => {
     if (isDisqualified) {
@@ -691,6 +716,38 @@ export default function ContestArenaPage({
   // Find index of current problem in contest (1-based numeric)
   const currentProblemIndex = contest?.problems?.findIndex((p) => p.id === activeProblemId) ?? -1;
   const problemNumber = currentProblemIndex >= 0 ? (currentProblemIndex + 1).toString() : "1";
+
+  if (authChecking) {
+    return (
+      <main className="min-h-screen bg-[#0F172A] text-white flex flex-col items-center justify-center font-mono text-sm space-y-3">
+        <div className="w-7 h-7 border-2 border-[#7F45DB] border-t-transparent rounded-full animate-spin" />
+        <div className="text-center space-y-1">
+          <p className="font-bold text-white">Verifying Contestant Authorization...</p>
+          <p className="text-xs text-slate-400">Authenticating session for ByteVerse 2026 Arena</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!sessionUser) {
+    return (
+      <main className="min-h-screen bg-[#0F172A] text-white flex flex-col items-center justify-center p-6 space-y-4 font-sans text-center">
+        <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+          <ShieldAlert className="w-7 h-7" />
+        </div>
+        <h1 className="text-2xl font-black">Authentication Required</h1>
+        <p className="text-xs font-mono text-slate-400 max-w-md">
+          You must be logged in as a registered contestant or administrator to participate in the contest arena. Redirecting to login...
+        </p>
+        <Link
+          href={`/login?callbackUrl=${encodeURIComponent(`/contest/${contestId}/arena/${activeProblemId}`)}`}
+          className="px-6 py-2.5 rounded-xl bg-[#7F45DB] hover:bg-[#6D34C9] text-white font-mono font-bold text-xs uppercase tracking-wider"
+        >
+          Proceed to Login
+        </Link>
+      </main>
+    );
+  }
 
   if (loading && !problem) {
     return (

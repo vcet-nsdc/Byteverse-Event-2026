@@ -3,12 +3,13 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
 import AdminNavbar from "@/components/admin/AdminNavbar";
+import AdminThemeEnforcer from "@/components/admin/AdminThemeEnforcer";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
 
-  // Strict Authentication Guard: Only authenticated ADMIN / ORGANIZER can access any /admin page
-  if (!session?.user?.id || !session.user.role || !requireRole("ORGANIZER", session.user.role)) {
+  // Strict Authentication Guard: Only authenticated ADMIN or SUPER_ADMIN can access any /admin page
+  if (!session?.user?.id || !session.user.role || !requireRole("ADMIN", session.user.role)) {
     redirect("/admin-login?callbackUrl=/admin");
   }
 
@@ -16,7 +17,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const userEmail = session.user.email ?? "admin@byteverse.dev";
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8F9FD] text-[#0F172A] flex flex-col font-sans light">
+      <AdminThemeEnforcer />
+
       {/* Top Navigation Bar with active path highlight */}
       <AdminNavbar userRole={userRole} userEmail={userEmail} />
 

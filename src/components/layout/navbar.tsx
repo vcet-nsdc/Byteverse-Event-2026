@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import {
   Code2,
@@ -174,13 +175,17 @@ export default function Navbar() {
 
                     <div className="border-t border-[#1E1B4B]/10 dark:border-[#2D2755] my-1" />
 
-                    <Link
-                      href="/login"
-                      className="flex items-center gap-2 px-4 py-2 text-xs font-mono font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setUserDropdownOpen(false);
+                        await signOut({ callbackUrl: "/login" });
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-xs font-mono font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>Sign Out / Switch</span>
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
@@ -206,8 +211,12 @@ export default function Navbar() {
           <div className="flex md:hidden items-center gap-2">
             <ThemeToggle />
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl border-2 border-[#1E1B4B] dark:border-[#A472F7] bg-white dark:bg-[#16122C] text-[#0F172A] dark:text-white shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#A472F7]"
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+              title="Toggle navigation menu"
+              className="p-2 rounded-xl border-2 border-[#1E1B4B] dark:border-[#A472F7] bg-white dark:bg-[#16122C] text-[#0F172A] dark:text-white shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#A472F7] cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -259,6 +268,17 @@ export default function Navbar() {
                     <span>Admin Dashboard</span>
                   </Link>
                 )}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setMobileMenuOpen(false);
+                    await signOut({ callbackUrl: "/login" });
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-xs font-mono font-bold transition-all cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out / Switch</span>
+                </button>
               </div>
             ) : (
               <div className="flex flex-col gap-2">

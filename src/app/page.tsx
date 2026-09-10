@@ -100,7 +100,7 @@ export default function LandingPage() {
 
         {/* 3. ByteVerse Main Hero Box with Official 3D Logo & Cyber HUD Accents */}
         <div className="space-y-4 sm:space-y-5 w-full">
-          <div className="relative max-w-2xl sm:max-w-3xl w-full mx-auto p-4 sm:p-8 md:p-10 bg-white dark:bg-[#111726] border-3 border-[#1E1B4B] dark:border-[#7F45DB] rounded-3xl shadow-[5px_5px_0px_0px_#1E1B4B] sm:shadow-[8px_8px_0px_0px_#1E1B4B] dark:shadow-[5px_5px_0px_0px_#7F45DB] dark:sm:shadow-[8px_8px_0px_0px_#7F45DB] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_0px_#1E1B4B] dark:hover:shadow-[4px_4px_0px_0px_#7F45DB] transition-all duration-300 cursor-pointer group select-none flex items-center justify-center overflow-hidden">
+          <div className="relative max-w-2xl sm:max-w-3xl w-full min-h-[260px] sm:min-h-[340px] md:min-h-[390px] mx-auto p-4 sm:p-8 md:p-10 bg-white dark:bg-[#111726] border-3 border-[#1E1B4B] dark:border-[#7F45DB] rounded-3xl shadow-[5px_5px_0px_0px_#1E1B4B] sm:shadow-[8px_8px_0px_0px_#1E1B4B] dark:shadow-[5px_5px_0px_0px_#7F45DB] dark:sm:shadow-[8px_8px_0px_0px_#7F45DB] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_0px_#1E1B4B] dark:hover:shadow-[4px_4px_0px_0px_#7F45DB] transition-all duration-300 cursor-pointer group select-none flex items-center justify-center overflow-hidden">
             {/* Ambient Purple Background Glow */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#7F45DB]/10 via-transparent to-[#A472F7]/10 pointer-events-none group-hover:opacity-100 transition-opacity" />
 
@@ -124,6 +124,7 @@ export default function LandingPage() {
                 src="/assets/byteverse-logo.png?v=3"
                 alt="ByteVerse 2026 Official 3D Logo"
                 fill
+                sizes="(max-width: 768px) 100vw, 768px"
                 className="object-contain object-center drop-shadow-xl dark:drop-shadow-[0_0_28px_rgba(164,114,247,0.4)] scale-95 sm:scale-100 transition-all duration-300 ease-out group-hover:scale-[1.06] sm:group-hover:scale-[1.10] md:group-hover:scale-[1.12] group-hover:-translate-y-1.5 group-active:scale-[0.96] group-active:translate-y-1"
                 priority
               />
@@ -243,7 +244,7 @@ export default function LandingPage() {
                       <circle cx="16" cy="8.5" r="1.5" fill="#10B981" className="animate-ping" />
                     </svg>
                   </div>
-                  <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/30">02 // JUDGE0</span>
+                  <span className="text-[10px] font-mono font-black text-emerald-800 dark:text-emerald-300 tracking-wider px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-400/50">02 // JUDGE0</span>
                 </div>
                 <h3 className="font-technor font-black text-base text-[#0F172A] dark:text-white uppercase tracking-wide">
                   Automated Online Judge
@@ -268,7 +269,7 @@ export default function LandingPage() {
                       <path d="M10.617 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z" fill="#3B82F6" />
                     </svg>
                   </div>
-                  <span className="text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400 tracking-wider px-2 py-0.5 rounded bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/30">03 // PRACTICE</span>
+                  <span className="text-[10px] font-mono font-black text-amber-900 dark:text-amber-300 tracking-wider px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 border border-amber-400/50">03 // PRACTICE</span>
                 </div>
                 <h3 className="font-technor font-black text-base text-[#0F172A] dark:text-white uppercase tracking-wide">
                   Curated Practice Arena
@@ -277,7 +278,7 @@ export default function LandingPage() {
                   Filter by difficulty (Easy, Medium, Hard), explore fundamental algorithmic patterns, debug custom edge cases, and elevate your technical interview readiness.
                 </p>
               </div>
-              <div className="pt-3 border-t border-[#1E1B4B]/10 dark:border-[#2D2755] mt-3 flex items-center justify-between text-[11px] font-mono font-bold text-amber-700 dark:text-amber-400">
+              <div className="pt-3 border-t border-[#1E1B4B]/10 dark:border-[#2D2755] mt-3 flex items-center justify-between text-[11px] font-mono font-bold text-amber-900 dark:text-amber-300">
                 <span>Monaco Editor</span>
                 <span>Custom Inputs</span>
               </div>
@@ -297,7 +298,7 @@ export default function LandingPage() {
                       <circle cx="18.5" cy="6.5" r="1.25" fill="#EF4444" />
                     </svg>
                   </div>
-                  <span className="text-[10px] font-mono font-bold text-rose-600 dark:text-rose-400 tracking-wider px-2 py-0.5 rounded bg-rose-500/10 dark:bg-rose-500/20 border border-rose-500/30">04 // PROJECTOR</span>
+                  <span className="text-[10px] font-mono font-black text-rose-900 dark:text-rose-300 tracking-wider px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950/60 border border-rose-400/50">04 // PROJECTOR</span>
                 </div>
                 <h3 className="font-technor font-black text-base text-[#0F172A] dark:text-white uppercase tracking-wide">
                   Global Leaderboard & Projector
@@ -416,7 +417,7 @@ export default function LandingPage() {
               <div className="text-[10px] sm:text-[11px] font-mono uppercase text-[#6E6E6E] dark:text-[#94A3B8] font-bold tracking-wider">
                 Judge Engine
               </div>
-              <div className="text-base sm:text-lg font-technor font-black text-emerald-600 dark:text-emerald-400">
+              <div className="text-base sm:text-lg font-technor font-black text-emerald-800 dark:text-emerald-300">
                 Judge0 Sandbox
               </div>
               <div className="text-[10px] font-mono text-[#6E6E6E] dark:text-[#94A3B8]">

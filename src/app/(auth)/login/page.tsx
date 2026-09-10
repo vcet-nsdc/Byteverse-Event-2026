@@ -1,11 +1,22 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Lock, Mail, User, School, AlertTriangle, CheckCircle2 } from "lucide-react";
+import {
+  ArrowRight,
+  Lock,
+  Mail,
+  User,
+  School,
+  AlertTriangle,
+  CheckCircle2,
+  LogOut,
+  Sparkles,
+  Shield,
+} from "lucide-react";
 
 function AuthForm() {
   const router = useRouter();
@@ -22,6 +33,18 @@ function AuthForm() {
   const [isDbOffline, setIsDbOffline] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [currentSession, setCurrentSession] = useState<{
+    user?: { name?: string; email?: string; role?: string };
+  } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/session")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.user?.email) setCurrentSession(data);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (searchParams.get("mode") === "signup") {
@@ -112,7 +135,14 @@ function AuthForm() {
         return;
       }
 
-      if (email.includes("admin") || email.includes("organizer")) {
+      // Verify session role for exact landing destination
+      const sessionRes = await fetch("/api/auth/session");
+      const sessionData = await sessionRes.json();
+      const userRole = sessionData?.user?.role;
+
+      if (userRole === "SUPER_ADMIN") {
+        router.push("/admin/superadmin");
+      } else if (userRole === "ADMIN") {
         router.push("/admin");
       } else {
         router.push("/contest");
@@ -152,10 +182,55 @@ function AuthForm() {
         </p>
       </div>
 
+      {/* Active Session Notification / Quick Sign-Out Switcher */}
+      {currentSession?.user && (
+        <div className="p-4 rounded-2xl border-2 border-[#1E1B4B] bg-white shadow-[4px_4px_0px_0px_#1E1B4B] space-y-2.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-mono font-bold uppercase text-[#6E6E6E]">Active Logged-In User:</span>
+            <span className="text-[10px] font-mono font-black px-2 py-0.5 rounded-full bg-[#7F45DB]/10 text-[#4A2293] border border-[#7F45DB]/30 uppercase">
+              {currentSession.user.role || "USER"}
+            </span>
+          </div>
+          <div className="font-mono text-xs text-[#0F172A]">
+            <span className="font-black text-sm block">{currentSession.user.name || "Signed-in User"}</span>
+            <span className="text-[#6E6E6E] text-[11px]">{currentSession.user.email}</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button
+              type="button"
+              onClick={async () => {
+                await signOut({ redirect: false });
+                setCurrentSession(null);
+                setEmail("");
+                setPassword("");
+                setSuccessMsg("Signed out from previous login. You can now log in as a normal user.");
+              }}
+              className="py-2 px-3 rounded-xl border-2 border-rose-600 bg-rose-50 hover:bg-rose-100 text-rose-700 font-mono font-black text-xs flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_0px_#E11D48] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Log Out</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (currentSession.user?.role === "ADMIN" || currentSession.user?.role === "SUPER_ADMIN") {
+                  router.push("/admin");
+                } else {
+                  router.push("/contest");
+                }
+              }}
+              className="py-2 px-3 rounded-xl border-2 border-[#1E1B4B] bg-[#7F45DB] text-white font-mono font-black text-xs flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_0px_#1E1B4B] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer"
+            >
+              <span>Continue →</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Neo-Brutalist Form Card */}
       <div className="bg-white border-2 border-[#1E1B4B] rounded-2xl p-6 sm:p-8 shadow-[6px_6px_0px_0px_#1E1B4B]">
         {/* Mode Switcher Tabs */}
-        <div className="grid grid-cols-2 gap-2 p-1 bg-[#F1F3FA] rounded-xl border-2 border-[#1E1B4B] mb-6">
+        <div className="grid grid-cols-2 gap-2 p-1 bg-[#F1F3FA] rounded-xl border-2 border-[#1E1B4B] mb-5">
           <button
             type="button"
             onClick={() => {
@@ -231,6 +306,28 @@ function AuthForm() {
           <div className="relative flex justify-center text-[10px] uppercase font-mono font-black text-[#6E6E6E]">
             <span className="bg-white px-3 tracking-widest">or continue with email</span>
           </div>
+        </div>
+
+        {/* Quick Demo Test Autofill for Contestant */}
+        <div className="p-3 rounded-xl bg-[#F8F9FD] border-2 border-[#1E1B4B]/20 space-y-1.5 mb-4">
+          <div className="flex items-center justify-between text-[10px] font-mono uppercase text-[#6E6E6E] font-extrabold">
+            <span>Contestant Demo Account:</span>
+            <span className="text-[#7F45DB]">Normal User</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("signin");
+              setEmail("coder@byteverse.dev");
+              setPassword("coder2026");
+              setError("");
+              setSuccessMsg("Filled test contestant (coder@byteverse.dev). Click Sign In below!");
+            }}
+            className="w-full py-2 px-3 rounded-lg bg-white border-2 border-[#1E1B4B] hover:bg-[#F0F2F8] text-[11px] font-mono font-black text-[#0F172A] transition-all flex items-center justify-center gap-2 shadow-[2px_2px_0px_0px_#1E1B4B] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-[#7F45DB]" />
+            <span>Autofill Contestant (coder@byteverse.dev)</span>
+          </button>
         </div>
 
         {/* Credentials Form */}
@@ -380,6 +477,20 @@ function AuthForm() {
             </button>
           </p>
         )}
+      </div>
+
+      {/* Admin Gateway Cross-Link */}
+      <div className="p-4 rounded-2xl border-2 border-[#1E1B4B] bg-white shadow-[4px_4px_0px_0px_#1E1B4B] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+        <div>
+          <div className="font-bold text-[#0F172A]">Event Staff or Administrator?</div>
+          <div className="text-[#6E6E6E] text-[11px]">Access the Admin &amp; SuperAdmin consoles</div>
+        </div>
+        <Link
+          href="/admin-login"
+          className="px-3.5 py-2 rounded-xl border-2 border-[#1E1B4B] bg-[#7F45DB] text-white font-black text-center shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+        >
+          Staff Login →
+        </Link>
       </div>
     </div>
   );

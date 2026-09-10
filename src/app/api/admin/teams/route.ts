@@ -6,7 +6,7 @@ import { requireRole } from "@/lib/auth";
 // GET /api/admin/teams — list all teams with exact tournament statistics and cheat flags
 export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
+  if (!session?.user?.role || !requireRole("ADMIN", session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
       disqualification: { select: { reason: true, disqualifiedAt: true } },
     },
     orderBy: { name: "asc" },
-  });
+  }).catch(() => []);
 
   const teams = rawTeams.map((t) => {
     let aiChatCount = 0;

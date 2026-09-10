@@ -56,19 +56,23 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  let eventId = req.nextUrl.searchParams.get("eventId");
-  if (!eventId) {
-    const activeEvent = await db.event.findFirst({ orderBy: { createdAt: "desc" } });
-    eventId = activeEvent?.id ?? null;
+  try {
+    let eventId = req.nextUrl.searchParams.get("eventId");
+    if (!eventId) {
+      const activeEvent = await db.event.findFirst({ orderBy: { createdAt: "desc" } }).catch(() => null);
+      eventId = activeEvent?.id ?? null;
+    }
+
+    const announcements = eventId
+      ? await db.announcement.findMany({
+          where: { eventId },
+          orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
+          take: 50,
+        }).catch(() => [])
+      : [];
+
+    return NextResponse.json({ announcements });
+  } catch {
+    return NextResponse.json({ announcements: [] });
   }
-
-  const announcements = eventId
-    ? await db.announcement.findMany({
-        where: { eventId },
-        orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
-        take: 50,
-      })
-    : [];
-
-  return NextResponse.json({ announcements });
 }

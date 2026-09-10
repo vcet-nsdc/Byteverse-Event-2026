@@ -9,6 +9,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   devIndicators: false,
   eslint: {
     ignoreDuringBuilds: true,
@@ -28,6 +29,15 @@ const nextConfig: NextConfig = {
       {
         source: "/:path*",
         headers: securityHeaders,
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      {
+        source: "/superadmin-login",
+        destination: "/admin-login",
+        permanent: false,
       },
     ];
   },

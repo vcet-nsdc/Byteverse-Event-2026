@@ -130,7 +130,7 @@ export default function HomeActiveContest() {
 
             <div className="p-3.5 rounded-xl bg-[#F8F9FD] dark:bg-[#1A2035] border-2 border-[#1E1B4B] dark:border-[#382F60]">
               <span className="text-[10px] font-mono font-bold text-[#6E6E6E] dark:text-[#94A3B8] uppercase block">Format</span>
-              <div className="text-lg font-mono font-black text-emerald-600 dark:text-emerald-400 mt-0.5">
+              <div className="text-lg font-mono font-black text-emerald-800 dark:text-emerald-300 mt-0.5">
                 Standard ICPC
               </div>
             </div>

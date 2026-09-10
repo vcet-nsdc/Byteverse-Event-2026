@@ -5,19 +5,19 @@ async function seedPlatformUpgrade() {
   console.log("Seeding Platform Upgrade data...");
 
   // 1. Seed the Two Admin Accounts requested by the user
-  const eventAdminHash = await bcrypt.hash("events2026", 12);
-  const eventAdmin = await db.user.upsert({
-    where: { email: "events@byteverse.dev" },
-    update: { passwordHash: eventAdminHash, role: "ORGANIZER" },
+  const adminHash = await bcrypt.hash("admin2026", 12);
+  const admin = await db.user.upsert({
+    where: { email: "admin@byteverse.dev" },
+    update: { passwordHash: adminHash, role: "ADMIN" },
     create: {
-      email: "events@byteverse.dev",
-      name: "Event Lead",
-      college: "NSDC Events & Competitions",
-      passwordHash: eventAdminHash,
-      role: "ORGANIZER",
+      email: "admin@byteverse.dev",
+      name: "ByteVerse Admin",
+      college: "NSDC Technical University",
+      passwordHash: adminHash,
+      role: "ADMIN",
     },
   });
-  console.log("Seeded Event Admin:", eventAdmin.email);
+  console.log("Seeded Admin:", admin.email);
 
   const superAdminHash = await bcrypt.hash("superadmin2026", 12);
   const superAdmin = await db.user.upsert({
@@ -421,7 +421,7 @@ async function seedPlatformUpgrade() {
     data: [
       {
         discussionId: disc1.id,
-        authorId: eventAdmin.id,
+        authorId: admin.id,
         content: "Great breakdown! In competitive environments with 10^5 elements, the hash map constant factor in C++ (unordered_map) can sometimes be targeted by anti-hash collision tests. Reserving buckets or using gp_hash_table is recommended for C++.",
       },
     ],
@@ -435,7 +435,7 @@ async function seedPlatformUpgrade() {
       id: "disc-judge0-fast-io",
       title: "Essential Fast I/O snippets for C++, Java, and Python on ByteVerse Judge0",
       content: "Judge0 enforces strict 2.0-second CPU limits. Here are recommended templates:\n\n**C++**:\n```cpp\nios_base::sync_with_stdio(false);\ncin.tie(NULL);\n```\n\n**Java**:\nUse `BufferedReader` and `StringTokenizer` instead of `java.util.Scanner`.\n\n**Python**:\nUse `sys.stdin.read().split()` to read all tokens at once.",
-      authorId: eventAdmin.id,
+      authorId: admin.id,
       tags: ["Tips", "FastIO", "Judge0"],
       upvotes: 38,
       views: 290,
