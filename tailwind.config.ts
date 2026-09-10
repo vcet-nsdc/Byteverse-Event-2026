@@ -47,6 +47,7 @@ const config: Config = {
         sans: ["'Manrope'", "system-ui", "sans-serif"],
         dosis: ["'Dosis'", "sans-serif"],
         display: ["'Syne'", "'Dosis'", "sans-serif"],
+        technor: ["'Technor'", "'Syne'", "sans-serif"],
         mono: ["'JetBrains Mono'", "monospace"],
       },
     },

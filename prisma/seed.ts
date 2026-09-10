@@ -65,11 +65,19 @@ async function main() {
   ];
 
   for (const r of rounds) {
-    await db.round.upsert({
-      where: { eventId_sequence: { eventId: activeEvent.id, sequence: r.sequence } },
-      update: { name: r.name, durationMin: r.durationMin },
-      create: { ...r, eventId: activeEvent.id },
+    const existing = await db.round.findFirst({
+      where: { eventId: activeEvent.id, sequence: r.sequence },
     });
+    if (existing) {
+      await db.round.update({
+        where: { id: existing.id },
+        data: { name: r.name, durationMin: r.durationMin },
+      });
+    } else {
+      await db.round.create({
+        data: { ...r, eventId: activeEvent.id },
+      });
+    }
   }
   console.log("✅ 5 Active Event Rounds seeded successfully.");
 
@@ -107,17 +115,25 @@ async function main() {
         DSA: "TYPE_TRANSFORM",
         CHALLENGE: "HUMAN_VS_MACHINE",
       };
-      await db.round.upsert({
-        where: { eventId_sequence: { eventId: pastEventRecord.id, sequence: rs.round } },
-        update: { name: rs.name },
-        create: {
-          eventId: pastEventRecord.id,
-          sequence: rs.round,
-          name: rs.name,
-          type: typeMap[rs.type] || "TRADITIONAL",
-          maxScore: rs.points,
-        },
+      const existingRound = await db.round.findFirst({
+        where: { eventId: pastEventRecord.id, sequence: rs.round },
       });
+      if (existingRound) {
+        await db.round.update({
+          where: { id: existingRound.id },
+          data: { name: rs.name },
+        });
+      } else {
+        await db.round.create({
+          data: {
+            eventId: pastEventRecord.id,
+            sequence: rs.round,
+            name: rs.name,
+            type: typeMap[rs.type] || "TRADITIONAL",
+            maxScore: rs.points,
+          },
+        });
+      }
     }
     console.log(`✅ Past Event seeded: ${pe.title} (${pe.stats.registeredTeams} teams, ${pe.stats.collegesParticipated} colleges)`);
   }

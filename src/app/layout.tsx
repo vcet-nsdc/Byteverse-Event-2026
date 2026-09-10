@@ -112,6 +112,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://api.fontshare.com" />
+        <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=technor@400,500,600,700,800,900&display=swap" />
         <link rel="icon" type="image/png" href="/favicon.png?v=3" />
         <link rel="shortcut icon" href="/favicon.ico?v=3" />
         <link rel="apple-touch-icon" href="/assets/byteverse-logo.png?v=3" />
