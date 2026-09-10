@@ -50,6 +50,9 @@ export default function EventHubPage() {
             ongoing: data.ongoing || [],
             past: data.past || [],
           });
+          if ((!data.ongoing || data.ongoing.length === 0) && data.past?.length > 0) {
+            setActiveTab("past");
+          }
         }
       } catch {
         // ignore
@@ -161,7 +164,7 @@ export default function EventHubPage() {
                       {startDate && (
                         <div className="flex items-center gap-1.5">
                           <Calendar className="w-4 h-4 text-[#7F45DB] dark:text-[#A472F7]" />
-                          <span>{startDate.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}</span>
+                          <span>{startDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                         </div>
                       )}
 

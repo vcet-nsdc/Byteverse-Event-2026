@@ -34,6 +34,25 @@ function formatDifficulty(diff?: string | null): string {
   return "Easy";
 }
 
+// In-memory registry of disqualified participants / sessions (survives offline DB)
+const globalDisqualified = ((globalThis as any).__bv_disqualified_participants =
+  (globalThis as any).__bv_disqualified_participants || new Set<string>());
+
+export function recordDisqualifiedParticipant(idOrEmailOrKey: string) {
+  if (idOrEmailOrKey) {
+    globalDisqualified.add(idOrEmailOrKey.toLowerCase().trim());
+  }
+}
+
+export function isParticipantDisqualified(idOrEmailOrKey?: string | null): boolean {
+  if (!idOrEmailOrKey) return false;
+  return globalDisqualified.has(idOrEmailOrKey.toLowerCase().trim());
+}
+
+export function getDisqualifiedParticipantsList(): string[] {
+  return Array.from(globalDisqualified);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. PROBLEMS DATA PROVIDER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -233,9 +252,10 @@ export async function getPlatformProblemById(id: string, userId?: string | null)
 
   // Fallback to Master Seed
   const seed = getMasterSeedData();
-  const allProblems = [
+  const allProblems: any[] = [
     ...(seed?.practiceProblems || []),
-    ...(seed?.contests?.flatMap((c: any) => c.problems) || []),
+    ...(seed?.contests?.flatMap((c: any) => c.problems || c.rounds?.flatMap((r: any) => r.problems) || []) || []),
+    ...(seed?.events?.pastEvents?.flatMap((e: any) => e.problems || e.rounds?.flatMap((r: any) => r.problems) || []) || []),
   ];
 
   const matched = allProblems.find((p: any) => 
@@ -261,9 +281,38 @@ export async function getPlatformProblemById(id: string, userId?: string | null)
   let outputFormatText = matched.outputFormat || "";
 
   if (matched.description) {
-    statementText = matched.description.context || "";
-    constraintsText = (matched.description.constraints || []).join("\n");
+    statementText = matched.description.context || statementText;
+    if (!constraintsText && matched.description.constraints) {
+      constraintsText = Array.isArray(matched.description.constraints)
+        ? matched.description.constraints.join("\n")
+        : String(matched.description.constraints);
+    }
   }
+
+  // If inputFormat / outputFormat are embedded inside statementText with markdown headers, extract them cleanly
+  if (statementText.includes("### Input Format")) {
+    const parts = statementText.split("### Input Format");
+    statementText = parts[0].trim();
+    const rest = parts[1] || "";
+    if (rest.includes("### Output Format")) {
+      const subParts = rest.split("### Output Format");
+      if (!inputFormatText) inputFormatText = subParts[0].trim();
+      if (!outputFormatText) outputFormatText = subParts[1].trim();
+    } else {
+      if (!inputFormatText) inputFormatText = rest.trim();
+    }
+  }
+
+  const sampleInput =
+    sampleTestCases[0]?.input ||
+    matched.description?.examples?.[0]?.input ||
+    matched.sampleInput ||
+    "";
+  const sampleOutput =
+    sampleTestCases[0]?.expected ||
+    matched.description?.examples?.[0]?.output ||
+    matched.sampleOutput ||
+    "";
 
   return {
     id: matched.id,
@@ -272,8 +321,8 @@ export async function getPlatformProblemById(id: string, userId?: string | null)
     inputFormat: inputFormatText,
     outputFormat: outputFormatText,
     constraints: constraintsText,
-    sampleInput: sampleTestCases[0]?.input || "",
-    sampleOutput: sampleTestCases[0]?.expected || "",
+    sampleInput,
+    sampleOutput,
     difficulty: formatDifficulty(matched.difficulty),
     tags: matched.tags || ["Algorithmic"],
     timeLimitMs: matched.timeLimitMs || 2000,
@@ -283,6 +332,7 @@ export async function getPlatformProblemById(id: string, userId?: string | null)
     sampleTestCases,
     totalTestCasesCount: matched.testCases?.length || sampleTestCases.length,
     isSolved: false,
+    readOnly: Boolean(matched.readOnly),
     userSubmissions: [],
     examples: matched.description?.examples || [],
     hints: matched.description?.hints || [],
@@ -349,9 +399,9 @@ export async function getPlatformContests(userId?: string | null) {
   const seed = getMasterSeedData();
   const rawContests = seed?.contests || [];
 
-  // Dynamic live window for Contest 1: starts 45 minutes ago, ends in 2 hours 15 mins (ACTIVE right now)
-  const dynamicActiveStart = new Date(Date.now() - 45 * 60 * 1000).toISOString();
-  const dynamicActiveEnd = new Date(Date.now() + 135 * 60 * 1000).toISOString();
+  // Dynamic live window for Contest 1: starts now, ends in 90 mins (ACTIVE right now, 1h 30m total)
+  const dynamicActiveStart = new Date(Date.now()).toISOString();
+  const dynamicActiveEnd = new Date(Date.now() + 90 * 60 * 1000).toISOString();
 
   const formatted = rawContests.map((c: any, index: number) => {
     let startsAt = c.startsAt;
@@ -359,7 +409,7 @@ export async function getPlatformContests(userId?: string | null) {
     let status = c.status;
 
     if (index === 0) {
-      // First contest is actively LIVE
+      // First contest is actively LIVE with a 90-minute duration
       startsAt = dynamicActiveStart;
       endsAt = dynamicActiveEnd;
       status = "ACTIVE";
@@ -375,8 +425,9 @@ export async function getPlatformContests(userId?: string | null) {
       startsAt,
       endsAt,
       bannerUrl: c.bannerUrl,
-      problemCount: c.problems?.length || 3,
+      problemCount: c.problems?.length || c.rounds?.reduce((acc: number, r: any) => acc + (r.problems?.length || 0), 0) || 25,
       participantCount: 84 + index * 24,
+      rounds: c.rounds || [],
       isRegistered: true,
       userScore: null,
       userRank: null,
@@ -387,7 +438,7 @@ export async function getPlatformContests(userId?: string | null) {
     all: formatted,
     active: formatted.filter((c: any) => c.status === "ACTIVE"),
     weekly: formatted.filter((c: any) => c.type === "WEEKLY" || c.type === "BIWEEKLY"),
-    past: formatted.filter((c: any) => c.status === "ENDED"),
+    past: formatted.filter((c: any) => c.status === "ENDED" || c.status === "COMPLETED"),
   };
 }
 
@@ -457,8 +508,8 @@ export async function getPlatformContestById(id: string, userId?: string | null)
 
   if (!rawContest) return null;
 
-  const dynamicActiveStart = new Date(Date.now() - 45 * 60 * 1000).toISOString();
-  const dynamicActiveEnd = new Date(Date.now() + 135 * 60 * 1000).toISOString();
+  const dynamicActiveStart = new Date(Date.now()).toISOString();
+  const dynamicActiveEnd = new Date(Date.now() + 90 * 60 * 1000).toISOString();
 
   const isFirst = rawContest.id === "contest_weekly_sprint_01";
   const startsAt = isFirst ? dynamicActiveStart : rawContest.startsAt;
@@ -481,15 +532,17 @@ export async function getPlatformContestById(id: string, userId?: string | null)
     startsAt,
     endsAt,
     bannerUrl: rawContest.bannerUrl,
-    problemCount: rawContest.problems?.length || 3,
+    problemCount: (rawContest.problems || []).length || (rawContest.rounds || []).reduce((acc: number, r: any) => acc + (r.problems?.length || 0), 0) || 25,
     participantCount: 84,
-    problems: (rawContest.problems || []).map((p: any) => ({
+    rounds: rawContest.rounds || [],
+    problems: (rawContest.problems || rawContest.rounds?.flatMap((r: any) => r.problems) || []).map((p: any) => ({
       id: p.id,
       title: p.title,
       difficulty: p.difficulty,
-      tags: [p.difficulty, "Competitive"],
-      timeLimitMs: p.timeLimitMs,
-      memoryLimitMb: p.memoryLimitMb,
+      tags: p.tags || [p.difficulty, "Competitive"],
+      timeLimitMs: p.timeLimitMs || 2000,
+      memoryLimitMb: p.memoryLimitMb || 256,
+      readOnly: Boolean(p.readOnly || status === "COMPLETED"),
     })),
     isRegistered: true,
     userScore: null,
@@ -549,6 +602,7 @@ export async function getPlatformEvents() {
   // Fallback to Master Seed Data
   const seed = getMasterSeedData();
   const pastEventsRaw = seed?.events?.pastEvents || [];
+  const activeEventsRaw = seed?.events?.activeEvents || [];
 
   const pastFormatted = pastEventsRaw.map((pe: any) => ({
     id: pe.id,
@@ -562,46 +616,39 @@ export async function getPlatformEvents() {
     registrationOpen: false,
     teamRegistrationOpen: false,
     isActive: false,
-    rounds: pe.roundsSummary.map((r: any) => ({
-      id: `round_${r.round}`,
+    rounds: (pe.rounds || pe.roundsSummary || []).map((r: any) => ({
+      id: r.id || `round_${r.round}`,
       name: r.name,
       type: r.type,
-      sequence: r.round,
-      durationMin: 35,
+      sequence: r.round || r.sequence || 1,
+      durationMin: r.durationMin || 35,
       status: "COMPLETED",
+      problems: r.problems || [],
     })),
     contests: [],
     teamCount: pe.stats?.registeredTeams || 142,
   }));
 
-  const activeEvent = {
-    id: "event_byteverse_2026",
-    name: "ByteVerse 2026 Grand Championship",
-    description: "The flagship annual collegiate programming championship. 5 progressive elimination rounds featuring AI Code Optimization, Algorithmic Speed Duels, and the Human vs Machine Finale.",
-    bannerUrl: "https://assets.byteverse.dev/events/byteverse-2026-banner.png",
-    venue: "Auditorium & Distributed Hack Labs",
-    category: "Championship",
-    startsAt: new Date(Date.now() - 3600000).toISOString(),
-    endsAt: new Date(Date.now() + 86400000).toISOString(),
-    registrationOpen: true,
-    teamRegistrationOpen: true,
+  const activeFormatted = activeEventsRaw.map((ae: any) => ({
+    id: ae.id,
+    name: ae.title || ae.name,
+    description: ae.description,
+    bannerUrl: ae.bannerUrl,
+    venue: ae.venue || "Campus Auditorium & Hack Labs",
+    category: ae.category || "Championship",
+    startsAt: ae.startDate || ae.startsAt,
+    endsAt: ae.endDate || ae.endsAt,
+    registrationOpen: Boolean(ae.registrationOpen),
+    teamRegistrationOpen: Boolean(ae.teamRegistrationOpen),
     isActive: true,
-    rounds: [
-      { id: "r1", name: "Logical Thinking & MCQ", type: "CODE_LOGIC", sequence: 1, durationMin: 20, status: "ACTIVE" },
-      { id: "r2", name: "AI Code Optimization", type: "AI_REPAIR", sequence: 2, durationMin: 25, status: "SCHEDULED" },
-      { id: "r3", name: "Debugging & Code Analysis", type: "TRADITIONAL", sequence: 3, durationMin: 35, status: "SCHEDULED" },
-      { id: "r4", name: "Data Structures & Algorithms", type: "TYPE_TRANSFORM", sequence: 4, durationMin: 45, status: "SCHEDULED" },
-      { id: "r5", name: "AI vs Human Duel", type: "HUMAN_VS_MACHINE", sequence: 5, durationMin: 35, status: "SCHEDULED" },
-    ],
-    contests: [
-      { id: "contest_weekly_sprint_01", title: "ByteVerse Weekly Sprint #01", status: "ACTIVE" },
-    ],
-    teamCount: 68,
-  };
+    rounds: ae.rounds || [],
+    contests: ae.contests || [],
+    teamCount: ae.teamCount || 0,
+  }));
 
   return {
-    all: [activeEvent, ...pastFormatted],
-    ongoing: [activeEvent],
+    all: [...activeFormatted, ...pastFormatted],
+    ongoing: activeFormatted,
     past: pastFormatted,
   };
 }

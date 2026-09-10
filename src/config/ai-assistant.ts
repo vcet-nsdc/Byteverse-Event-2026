@@ -1,5 +1,5 @@
 /**
- * ByteVerse / ByteClash In-Editor AI Socratic Assistant Configuration
+ * ByteVerse / ByteVerse In-Editor AI Socratic Assistant Configuration
  * Production-grade behavioral contract and system prompt specification.
  */
 

@@ -873,7 +873,7 @@ export default function RoundWorkspacePage() {
                   All 5 Rounds Completed · Tournament Finished
                 </div>
                 <h1 className="font-display font-black text-3xl sm:text-4xl text-[#0F172A] tracking-tight uppercase">
-                  ByteClash 2026 Concluded!
+                  ByteVerse 2026 Concluded!
                 </h1>
                 <p className="text-xs sm:text-sm text-[#475569] font-mono leading-relaxed max-w-lg mx-auto">
                   Congratulations! You have completed all 5 tournament rounds. Fullscreen lock and Anti-Cheat restrictions have been disengaged.
@@ -905,7 +905,7 @@ export default function RoundWorkspacePage() {
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Submissions Closed & Under Evaluation
                 </div>
                 <p className="text-xs text-[#334155] font-medium leading-relaxed pt-1">
-                  Thank you for competing in ByteClash 2026! Official scores, final tournament standings, and award winners will be announced by the organizers during the closing ceremony.
+                  Thank you for competing in ByteVerse 2026! Official scores, final tournament standings, and award winners will be announced by the organizers during the closing ceremony.
                 </p>
               </div>
 

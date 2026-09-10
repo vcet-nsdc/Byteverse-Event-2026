@@ -102,7 +102,7 @@ export default function ProfilePage() {
           href="/login"
           className="px-6 py-3.5 text-xs font-mono font-black uppercase tracking-wider bg-[#7F45DB] hover:bg-[#6D35C7] text-white rounded-xl border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_#1E1B4B] transition-all flex items-center justify-center gap-2"
         >
-          <span>Sign In to ByteClash</span>
+          <span>Sign In to ByteVerse</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
       </main>
@@ -200,7 +200,7 @@ export default function ProfilePage() {
                 </span>
               </div>
               <p className="text-xs font-mono text-[#6E6E6E] dark:text-[#94A3B8]">
-                Aggregated from official ByteClash tournament rounds & duels
+                Aggregated from official ByteVerse tournament rounds & duels
               </p>
             </div>
 

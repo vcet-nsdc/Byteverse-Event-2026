@@ -106,8 +106,8 @@ async function seedPlatformUpgrade() {
     where: { id: "weekly-contest-101" },
     update: {
       status: "ACTIVE",
-      startsAt: new Date(Date.now() - 45 * 60 * 1000),
-      endsAt: new Date(Date.now() + 75 * 60 * 1000), // 75 mins remaining
+      startsAt: new Date(Date.now()),
+      endsAt: new Date(Date.now() + 90 * 60 * 1000), // 90 mins remaining
     },
     create: {
       id: "weekly-contest-101",
@@ -116,8 +116,8 @@ async function seedPlatformUpgrade() {
       type: "WEEKLY",
       status: "ACTIVE",
       difficulty: "Medium",
-      startsAt: new Date(Date.now() - 45 * 60 * 1000),
-      endsAt: new Date(Date.now() + 75 * 60 * 1000),
+      startsAt: new Date(Date.now()),
+      endsAt: new Date(Date.now() + 90 * 60 * 1000),
       eventId: mainEvent.id,
     },
   });

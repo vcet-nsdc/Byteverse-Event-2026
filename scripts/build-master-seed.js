@@ -16,11 +16,11 @@ const events = {
     {
       id: "event_byteverse_2025",
       slug: "byteverse-2025",
-      title: "ByteVerse 2025 Annual Coding Fest",
+      title: "ByteVerse 2026 Annual Coding Fest",
       bannerUrl: "https://assets.byteverse.dev/events/byteverse-2025-banner.png",
       status: "COMPLETED",
-      startDate: "2025-03-15T09:00:00Z",
-      endDate: "2025-03-15T18:00:00Z",
+      startDate: "2026-09-03T09:00:00Z",
+      endDate: "2026-09-03T18:00:00Z",
       description: "The flagship inter-college programming contest featuring 5 progressive rounds: Logical MCQ, AI Code Optimization, Code Debugging, DSA Deep Dive, and the AI vs Human Challenge.",
       stats: {
         registeredTeams: 142,

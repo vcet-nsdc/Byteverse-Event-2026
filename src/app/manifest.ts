@@ -2,8 +2,8 @@ import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "NSDC ByteClash 2026",
-    short_name: "ByteClash",
+    name: "NSDC ByteVerse 2026",
+    short_name: "ByteVerse",
     description: "Premier Collegiate Competitive Programming Platform & Arena by NSDC",
     start_url: "/",
     display: "standalone",
@@ -11,7 +11,7 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#7F45DB",
     icons: [
       {
-        src: "/assets/byteclash-logo.png",
+        src: "/assets/byteverse-logo.png",
         sizes: "any",
         type: "image/png",
       },

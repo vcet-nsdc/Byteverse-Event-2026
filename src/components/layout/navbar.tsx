@@ -65,13 +65,14 @@ export default function Navbar() {
     setUserDropdownOpen(false);
   }, [pathname]);
 
-  // Hide Navbar in the full-screen tournament rounds workspace
-  if (pathname.startsWith("/rounds/")) {
-    return null;
-  }
-
-  // Admin layouts already have AdminNavbar
-  if (pathname.startsWith("/admin")) {
+  // Hide Navbar in the full-screen tournament rounds workspace, contest arena, and admin portals
+  if (
+    pathname.startsWith("/rounds/") ||
+    pathname.startsWith("/admin") ||
+    pathname === "/admin-login" ||
+    pathname === "/superadmin-login" ||
+    (pathname.startsWith("/contest/") && pathname.includes("/arena/"))
+  ) {
     return null;
   }
 
@@ -86,11 +87,11 @@ export default function Navbar() {
             <Link href="/" className="flex items-center gap-2 group shrink-0">
               <div className="relative h-11 w-auto flex items-center">
                 <Image
-                  src="/assets/byteclash-logo.png"
-                  alt="ByteClash Logo"
+                  src="/assets/byteverse-logo.png?v=3"
+                  alt="ByteVerse Logo"
                   width={150}
                   height={50}
-                  className="h-10 sm:h-11 w-auto object-contain drop-shadow-sm group-hover:scale-105 group-hover:-translate-y-0.5 transition-all duration-200"
+                  className="h-10 sm:h-11 w-auto object-contain drop-shadow-sm dark:drop-shadow-[0_0_10px_rgba(164,114,247,0.35)] group-hover:scale-105 group-hover:-translate-y-0.5 transition-all duration-200"
                   priority
                 />
               </div>

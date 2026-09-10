@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Practice Problems & Algorithmic Library",
   description:
-    "Explore curated coding challenges on NSDC ByteClash. Practice data structures, dynamic programming, and logic puzzles in Python, C++, Java, and C.",
+    "Explore curated coding challenges on NSDC ByteVerse. Practice data structures, dynamic programming, and logic puzzles in Python, C++, Java, and C.",
   keywords: [
-    "NSDC ByteClash practice",
+    "NSDC ByteVerse practice",
     "coding problems",
     "algorithm practice",
     "data structures",
@@ -16,8 +16,8 @@ export const metadata: Metadata = {
     canonical: "/practice",
   },
   openGraph: {
-    title: "Practice Problems & Online Judge | NSDC ByteClash",
-    description: "Sharpen your algorithmic problem solving with curated problems on NSDC ByteClash.",
+    title: "Practice Problems & Online Judge | NSDC ByteVerse",
+    description: "Sharpen your algorithmic problem solving with curated problems on NSDC ByteVerse.",
   },
 };
 

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "user_admin_root",
+    "email": "admin@byteverse.dev",
+    "name": "ByteVerse Admin",
+    "passwordHash": "$2a$10$AFTXgYAArJ.u2WHk7/VIUumHurMxN/LllR628wpKCjsMj.03cjCaO",
+    "role": "SUPER_ADMIN",
+    "college": "NSDC Technical University",
+    "createdAt": "2026-09-10T09:49:31.110Z"
+  },
+  {
+    "id": "user_organizer_head",
+    "email": "organizer@byteverse.dev",
+    "name": "Lead Event Organizer",
+    "passwordHash": "$2a$10$AFTXgYAArJ.u2WHk7/VIUumHurMxN/LllR628wpKCjsMj.03cjCaO",
+    "role": "ORGANIZER",
+    "college": "NSDC Technical University",
+    "createdAt": "2026-09-10T09:49:31.110Z"
+  },
+  {
+    "id": "user_participant_coder",
+    "email": "coder@byteverse.dev",
+    "name": "Aryan Sharma",
+    "passwordHash": "$2a$10$tZHps60OMeJ0nnnTPG4KueT7fJJSaU7Vp3vb4jLlR0OQmLvj8c5z.",
+    "role": "PARTICIPANT",
+    "college": "NSDC Engineering Institute",
+    "createdAt": "2026-09-10T09:49:31.110Z"
+  },
+  {
+    "id": "user_1789033771191_h7wtn",
+    "email": "student_1789033769685@byteverse.dev",
+    "name": "Rohan Verma",
+    "passwordHash": "$2a$10$bxKi9swUk3Iq0ec3EjEDue.n07HWiMtcTfirXWp2PSL8de/QO8ntG",
+    "role": "PARTICIPANT",
+    "college": "NSDC Engineering",
+    "createdAt": "2026-09-10T09:49:31.191Z"
+  }
+]

@@ -9,7 +9,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   // Strict Authentication Guard: Only authenticated ADMIN / ORGANIZER can access any /admin page
   if (!session?.user?.id || !session.user.role || !requireRole("ORGANIZER", session.user.role)) {
-    redirect("/login?callbackUrl=/admin");
+    redirect("/admin-login?callbackUrl=/admin");
   }
 
   const userRole = session.user.role;

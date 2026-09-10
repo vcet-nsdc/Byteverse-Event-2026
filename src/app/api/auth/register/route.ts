@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { ensureInitialized, getFallbackUserByEmail, addFallbackUser } from "@/lib/user-store";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 const schema = z.object({
@@ -41,31 +42,57 @@ export async function POST(req: NextRequest) {
   }
 
   const { name, email, password, college } = parsed.data;
+  const normEmail = email.trim().toLowerCase();
 
-  const existing = await db.user.findUnique({ where: { email } });
-  if (existing)
-    return NextResponse.json(
-      { error: "Email already registered" },
-      { status: 409 },
-    );
+  await ensureInitialized();
 
-  const passwordHash = await bcrypt.hash(password, 12);
+  // 1. Check for existing account in PostgreSQL or local fallback store
+  try {
+    const existing = await db.user.findUnique({ where: { email: normEmail } });
+    if (existing) {
+      return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+    }
+  } catch {
+    // Database offline, check local fallback store
+  }
 
-  const user = await db.user.create({
-    data: {
-      name,
-      email,
-      passwordHash,
-      college: college ?? "NSDC College",
-      role: "PARTICIPANT",
-    },
+  const existingFallback = getFallbackUserByEmail(normEmail);
+  if (existingFallback) {
+    return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  // 2. Persist to local fallback store first (guarantees offline availability)
+  const fallbackUser = addFallbackUser({
+    name,
+    email: normEmail,
+    passwordHash,
+    college: college ?? "NSDC Technical Institute",
+    role: "PARTICIPANT",
   });
+
+  // 3. Also sync to PostgreSQL if database is reachable
+  try {
+    await db.user.create({
+      data: {
+        id: fallbackUser.id,
+        name,
+        email: normEmail,
+        passwordHash,
+        college: college ?? "NSDC Technical Institute",
+        role: "PARTICIPANT",
+      },
+    });
+  } catch {
+    // Gracefully ignore database connection errors when running in offline/Docker-less mode
+  }
 
   return NextResponse.json(
     {
-      id: user.id,
-      name: user.name,
-      email: user.email,
+      id: fallbackUser.id,
+      name: fallbackUser.name,
+      email: fallbackUser.email,
     },
     { status: 201 },
   );

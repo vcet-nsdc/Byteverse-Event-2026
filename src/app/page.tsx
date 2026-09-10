@@ -7,44 +7,48 @@ import HomeLanguageStats from "@/components/home/HomeLanguageStats";
 export default function LandingPage() {
   return (
     <main className="min-h-screen flex flex-col items-center relative overflow-hidden bg-transparent text-[#0F172A] dark:text-[#F8FAFC] px-4 py-8 md:py-12 font-sans transition-colors duration-500">
-      {/* Floating Language Badges — Java, C, C++, Python */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-24 left-[6%] opacity-70 hover:opacity-100 transition-opacity animate-float">
-          <div className="w-16 h-16 rounded-2xl bg-white dark:bg-[#111726] border-2 border-[#1E1B4B] dark:border-[#7F45DB] shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#7F45DB] flex items-center justify-center font-mono font-black text-base text-[#7F45DB] dark:text-[#A472F7]">
+      {/* Floating Language Badges — Java, C, C++, Python (visible on mobile, tablet & desktop) */}
+      <div className="block absolute inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Java Badge */}
+        <div className="absolute top-12 sm:top-20 lg:top-24 left-1.5 sm:left-3 lg:left-[5%] opacity-85 hover:opacity-100 transition-opacity animate-float">
+          <div className="w-10 h-10 sm:w-13 sm:h-13 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl bg-white dark:bg-[#111726] border-2 border-[#1E1B4B] dark:border-[#7F45DB] shadow-[2px_2px_0px_0px_#1E1B4B] sm:shadow-[3px_3px_0px_0px_#1E1B4B] lg:shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#7F45DB] dark:sm:shadow-[3px_3px_0px_0px_#7F45DB] dark:lg:shadow-[4px_4px_0px_0px_#7F45DB] flex items-center justify-center font-mono font-black text-[11px] sm:text-xs lg:text-base text-[#7F45DB] dark:text-[#A472F7]">
             Java
           </div>
         </div>
 
-        <div className="absolute top-32 right-[8%] opacity-70 hover:opacity-100 transition-opacity animate-float" style={{ animationDelay: "1.5s" }}>
-          <div className="w-14 h-14 rounded-2xl bg-white dark:bg-[#111726] border-2 border-[#1E1B4B] dark:border-[#7F45DB] shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#7F45DB] flex items-center justify-center font-mono font-black text-base text-[#4A2293] dark:text-[#C084FC]">
+        {/* C Badge */}
+        <div className="absolute top-20 sm:top-28 lg:top-32 right-1.5 sm:right-3 lg:right-[6%] opacity-85 hover:opacity-100 transition-opacity animate-float" style={{ animationDelay: "1.5s" }}>
+          <div className="w-9 h-9 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-xl sm:rounded-2xl bg-white dark:bg-[#111726] border-2 border-[#1E1B4B] dark:border-[#7F45DB] shadow-[2px_2px_0px_0px_#1E1B4B] sm:shadow-[3px_3px_0px_0px_#1E1B4B] lg:shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#7F45DB] dark:sm:shadow-[3px_3px_0px_0px_#7F45DB] dark:lg:shadow-[4px_4px_0px_0px_#7F45DB] flex items-center justify-center font-mono font-black text-[11px] sm:text-xs lg:text-base text-[#4A2293] dark:text-[#C084FC]">
             C
           </div>
         </div>
 
-        <div className="absolute bottom-36 left-[8%] opacity-70 hover:opacity-100 transition-opacity animate-float" style={{ animationDelay: "3s" }}>
-          <div className="w-16 h-16 rounded-2xl bg-white dark:bg-[#111726] border-2 border-[#1E1B4B] dark:border-[#7F45DB] shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#7F45DB] flex items-center justify-center font-mono font-black text-base text-[#7F45DB] dark:text-[#A472F7]">
+        {/* C++ Badge */}
+        <div className="absolute bottom-24 sm:bottom-32 lg:bottom-36 left-1.5 sm:left-3 lg:left-[6%] opacity-85 hover:opacity-100 transition-opacity animate-float" style={{ animationDelay: "3s" }}>
+          <div className="w-10 h-10 sm:w-13 sm:h-13 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl bg-white dark:bg-[#111726] border-2 border-[#1E1B4B] dark:border-[#7F45DB] shadow-[2px_2px_0px_0px_#1E1B4B] sm:shadow-[3px_3px_0px_0px_#1E1B4B] lg:shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#7F45DB] dark:sm:shadow-[3px_3px_0px_0px_#7F45DB] dark:lg:shadow-[4px_4px_0px_0px_#7F45DB] flex items-center justify-center font-mono font-black text-[11px] sm:text-xs lg:text-base text-[#7F45DB] dark:text-[#A472F7]">
             C++
           </div>
         </div>
 
-        <div className="absolute bottom-44 right-[10%] opacity-70 hover:opacity-100 transition-opacity animate-float" style={{ animationDelay: "2s" }}>
-          <div className="w-16 h-16 rounded-2xl bg-white dark:bg-[#111726] border-2 border-[#1E1B4B] dark:border-[#7F45DB] shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#7F45DB] flex items-center justify-center font-mono font-black text-base text-[#4A2293] dark:text-[#C084FC]">
+        {/* Python Badge */}
+        <div className="absolute bottom-32 sm:bottom-40 lg:bottom-44 right-1.5 sm:right-3 lg:right-[8%] opacity-85 hover:opacity-100 transition-opacity animate-float" style={{ animationDelay: "2s" }}>
+          <div className="w-10 h-10 sm:w-13 sm:h-13 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl bg-white dark:bg-[#111726] border-2 border-[#1E1B4B] dark:border-[#7F45DB] shadow-[2px_2px_0px_0px_#1E1B4B] sm:shadow-[3px_3px_0px_0px_#1E1B4B] lg:shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#7F45DB] dark:sm:shadow-[3px_3px_0px_0px_#7F45DB] dark:lg:shadow-[4px_4px_0px_0px_#7F45DB] flex items-center justify-center font-mono font-black text-[10px] sm:text-xs lg:text-base text-[#4A2293] dark:text-[#C084FC]">
             Python
           </div>
         </div>
       </div>
 
       {/* Main Content Layout */}
-      <div className="relative z-10 text-center max-w-5xl mx-auto space-y-10 w-full">
+      <div className="relative z-10 text-center max-w-5xl mx-auto space-y-8 sm:space-y-10 w-full">
 
-        {/* Primary SEO Heading targeting 'NSDC ByteClash' */}
+        {/* Primary SEO Heading targeting 'NSDC ByteVerse' */}
         <h1 className="sr-only">
-          NSDC ByteClash 2026 — Premier Collegiate Competitive Programming Platform & Online Judge
+          NSDC ByteVerse 2026 — Premier Collegiate Competitive Programming Platform & Online Judge
         </h1>
 
         {/* 1. Large NSDC Committee Logo on High-Contrast Dark Card */}
-        <div className="flex flex-col items-center justify-center gap-3">
-          <div className="relative w-64 sm:w-72 md:w-80 h-[85px] sm:h-[100px] md:h-[115px] rounded-2xl bg-[#0F172A] border-3 border-[#1E1B4B] dark:border-[#7F45DB] shadow-[6px_6px_0px_0px_#1E1B4B] dark:shadow-[6px_6px_0px_0px_#7F45DB] px-5 py-3 flex items-center justify-center hover:translate-x-0.5 hover:translate-y-0.5 transition-all overflow-hidden">
+        <div className="flex flex-col items-center justify-center gap-3 w-full">
+          <div className="relative w-[260px] sm:w-72 md:w-80 h-[80px] sm:h-[100px] md:h-[115px] rounded-2xl bg-[#0F172A] border-3 border-[#1E1B4B] dark:border-[#7F45DB] shadow-[4px_4px_0px_0px_#1E1B4B] sm:shadow-[6px_6px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#7F45DB] dark:sm:shadow-[6px_6px_0px_0px_#7F45DB] px-4 sm:px-5 py-2.5 sm:py-3 flex items-center justify-center hover:translate-x-0.5 hover:translate-y-0.5 transition-all overflow-hidden mx-auto">
             <Image
               src="/assets/nsdc-logo.png"
               alt="NSDC Logo - National Skill Development Committee"
@@ -56,53 +60,53 @@ export default function LandingPage() {
           </div>
 
           {/* 2. NSDC Presents Badge */}
-          <div className="inline-flex items-center gap-2 px-5 py-1.5 rounded-full border-2 border-[#1E1B4B] dark:border-[#7F45DB] bg-white dark:bg-[#16122C] text-[#0F172A] dark:text-white text-xs sm:text-sm font-mono font-black uppercase tracking-widest shadow-[3px_3px_0px_0px_#1E1B4B] dark:shadow-[3px_3px_0px_0px_#7F45DB]">
+          <div className="inline-flex items-center gap-2 px-4 sm:px-5 py-1 sm:py-1.5 rounded-full border-2 border-[#1E1B4B] dark:border-[#7F45DB] bg-white dark:bg-[#16122C] text-[#0F172A] dark:text-white text-xs sm:text-sm font-mono font-black uppercase tracking-widest shadow-[2px_2px_0px_0px_#1E1B4B] sm:shadow-[3px_3px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#7F45DB] dark:sm:shadow-[3px_3px_0px_0px_#7F45DB]">
             <span className="w-2 h-2 rounded-full bg-[#7F45DB] animate-pulse" />
             <span>NSDC PRESENTS</span>
           </div>
         </div>
 
-        {/* 3. ByteClash Main Hero Box with Official 3D Logo */}
-        <div className="space-y-6">
-          <div className="relative max-w-2xl sm:max-w-3xl w-full mx-auto p-6 sm:p-8 md:p-10 bg-white dark:bg-[#111726] border-3 border-[#1E1B4B] dark:border-[#7F45DB] rounded-3xl shadow-[8px_8px_0px_0px_#1E1B4B] dark:shadow-[8px_8px_0px_0px_#7F45DB] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_0px_#1E1B4B] dark:hover:shadow-[4px_4px_0px_0px_#7F45DB] transition-all duration-300 cursor-pointer group select-none flex items-center justify-center overflow-hidden">
+        {/* 3. ByteVerse Main Hero Box with Official 3D Logo */}
+        <div className="space-y-5 sm:space-y-6 w-full">
+          <div className="relative max-w-2xl sm:max-w-3xl w-full mx-auto p-4 sm:p-8 md:p-10 bg-white dark:bg-[#111726] border-3 border-[#1E1B4B] dark:border-[#7F45DB] rounded-3xl shadow-[5px_5px_0px_0px_#1E1B4B] sm:shadow-[8px_8px_0px_0px_#1E1B4B] dark:shadow-[5px_5px_0px_0px_#7F45DB] dark:sm:shadow-[8px_8px_0px_0px_#7F45DB] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_0px_#1E1B4B] dark:hover:shadow-[4px_4px_0px_0px_#7F45DB] transition-all duration-300 cursor-pointer group select-none flex items-center justify-center overflow-hidden">
             {/* Ambient Purple Background Glow */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#7F45DB]/10 via-transparent to-[#A472F7]/10 pointer-events-none group-hover:opacity-100 transition-opacity" />
             
-            <div className="relative w-full h-[180px] sm:h-[230px] md:h-[270px] flex items-center justify-center overflow-visible">
+            <div className="relative w-full h-[170px] sm:h-[230px] md:h-[270px] flex items-center justify-center overflow-visible">
               <Image
-                src="/assets/byteclash-logo.png"
-                alt="ByteClash 2026 Official 3D Logo"
+                src="/assets/byteverse-logo.png?v=3"
+                alt="ByteVerse 2026 Official 3D Logo"
                 fill
-                className="object-contain object-center drop-shadow-xl scale-95 sm:scale-100 transition-all duration-300 ease-out group-hover:scale-[1.06] sm:group-hover:scale-[1.10] md:group-hover:scale-[1.12] group-hover:-translate-y-1.5 group-active:scale-[0.96] group-active:translate-y-1"
+                className="object-contain object-center drop-shadow-xl dark:drop-shadow-[0_0_24px_rgba(164,114,247,0.35)] scale-95 sm:scale-100 transition-all duration-300 ease-out group-hover:scale-[1.06] sm:group-hover:scale-[1.10] md:group-hover:scale-[1.12] group-hover:-translate-y-1.5 group-active:scale-[0.96] group-active:translate-y-1"
                 priority
               />
             </div>
           </div>
 
-          {/* 4. Tagline & Detailed ByteClash Platform Description */}
-          <div className="space-y-4 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-3 px-6 py-2.5 rounded-2xl bg-[#7F45DB] text-white border-2 border-[#1E1B4B] dark:border-[#A472F7] shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#A472F7]">
-              <span className="font-display font-black text-xl sm:text-2xl md:text-3xl tracking-wider uppercase">
-                THINK <span className="text-amber-300">·</span> CODE <span className="text-amber-300">·</span> CLASH
+          {/* 4. Tagline & Detailed ByteVerse Platform Description */}
+          <div className="space-y-3 sm:space-y-4 max-w-3xl mx-auto px-2">
+            <div className="inline-flex items-center gap-2 sm:gap-3 px-5 sm:px-6 py-2 sm:py-2.5 rounded-2xl bg-[#7F45DB] text-white border-2 border-[#1E1B4B] dark:border-[#A472F7] shadow-[3px_3px_0px_0px_#1E1B4B] sm:shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[3px_3px_0px_0px_#A472F7]">
+              <span className="font-display font-black text-base sm:text-2xl md:text-3xl tracking-wider uppercase">
+                THINK <span className="text-amber-300">·</span> CODE <span className="text-amber-300">·</span> VERSE
               </span>
             </div>
 
             <p className="text-base sm:text-lg md:text-xl text-[#334155] dark:text-[#E2E8F0] font-semibold leading-relaxed">
-              Welcome to <strong className="text-[#7F45DB] dark:text-[#A472F7] font-black">ByteClash</strong> — the modern collegiate competitive programming arena and automated online judge.
+              Welcome to <strong className="text-[#7F45DB] dark:text-[#A472F7] font-black">ByteVerse</strong> — the modern collegiate competitive programming arena and automated online judge.
             </p>
 
             <p className="text-sm sm:text-base text-[#6E6E6E] dark:text-[#94A3B8] font-medium leading-relaxed max-w-2xl mx-auto">
-              ByteClash empowers coders to battle in timed algorithmic contests, solve curated data structure challenges in C++, Python, Java, and C, receive real-time judge telemetry, and climb live ratings on the global leaderboard.
+              ByteVerse empowers coders to battle in timed algorithmic contests, solve curated data structure challenges in C++, Python, Java, and C, receive real-time judge telemetry, and climb live ratings on the global leaderboard.
             </p>
           </div>
         </div>
 
-        {/* 5. Detailed ByteClash Platform Capabilities (Neo-Brutalist Grid) */}
+        {/* 5. Detailed ByteVerse Platform Capabilities (Neo-Brutalist Grid) */}
         <div className="space-y-4 text-left">
           <div className="flex items-center gap-2.5 px-1">
             <div className="w-3 h-3 rounded-full bg-[#7F45DB]" />
             <h2 className="text-lg sm:text-xl font-display font-black text-[#0F172A] dark:text-white uppercase tracking-wide">
-              The ByteClash Platform Architecture
+              The ByteVerse Platform Architecture
             </h2>
           </div>
 
@@ -275,7 +279,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center sm:text-left">
             <div>
               <div className="text-[11px] font-mono uppercase text-[#6E6E6E] dark:text-[#94A3B8] font-bold">Platform Arena</div>
-              <div className="text-lg font-bold text-[#0F172A] dark:text-white font-mono">ByteClash 2026</div>
+              <div className="text-lg font-bold text-[#0F172A] dark:text-white font-mono">ByteVerse 2026</div>
             </div>
             <div>
               <div className="text-[11px] font-mono uppercase text-[#6E6E6E] dark:text-[#94A3B8] font-bold">Supported Languages</div>

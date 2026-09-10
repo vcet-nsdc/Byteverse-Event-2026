@@ -13,6 +13,7 @@ import {
   LucideIcon,
   Shield,
   ShieldCheck,
+  ShieldAlert,
   UserCheck,
 } from "lucide-react";
 import { requireRole } from "@/lib/rbac";
@@ -33,6 +34,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Overview", href: "/admin", exact: true, icon: LayoutDashboard },
+  { label: "SuperAdmin", href: "/admin/superadmin", exact: false, icon: ShieldAlert, minRole: "SUPER_ADMIN" },
   { label: "Contests", href: "/admin/contests", exact: false, icon: Trophy, minRole: "ADMIN" },
   { label: "Events", href: "/admin/events", exact: false, icon: Calendar, minRole: "ORGANIZER" },
   { label: "Registered Users", href: "/admin/users", exact: false, icon: Users, minRole: "ORGANIZER" },
@@ -57,7 +59,7 @@ export default function AdminNavbar({ userRole, userEmail }: AdminNavbarProps) {
         <Link href="/admin" className="flex items-center gap-2.5 shrink-0">
           <span className="w-3 h-3 rounded-full bg-[#7F45DB] animate-pulse" />
           <span className="font-extrabold font-mono text-base sm:text-lg text-[#0F172A] tracking-tight uppercase">
-            BYTECLASH <span className="text-[#7F45DB]">ADMIN</span>
+            BYTEVERSE <span className="text-[#7F45DB]">ADMIN</span>
           </span>
         </Link>
 

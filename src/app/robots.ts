@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://byteclash.dev";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://byteverse.dev";
 
   return {
     rules: [

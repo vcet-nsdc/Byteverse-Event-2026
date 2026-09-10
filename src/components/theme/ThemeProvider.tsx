@@ -22,7 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
-    const saved = localStorage.getItem("byteclash_theme") as Theme | null;
+    const saved = localStorage.getItem("byteverse_theme") as Theme | null;
     if (saved === "night" || saved === "day") {
       setTheme(saved);
       if (saved === "night") {
@@ -42,7 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const toggleTheme = () => {
     const nextTheme: Theme = theme === "day" ? "night" : "day";
     setTheme(nextTheme);
-    localStorage.setItem("byteclash_theme", nextTheme);
+    localStorage.setItem("byteverse_theme", nextTheme);
 
     if (nextTheme === "night") {
       document.documentElement.classList.add("dark");

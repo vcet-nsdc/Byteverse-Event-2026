@@ -4,6 +4,11 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Route /admin/login alias to dedicated /admin-login
+  if (pathname === "/admin/login") {
+    return NextResponse.redirect(new URL("/admin-login", request.url));
+  }
+
   // Protect all /admin routes
   if (pathname.startsWith("/admin")) {
     const sessionToken =
@@ -13,7 +18,7 @@ export function middleware(request: NextRequest) {
       request.cookies.get("__Secure-next-auth.session-token")?.value;
 
     if (!sessionToken) {
-      const loginUrl = new URL("/login", request.url);
+      const loginUrl = new URL("/admin-login", request.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
     }

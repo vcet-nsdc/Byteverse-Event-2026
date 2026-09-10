@@ -130,8 +130,8 @@ function AuthForm() {
         <Link href="/" className="inline-block hover:scale-105 transition-transform mb-1">
           <div className="relative h-12 w-40 mx-auto">
             <Image
-              src="/assets/byteclash-logo.png"
-              alt="ByteClash Logo"
+              src="/assets/byteverse-logo.png"
+              alt="ByteVerse Logo"
               fill
               className="object-contain"
               priority
@@ -140,7 +140,7 @@ function AuthForm() {
         </Link>
         <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full border-2 border-[#1E1B4B] bg-[#7F45DB]/10 text-[#4A2293] text-xs font-mono font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#1E1B4B]">
           <span className="w-2 h-2 rounded-full bg-[#7F45DB] animate-pulse" />
-          ByteClash 2026 Arena
+          ByteVerse 2026 Arena
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0F172A] uppercase tracking-tight font-display">
           {mode === "signin" ? "Sign In" : "Create Account"}
@@ -148,7 +148,7 @@ function AuthForm() {
         <p className="text-[#6E6E6E] text-xs font-medium">
           {mode === "signin"
             ? "Access your contest dashboard, practice arena, and live duels"
-            : "Join ByteClash to compete in official collegiate programming contests"}
+            : "Join ByteVerse to compete in official collegiate programming contests"}
         </p>
       </div>
 
@@ -341,8 +341,8 @@ function AuthForm() {
                   ? "Creating Account..."
                   : "Authenticating..."
                 : mode === "signup"
-                ? "Register & Enter ByteClash"
-                : "Sign In to ByteClash"}
+                ? "Register & Enter ByteVerse"
+                : "Sign In to ByteVerse"}
             </span>
             <ArrowRight className="w-4 h-4" />
           </button>
@@ -391,7 +391,7 @@ export default function LoginPage() {
       <Suspense
         fallback={
           <div className="text-center font-mono text-xs text-[#6E6E6E] animate-pulse">
-            Loading ByteClash Portal...
+            Loading ByteVerse Portal...
           </div>
         }
       >

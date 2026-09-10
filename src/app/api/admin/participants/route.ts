@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { requireRole } from "@/lib/auth";
+import { isParticipantDisqualified } from "@/lib/platform-data";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -63,7 +64,7 @@ export async function GET(req: NextRequest) {
       },
     },
     orderBy: { name: "asc" },
-  });
+  }).catch(() => []);
 
   const ROUND_QUESTION_POINTS: Record<number, number> = {
     1: 10,
@@ -139,7 +140,13 @@ export async function GET(req: NextRequest) {
       0
     );
 
-    const isDisqualified = !!p.disqualification || p.teamMember?.team.status === "DISQUALIFIED";
+    const isDisqualified =
+      Boolean(p.disqualification) ||
+      p.teamMember?.team?.status === "DISQUALIFIED" ||
+      violationCount >= 3 ||
+      isParticipantDisqualified(p.id) ||
+      isParticipantDisqualified(p.email) ||
+      (p.teamMember?.team?.id ? isParticipantDisqualified(p.teamMember.team.id) : false);
 
     return {
       id: p.id,
