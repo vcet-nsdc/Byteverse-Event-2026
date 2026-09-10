@@ -21,15 +21,6 @@ export default function StarrySkyBackground() {
     }
   }, []);
 
-  // Hide cosmic starfield and animated nebulae on admin interfaces to enforce a clean light dashboard
-  if (
-    pathname?.startsWith("/admin") ||
-    pathname === "/admin-login" ||
-    pathname === "/superadmin-login"
-  ) {
-    return null;
-  }
-
   // Day vs Night palette
   const themeConfig = useMemo(() => {
     if (isNight) {
@@ -50,6 +41,16 @@ export default function StarrySkyBackground() {
       };
     }
   }, [isNight]);
+
+  // Hide cosmic starfield and animated nebulae on admin interfaces to enforce a clean light dashboard
+  const isAdminRoute =
+    pathname?.startsWith("/admin") ||
+    pathname === "/admin-login" ||
+    pathname === "/superadmin-login";
+
+  if (isAdminRoute) {
+    return null;
+  }
 
   return (
     <div
