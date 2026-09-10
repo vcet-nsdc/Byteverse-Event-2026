@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description:
     "Explore upcoming and ongoing technical championships, hackathons, and collegiate coding events hosted by NSDC.",
   keywords: [
-    "NSDC ByteClash events",
+    "NSDC ByteVerse events",
     "NSDC college hackathon",
     "collegiate coding events",
     "programming championships 2026",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     canonical: "/event",
   },
   openGraph: {
-    title: "Campus Events & Championships | NSDC ByteClash",
+    title: "Campus Events & Championships | NSDC ByteVerse",
     description: "Ongoing and past collegiate coding tournaments hosted by NSDC.",
   },
 };

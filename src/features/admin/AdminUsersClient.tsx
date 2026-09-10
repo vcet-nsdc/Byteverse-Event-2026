@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -73,7 +73,7 @@ export default function AdminUsersClient({
   const [selectedRole, setSelectedRole] = useState("ALL");
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -90,14 +90,14 @@ export default function AdminUsersClient({
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, selectedRole]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchUsers();
     }, 250);
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedRole]);
+  }, [fetchUsers]);
 
   const exportCSV = () => {
     if (users.length === 0) return;
@@ -346,9 +346,46 @@ export default function AdminUsersClient({
                         </div>
                       </td>
 
-                      {/* Role Badge */}
+                      {/* Role Badge / SuperAdmin Quick Edit */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        {getRoleBadge(u.role)}
+                        {userRole === "SUPER_ADMIN" ? (
+                          <select
+                            value={u.role}
+                            onChange={async (e) => {
+                              const newRole = e.target.value as any;
+                              try {
+                                const res = await fetch("/api/admin/roles", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ targetUserId: u.id, newRole }),
+                                });
+                                if (res.ok) {
+                                  setUsers((prev) =>
+                                    prev.map((usr) => (usr.id === u.id ? { ...usr, role: newRole } : usr))
+                                  );
+                                }
+                              } catch (err) {
+                                console.error(err);
+                              }
+                            }}
+                            className={`px-2 py-1 rounded-md text-[11px] font-mono font-bold border focus:outline-none cursor-pointer ${
+                              u.role === "SUPER_ADMIN"
+                                ? "bg-rose-100 text-rose-800 border-rose-400"
+                                : u.role === "ADMIN"
+                                ? "bg-purple-100 text-purple-800 border-purple-400"
+                                : u.role === "ORGANIZER"
+                                ? "bg-amber-100 text-amber-800 border-amber-400"
+                                : "bg-slate-100 text-slate-700 border-slate-300"
+                            }`}
+                          >
+                            <option value="PARTICIPANT">PARTICIPANT</option>
+                            <option value="ORGANIZER">ORGANIZER</option>
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="SUPER_ADMIN">SUPER_ADMIN</option>
+                          </select>
+                        ) : (
+                          getRoleBadge(u.role)
+                        )}
                       </td>
 
                       {/* College */}

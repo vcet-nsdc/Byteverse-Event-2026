@@ -85,31 +85,31 @@ export default function PracticePage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F8F9FD] text-[#0F172A] py-10 px-4 sm:px-6 lg:px-8 font-sans">
+    <main className="min-h-screen bg-transparent text-[#0F172A] dark:text-[#F8FAFC] py-10 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-500">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header */}
-        <div className="bg-white border-2 border-[#1E1B4B] rounded-3xl p-6 sm:p-10 shadow-[6px_6px_0px_0px_#1E1B4B] relative overflow-hidden">
+        <div className="bg-white dark:bg-[#111726]/90 border-2 border-[#1E1B4B] dark:border-[#7F45DB]/60 rounded-3xl p-6 sm:p-10 shadow-[6px_6px_0px_0px_#1E1B4B] dark:shadow-[6px_6px_0px_0px_#7F45DB]/50 relative overflow-hidden transition-all duration-300">
           <div className="absolute top-0 right-0 w-80 h-80 bg-[#7F45DB]/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
           <div className="relative z-10 max-w-2xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7F45DB]/10 text-[#7F45DB] border border-[#7F45DB]/30 text-xs font-mono font-black uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#7F45DB]/10 text-[#7F45DB] dark:text-[#A472F7] border border-[#7F45DB]/30 text-xs font-mono font-black uppercase tracking-wider">
               <BookOpen className="w-3.5 h-3.5" />
               <span>Practice Arena</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-display font-black text-[#0F172A] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-display font-black text-[#0F172A] dark:text-white tracking-tight">
               Problem Library
             </h1>
-            <p className="text-sm sm:text-base text-[#6E6E6E] font-medium leading-relaxed">
+            <p className="text-sm sm:text-base text-[#6E6E6E] dark:text-[#94A3B8] font-medium leading-relaxed">
               Master classical algorithmic problems, data structures, and optimization patterns. Practice in C, C++, Java, or Python with instant Judge0 test evaluation.
             </p>
           </div>
         </div>
 
         {/* Filter Controls Bar */}
-        <div className="bg-white border-2 border-[#1E1B4B] rounded-2xl p-5 shadow-[4px_4px_0px_0px_#1E1B4B] space-y-4">
+        <div className="bg-white dark:bg-[#111726]/90 border-2 border-[#1E1B4B] dark:border-[#7F45DB]/60 rounded-2xl p-5 shadow-[4px_4px_0px_0px_#1E1B4B] dark:shadow-[4px_4px_0px_0px_#7F45DB]/50 space-y-4 transition-all duration-300">
           {/* Top row: Search input + Status Filter */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#6E6E6E] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#6E6E6E] dark:text-[#94A3B8] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={search}
@@ -118,12 +118,12 @@ export default function PracticePage() {
                   setPage(1);
                 }}
                 placeholder="Search problem title or keywords..."
-                className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#F8F9FD] border-2 border-[#1E1B4B]/20 text-xs font-mono font-medium text-[#0F172A] placeholder:text-[#6E6E6E] focus:outline-none focus:border-[#7F45DB]"
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#F8F9FD] dark:bg-[#1A2035] border-2 border-[#1E1B4B]/20 dark:border-[#382F60] text-xs font-mono font-medium text-[#0F172A] dark:text-white placeholder:text-[#6E6E6E] dark:placeholder:text-[#94A3B8] focus:outline-none focus:border-[#7F45DB]"
               />
             </div>
 
             {/* Status Filter */}
-            <div className="flex items-center gap-1 bg-[#F8F9FD] p-1 rounded-xl border border-[#1E1B4B]/20">
+            <div className="flex items-center gap-1 bg-[#F8F9FD] dark:bg-[#1A2035] p-1 rounded-xl border border-[#1E1B4B]/20 dark:border-[#382F60]">
               {[
                 { key: "all", label: "All" },
                 { key: "solved", label: "Solved" },
@@ -135,7 +135,7 @@ export default function PracticePage() {
                   className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
                     status === s.key
                       ? "bg-[#7F45DB] text-white font-black"
-                      : "text-[#6E6E6E] hover:text-[#0F172A]"
+                      : "text-[#6E6E6E] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white"
                   }`}
                 >
                   {s.label}
@@ -145,9 +145,9 @@ export default function PracticePage() {
           </div>
 
           {/* Difficulty Filter Pills */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#1E1B4B]/10">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#1E1B4B]/10 dark:border-[#2D2755]">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-mono text-[#6E6E6E] uppercase font-bold mr-1">
+              <span className="text-[11px] font-mono text-[#6E6E6E] dark:text-[#94A3B8] uppercase font-bold mr-1">
                 Difficulty:
               </span>
               {["All", "Easy", "Medium", "Hard"].map((d) => (
@@ -163,7 +163,7 @@ export default function PracticePage() {
                         : d === "Hard"
                         ? "bg-rose-500 text-white border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B]"
                         : "bg-[#7F45DB] text-white border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B]"
-                      : "bg-white text-[#6E6E6E] border-[#1E1B4B]/20 hover:border-[#1E1B4B] hover:text-[#0F172A]"
+                      : "bg-white dark:bg-[#1A2035] text-[#6E6E6E] dark:text-[#94A3B8] border-[#1E1B4B]/20 dark:border-[#382F60] hover:border-[#1E1B4B] hover:text-[#0F172A] dark:hover:text-white"
                   }`}
                 >
                   {d}
@@ -173,15 +173,15 @@ export default function PracticePage() {
 
             {/* Topic Filter Pills */}
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] font-mono text-[#6E6E6E] uppercase font-bold mr-1">
+              <span className="text-[11px] font-mono text-[#6E6E6E] dark:text-[#94A3B8] uppercase font-bold mr-1">
                 Topic:
               </span>
               <button
                 onClick={() => handleTagChange("All")}
                 className={`px-2.5 py-0.5 rounded-lg text-[11px] font-mono border ${
                   tag === "All"
-                    ? "bg-[#0F172A] text-white border-[#0F172A] font-bold"
-                    : "bg-[#F8F9FD] text-[#6E6E6E] border-[#1E1B4B]/15 hover:text-[#0F172A]"
+                    ? "bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A] border-[#0F172A] dark:border-white font-bold"
+                    : "bg-[#F8F9FD] dark:bg-[#1A2035] text-[#6E6E6E] dark:text-[#94A3B8] border-[#1E1B4B]/15 dark:border-[#382F60] hover:text-[#0F172A] dark:hover:text-white"
                 }`}
               >
                 All
@@ -193,7 +193,7 @@ export default function PracticePage() {
                   className={`px-2.5 py-0.5 rounded-lg text-[11px] font-mono border ${
                     tag === t
                       ? "bg-[#7F45DB] text-white border-[#7F45DB] font-bold"
-                      : "bg-[#F8F9FD] text-[#6E6E6E] border-[#1E1B4B]/15 hover:text-[#0F172A]"
+                      : "bg-[#F8F9FD] dark:bg-[#1A2035] text-[#6E6E6E] dark:text-[#94A3B8] border-[#1E1B4B]/15 dark:border-[#382F60] hover:text-[#0F172A] dark:hover:text-white"
                   }`}
                 >
                   {t}
@@ -204,16 +204,16 @@ export default function PracticePage() {
         </div>
 
         {/* Problems Table */}
-        <div className="bg-white border-2 border-[#1E1B4B] rounded-3xl p-6 shadow-[5px_5px_0px_0px_#1E1B4B]">
+        <div className="bg-white dark:bg-[#111726]/90 border-2 border-[#1E1B4B] dark:border-[#7F45DB]/60 rounded-3xl p-6 shadow-[5px_5px_0px_0px_#1E1B4B] dark:shadow-[5px_5px_0px_0px_#7F45DB]/50 transition-all duration-300">
           {loading ? (
-            <div className="py-16 text-center font-mono text-sm text-[#6E6E6E] animate-pulse">
+            <div className="py-16 text-center font-mono text-sm text-[#6E6E6E] dark:text-[#94A3B8] animate-pulse">
               Retrieving problem repository...
             </div>
           ) : problems.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left font-mono text-xs">
                 <thead>
-                  <tr className="border-b-2 border-[#1E1B4B] text-[#6E6E6E] uppercase tracking-wider text-[10px]">
+                  <tr className="border-b-2 border-[#1E1B4B] dark:border-[#382F60] text-[#6E6E6E] dark:text-[#94A3B8] uppercase tracking-wider text-[10px]">
                     <th className="py-3 px-3 font-black w-12 text-center">Status</th>
                     <th className="py-3 px-4 font-black">Title</th>
                     <th className="py-3 px-3 font-black hidden sm:table-cell">Topics</th>
@@ -222,34 +222,34 @@ export default function PracticePage() {
                     <th className="py-3 px-3 font-black text-right w-24">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1E1B4B]/10">
+                <tbody className="divide-y divide-[#1E1B4B]/10 dark:divide-[#382F60]">
                   {problems.map((prob) => {
                     const diffColor =
                       prob.difficulty === "Easy"
-                        ? "text-emerald-700 bg-emerald-50 border-emerald-300"
+                        ? "text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-600/50"
                         : prob.difficulty === "Hard"
-                        ? "text-rose-700 bg-rose-50 border-rose-300"
-                        : "text-amber-700 bg-amber-50 border-amber-300";
+                        ? "text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-600/50"
+                        : "text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-600/50";
 
                     return (
                       <tr
                         key={prob.id}
-                        className="hover:bg-[#F8F9FD] transition-colors group"
+                        className="hover:bg-[#F8F9FD] dark:hover:bg-[#1A2035]/80 transition-colors group"
                       >
                         <td className="py-3 px-3 text-center">
                           {prob.isSolved ? (
-                            <div className="w-5 h-5 rounded-full bg-emerald-100 border border-emerald-400 text-emerald-700 flex items-center justify-center mx-auto">
+                            <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-400 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 flex items-center justify-center mx-auto">
                               <Check className="w-3 h-3 stroke-[3]" />
                             </div>
                           ) : (
-                            <span className="text-[#6E6E6E]/40 text-sm">—</span>
+                            <span className="text-[#6E6E6E]/40 dark:text-[#94A3B8]/30 text-sm">—</span>
                           )}
                         </td>
 
                         <td className="py-3 px-4">
                           <Link
                             href={`/practice/${prob.id}`}
-                            className="font-bold text-[#0F172A] group-hover:text-[#7F45DB] transition-colors text-sm"
+                            className="font-bold text-[#0F172A] dark:text-white group-hover:text-[#7F45DB] dark:group-hover:text-[#A472F7] transition-colors text-sm"
                           >
                             {prob.title}
                           </Link>
@@ -260,7 +260,7 @@ export default function PracticePage() {
                             {prob.tags.slice(0, 2).map((t) => (
                               <span
                                 key={t}
-                                className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F8F9FD] text-[#6E6E6E] border border-[#1E1B4B]/10"
+                                className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F8F9FD] dark:bg-[#1A2035] text-[#6E6E6E] dark:text-[#94A3B8] border border-[#1E1B4B]/10 dark:border-[#382F60]"
                               >
                                 {t}
                               </span>
@@ -276,14 +276,14 @@ export default function PracticePage() {
                           </span>
                         </td>
 
-                        <td className="py-3 px-3 text-right font-black text-[#0F172A]">
+                        <td className="py-3 px-3 text-right font-black text-[#0F172A] dark:text-white">
                           {prob.acceptanceRate}
                         </td>
 
                         <td className="py-3 px-3 text-right">
                           <Link
                             href={`/practice/${prob.id}`}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white text-[#7F45DB] border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none hover:bg-[#7F45DB] hover:text-white transition-all text-[11px] font-bold uppercase"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white dark:bg-[#1A2035] text-[#7F45DB] dark:text-[#A472F7] border-2 border-[#1E1B4B] dark:border-[#382F60] shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#382F60] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none hover:bg-[#7F45DB] hover:text-white transition-all text-[11px] font-bold uppercase"
                           >
                             <span>Solve</span>
                             <ArrowRight className="w-3 h-3" />
@@ -298,8 +298,8 @@ export default function PracticePage() {
           ) : (
             <div className="py-16 text-center space-y-3">
               <BookOpen className="w-10 h-10 text-[#7F45DB] mx-auto" />
-              <h3 className="text-base font-black text-[#0F172A]">No problems matched your filter criteria</h3>
-              <p className="text-xs font-mono text-[#6E6E6E]">Try clearing the search query or switching the difficulty filter.</p>
+              <h3 className="text-base font-black text-[#0F172A] dark:text-white">No problems matched your filter criteria</h3>
+              <p className="text-xs font-mono text-[#6E6E6E] dark:text-[#94A3B8]">Try clearing the search query or switching the difficulty filter.</p>
               <button
                 onClick={() => {
                   setDifficulty("All");
@@ -307,7 +307,7 @@ export default function PracticePage() {
                   setStatus("all");
                   setSearch("");
                 }}
-                className="px-4 py-2 rounded-xl bg-[#7F45DB] text-white text-xs font-mono font-bold uppercase border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B]"
+                className="px-4 py-2 rounded-xl bg-[#7F45DB] text-white text-xs font-mono font-bold uppercase border-2 border-[#1E1B4B] dark:border-[#A472F7] shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#A472F7]"
               >
                 Reset Filters
               </button>
@@ -316,8 +316,8 @@ export default function PracticePage() {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t-2 border-[#1E1B4B]/10 pt-4 mt-4 font-mono text-xs">
-              <span className="text-[#6E6E6E]">
+            <div className="flex items-center justify-between border-t-2 border-[#1E1B4B]/10 dark:border-[#2D2755] pt-4 mt-4 font-mono text-xs">
+              <span className="text-[#6E6E6E] dark:text-[#94A3B8]">
                 Showing {problems.length} of {total} problems
               </span>
 
@@ -325,19 +325,19 @@ export default function PracticePage() {
                 <button
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="p-2 rounded-xl border-2 border-[#1E1B4B] bg-white shadow-[2px_2px_0px_0px_#1E1B4B] disabled:opacity-30 disabled:pointer-events-none hover:bg-[#F0F2F8]"
+                  className="p-2 rounded-xl border-2 border-[#1E1B4B] dark:border-[#382F60] bg-white dark:bg-[#1A2035] text-[#0F172A] dark:text-white shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#382F60] disabled:opacity-30 disabled:pointer-events-none hover:bg-[#F0F2F8] dark:hover:bg-[#232946]"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
 
-                <span className="px-3 py-1 font-bold text-[#0F172A]">
+                <span className="px-3 py-1 font-bold text-[#0F172A] dark:text-white">
                   Page {page} of {totalPages}
                 </span>
 
                 <button
                   disabled={page >= totalPages}
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className="p-2 rounded-xl border-2 border-[#1E1B4B] bg-white shadow-[2px_2px_0px_0px_#1E1B4B] disabled:opacity-30 disabled:pointer-events-none hover:bg-[#F0F2F8]"
+                  className="p-2 rounded-xl border-2 border-[#1E1B4B] dark:border-[#382F60] bg-white dark:bg-[#1A2035] text-[#0F172A] dark:text-white shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#382F60] disabled:opacity-30 disabled:pointer-events-none hover:bg-[#F0F2F8] dark:hover:bg-[#232946]"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Plus, Trash2, Code2, Layers, ArrowLeft, CheckCircle2, HelpCircle } from "lucide-react";
 
@@ -78,7 +78,7 @@ export default function ProblemCreatorClient({ roundId }: { roundId: string }) {
 
   const [saving, setSaving] = useState(false);
 
-  const fetchProblems = async () => {
+  const fetchProblems = useCallback(async () => {
     try {
       const [rRes, pRes] = await Promise.all([
         fetch("/api/admin/rounds"),
@@ -100,11 +100,11 @@ export default function ProblemCreatorClient({ roundId }: { roundId: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [roundId]);
 
   useEffect(() => {
     fetchProblems();
-  }, [roundId]);
+  }, [fetchProblems]);
 
   const handleAddTestCase = () => {
     setTestCases((prev) => [

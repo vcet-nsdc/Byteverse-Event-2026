@@ -152,7 +152,7 @@ export default function SystemReadinessGate({
               <div className="text-xs space-y-0.5">
                 <div className="font-bold text-[#0F172A]">Single Display & Fullscreen Policy</div>
                 <p className="text-[11px] text-[#6E6E6E] leading-relaxed">
-                  I will remain on a single active display screen. Exiting fullscreen or switching windows during an active round triggers a security violation requiring proctor PIN unlock.
+                  I will remain on a single active display screen. Exiting fullscreen or switching windows during an active round deducts a heart (3 strikes); depleting all 3 hearts triggers immediate contest disqualification.
                 </p>
               </div>
             </label>

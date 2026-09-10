@@ -1,0 +1,65 @@
+[
+  {
+    "id": "user_admin_primary",
+    "email": "admin@byteverse.dev",
+    "name": "ByteVerse Admin",
+    "passwordHash": "$2a$10$kB5aBoRdQEkvjV/J7oaTb.QzSmiQ60cr.tW3tq9R83jBQsYiBRrgy",
+    "role": "ADMIN",
+    "college": "NSDC Technical University",
+    "createdAt": "2026-09-10T00:00:00.000Z"
+  },
+  {
+    "id": "user_participant_coder",
+    "email": "coder@byteverse.dev",
+    "name": "Aryan Sharma",
+    "passwordHash": "$2a$10$F/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "NSDC Engineering Institute",
+    "createdAt": "2026-09-10T00:00:00.000Z"
+  },
+  {
+    "id": "user_1789033771191_h7wtn",
+    "email": "student_1789033769685@byteverse.dev",
+    "name": "Rohan Verma",
+    "passwordHash": "$2a$10$bxKi9swUk3Iq0ec3EjEDue.n07HWiMtcTfirXWp2PSL8de/QO8ntG",
+    "role": "PARTICIPANT",
+    "college": "NSDC Engineering",
+    "createdAt": "2026-09-10T09:49:31.191Z"
+  },
+  {
+    "id": "user_1789061997694_yi03q",
+    "email": "ggg@gmail.com",
+    "name": "ggg",
+    "passwordHash": "$2a$10$LBLqu1KkRwyzng.PvSn6gOTz4QOFiiw.AQreBIXlunZ8hDEaJwvnO",
+    "role": "PARTICIPANT",
+    "college": "NSDC Technical Institute",
+    "createdAt": "2026-09-10T17:39:57.694Z"
+  },
+  {
+    "id": "user_1789062050650_uuwvj",
+    "email": "name@gmail.com",
+    "name": "Hello",
+    "passwordHash": "$2a$10$N20v8zi9eSxBLjy3jwjr4ekw3ppm2dfLHtrbGdCFF5YTJW..Ypu32",
+    "role": "PARTICIPANT",
+    "college": "NSDC Technical Institute",
+    "createdAt": "2026-09-10T17:40:50.650Z"
+  },
+  {
+    "id": "user_superadmin_root",
+    "email": "superadmin@byteverse.dev",
+    "name": "ByteVerse Super Admin",
+    "passwordHash": "$2a$10$j8rkHBDNAHu7egJbsRpz0u69aI8QVPxVJFdrTiDMFGPYp0863KzNi",
+    "role": "SUPER_ADMIN",
+    "college": "NSDC ByteVerse Board",
+    "createdAt": "2026-09-10T00:00:00.000Z"
+  },
+  {
+    "id": "user_1789063025907_1qtbu",
+    "email": "vcet-nsdc@gmail.comm",
+    "name": "hhh",
+    "passwordHash": "$2a$10$bl94QWceWghJI66aN/ZpgOQkZFy27Duo758mVeD45KqzpsiiP3l/y",
+    "role": "PARTICIPANT",
+    "college": "NSDC Technical Institute",
+    "createdAt": "2026-09-10T17:57:05.907Z"
+  }
+]

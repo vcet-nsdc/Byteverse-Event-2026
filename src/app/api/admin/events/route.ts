@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
+  if (!session?.user?.role || !requireRole("ADMIN", session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -20,15 +20,15 @@ export async function GET() {
         },
       },
     },
-  });
+  }).catch(() => []);
 
   return NextResponse.json(events);
 }
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
-    return NextResponse.json({ error: "Forbidden: Organizer or Super Admin access required" }, { status: 403 });
+  if (!session?.user?.role || !requireRole("ADMIN", session.user.role)) {
+    return NextResponse.json({ error: "Forbidden: Admin or SuperAdmin access required" }, { status: 403 });
   }
 
   try {

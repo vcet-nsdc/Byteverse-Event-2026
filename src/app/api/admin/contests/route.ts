@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
+  if (!session?.user?.role || !requireRole("ADMIN", session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -28,7 +28,7 @@ export async function GET() {
         },
       },
     },
-  });
+  }).catch(() => []);
 
   return NextResponse.json(contests);
 }

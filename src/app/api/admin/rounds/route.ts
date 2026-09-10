@@ -17,7 +17,7 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
+  if (!session?.user?.role || !requireRole("ADMIN", session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -53,29 +53,33 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!session?.user?.role || !requireRole("ORGANIZER", session.user.role)) {
+  if (!session?.user?.role || !requireRole("ADMIN", session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const eventId = req.nextUrl.searchParams.get("eventId") || process.env.NEXT_PUBLIC_EVENT_ID || "byteverse-2026";
   
-  // Auto-expire any active rounds whose time has elapsed
-  const now = new Date();
-  await db.round.updateMany({
-    where: {
-      status: "ACTIVE",
-      endsAt: { lte: now },
-    },
-    data: {
-      status: "ENDED",
-    },
-  });
+  try {
+    // Auto-expire any active rounds whose time has elapsed
+    const now = new Date();
+    await db.round.updateMany({
+      where: {
+        status: "ACTIVE",
+        endsAt: { lte: now },
+      },
+      data: {
+        status: "ENDED",
+      },
+    }).catch(() => null);
 
-  const rounds = await db.round.findMany({
-    where: { eventId },
-    orderBy: { sequence: "asc" },
-    include: { _count: { select: { problems: true } } },
-  });
+    const rounds = await db.round.findMany({
+      where: { eventId },
+      orderBy: { sequence: "asc" },
+      include: { _count: { select: { problems: true } } },
+    });
 
-  return NextResponse.json(rounds);
+    return NextResponse.json(rounds);
+  } catch {
+    return NextResponse.json([]);
+  }
 }

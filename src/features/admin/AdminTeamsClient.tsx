@@ -47,7 +47,7 @@ const STATUS_COLORS: Record<string, string> = {
   PENDING: "text-[#6E6E6E] border-[#8A8A8A]/40 bg-[#F0F2F8]",
   ACTIVE: "text-[#7F45DB] border-[#7F45DB]/40 bg-[#7F45DB]/10",
   LOCKED: "text-amber-600 border-amber-400/40 bg-amber-50",
-  DISQUALIFIED: "text-red-400 border-red-500/60 bg-red-950/80",
+  DISQUALIFIED: "text-white border-red-600 bg-red-600 shadow-[0_0_12px_rgba(239,68,68,0.6)] font-black",
 };
 
 export default function AdminTeamsClient() {

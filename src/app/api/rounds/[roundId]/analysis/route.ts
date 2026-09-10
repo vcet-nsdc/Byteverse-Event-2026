@@ -8,9 +8,8 @@ import { updateRoundScore } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
 
-const rawBase = (process.env.JUDGE0_URL || "http://127.0.0.1:2358").trim();
-const JUDGE_BASE = rawBase.replace(/\/+$/, "").replace(/\/system_info$/, "").replace(/\/about$/, "");
-const JUDGE_KEY = process.env.JUDGE0_API_KEY?.trim() || "";
+import { isJudge0Available, getJudgeHeaders, JUDGE_BASE } from "@/lib/judge-status";
+import { runLocally } from "@/lib/local-runner";
 
 const LANG_IDS: Record<string, number> = {
   cpp: 54,
@@ -25,19 +24,6 @@ const analysisSchema = z.object({
   sourceCode: z.string().min(1).max(65536),
   isFinal: z.boolean().optional().default(false),
 });
-
-function getJudgeHeaders(): Record<string, string> {
-  if (!JUDGE_KEY) return {};
-  if (JUDGE_BASE.includes("rapidapi.com")) {
-    try {
-      const host = new URL(JUDGE_BASE).host;
-      return { "x-rapidapi-key": JUDGE_KEY, "x-rapidapi-host": host };
-    } catch {
-      return { "x-rapidapi-key": JUDGE_KEY };
-    }
-  }
-  return { "X-Auth-Token": JUDGE_KEY };
-}
 
 export async function POST(
   req: NextRequest,
@@ -113,7 +99,18 @@ export async function POST(
   let hiddenPassed = 0;
   let edgePassed = 0;
 
+  const judgeOnline = await isJudge0Available();
+
   async function evaluateTestCase(tc: { input: string; expected: string }): Promise<boolean> {
+    if (!judgeOnline) {
+      try {
+        const local = await runLocally(language as any, sourceCode, tc.input);
+        return (local.stdout || "").trim() === (tc.expected || "").trim();
+      } catch {
+        return false;
+      }
+    }
+
     try {
       const response = await axios.post(
         `${JUDGE_BASE}/submissions?wait=true`,
@@ -125,7 +122,7 @@ export async function POST(
           cpu_time_limit: Math.max(1, Math.min(problem!.timeLimitMs / 1000, 5)),
           memory_limit: problem!.memoryLimitMb * 1024,
         },
-        { headers, timeout: 12000 }
+        { headers, timeout: 5000 }
       );
 
       const statusId = response.data?.status?.id;
@@ -136,7 +133,13 @@ export async function POST(
       const expected = tc.expected.trim();
       return stdout === expected;
     } catch {
-      return false;
+      // If Judge0 failed, fallback to local
+      try {
+        const local = await runLocally(language as any, sourceCode, tc.input);
+        return (local.stdout || "").trim() === (tc.expected || "").trim();
+      } catch {
+        return false;
+      }
     }
   }
 

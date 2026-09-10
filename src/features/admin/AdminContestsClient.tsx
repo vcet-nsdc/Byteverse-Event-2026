@@ -17,6 +17,7 @@ import {
   Loader2,
   RefreshCw,
   Play,
+  Pause,
   Square,
   Sparkles,
 } from "lucide-react";
@@ -26,13 +27,13 @@ interface ContestItem {
   title: string;
   description: string | null;
   type: string;
-  status: "SCHEDULED" | "ACTIVE" | "ENDED";
+  status: "SCHEDULED" | "ACTIVE" | "PAUSED" | "ENDED";
   startsAt: string;
   endsAt: string;
   difficulty: string | null;
   bannerUrl: string | null;
   event?: { id: string; name: string } | null;
-  problems?: Array<{ id: string; title: string; difficulty: string; points: number }>;
+  problems?: Array<{ id: string; title: string; difficulty: string; points?: number; isPublished?: boolean }>;
   _count?: {
     participants: number;
     submissions: number;
@@ -65,7 +66,7 @@ export default function AdminContestsClient({ userRole }: { userRole: string }) 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState("WEEKLY");
-  const [status, setStatus] = useState<"SCHEDULED" | "ACTIVE" | "ENDED">("SCHEDULED");
+  const [status, setStatus] = useState<"SCHEDULED" | "ACTIVE" | "PAUSED" | "ENDED">("SCHEDULED");
   const [difficulty, setDifficulty] = useState("Mixed");
   const [startsAt, setStartsAt] = useState("");
   const [endsAt, setEndsAt] = useState("");
@@ -196,7 +197,7 @@ export default function AdminContestsClient({ userRole }: { userRole: string }) 
 
   const setContestStatus = async (
     contest: ContestItem,
-    newStatus: "SCHEDULED" | "ACTIVE" | "ENDED"
+    newStatus: "SCHEDULED" | "ACTIVE" | "PAUSED" | "ENDED"
   ) => {
     try {
       const res = await fetch(`/api/admin/contests/${contest.id}`, {
@@ -212,14 +213,45 @@ export default function AdminContestsClient({ userRole }: { userRole: string }) 
         `Contest "${contest.title}" is now ${
           newStatus === "ACTIVE"
             ? "PUBLISHED & LIVE (ACTIVE)"
+            : newStatus === "PAUSED"
+            ? "PAUSED (ON HOLD)"
             : newStatus === "SCHEDULED"
             ? "SCHEDULED (UPCOMING)"
-            : "ENDED (PAST)"
+            : "ENDED (ARCHIVED)"
         }!`
       );
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
       setError(err.message || "Failed to update status");
+    }
+  };
+
+  // Toggle individual question active/pause state
+  const toggleProblemActive = async (contestId: string, problemId: string, currentPublished: boolean = true) => {
+    const nextPublished = !currentPublished;
+    try {
+      const res = await fetch(`/api/admin/problems/${problemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublished: nextPublished }),
+      });
+      if (!res.ok) throw new Error("Failed to toggle question status");
+
+      setContests((prev) =>
+        prev.map((c) => {
+          if (c.id !== contestId || !c.problems) return c;
+          return {
+            ...c,
+            problems: c.problems.map((p) =>
+              p.id === problemId ? { ...p, isPublished: nextPublished } : p
+            ),
+          };
+        })
+      );
+      setSuccessMsg(`Question status updated to ${nextPublished ? "ACTIVE" : "PAUSED / HIDDEN"}.`);
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (err: any) {
+      setError(err.message || "Failed to update question status");
     }
   };
 
@@ -331,7 +363,7 @@ export default function AdminContestsClient({ userRole }: { userRole: string }) 
         </div>
       ) : filteredContests.length === 0 ? (
         <div className="p-12 text-center text-[#6E6E6E] font-mono text-sm border-2 border-dashed border-[#1E1B4B]/20 rounded-2xl bg-white">
-          No contests in this category. Click "CREATE & PUBLISH CONTEST" above!
+          No contests in this category. Click &quot;CREATE &amp; PUBLISH CONTEST&quot; above!
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
@@ -419,43 +451,89 @@ export default function AdminContestsClient({ userRole }: { userRole: string }) 
                     </div>
                   </div>
 
-                  {/* Problems in Contest */}
+                  {/* Problems in Contest with Activate/Pause toggles */}
                   {contest.problems && contest.problems.length > 0 && (
-                    <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                      <span className="text-[10px] font-mono font-bold text-[#6E6E6E] uppercase mr-1">
-                        Problem Set:
-                      </span>
-                      {contest.problems.map((p) => (
-                        <span
-                          key={p.id}
-                          className="px-2 py-0.5 rounded bg-[#F0F2F8] border border-[#1E1B4B]/20 text-[11px] font-mono text-[#0F172A] font-medium"
-                        >
-                          {p.title}
-                        </span>
-                      ))}
+                    <div className="space-y-1.5 pt-2 border-t border-[#1E1B4B]/10">
+                      <div className="text-[10px] font-mono font-bold text-[#6E6E6E] uppercase">
+                        Questions ({contest.problems.length}) — Click to Toggle Active / Paused:
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {contest.problems.map((p) => {
+                          const isPub = p.isPublished !== false;
+                          return (
+                            <button
+                              key={p.id}
+                              onClick={() => toggleProblemActive(contest.id, p.id, isPub)}
+                              title={`Click to ${isPub ? "Pause / Hide" : "Activate"} this question`}
+                              className={`px-2.5 py-1 rounded-lg border font-mono text-[11px] font-bold flex items-center gap-1.5 transition-all ${
+                                isPub
+                                  ? "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
+                                  : "bg-slate-100 text-slate-500 border-slate-300 line-through hover:bg-slate-200"
+                              }`}
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full ${isPub ? "bg-emerald-600" : "bg-slate-400"}`} />
+                              <span>{p.title}</span>
+                              <span className="text-[9px] opacity-75">({isPub ? "ACTIVE" : "PAUSED"})</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
 
                 {/* Status & Action Controls */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border-t lg:border-t-0 pt-4 lg:pt-0 border-[#1E1B4B]/10">
-                  {contest.status !== "ACTIVE" && (
+                  {contest.status === "ACTIVE" && (
+                    <>
+                      <button
+                        onClick={() => setContestStatus(contest, "PAUSED")}
+                        className="px-3 py-2 rounded-xl border-2 border-[#1E1B4B] bg-amber-500 text-black font-mono font-bold text-xs shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all flex items-center justify-center gap-1.5"
+                        title="Pause contest"
+                      >
+                        <Pause className="w-3.5 h-3.5 fill-black" />
+                        <span>Pause</span>
+                      </button>
+                      <button
+                        onClick={() => setContestStatus(contest, "ENDED")}
+                        className="px-3 py-2 rounded-xl border-2 border-[#1E1B4B] bg-rose-500 text-white font-mono font-bold text-xs shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all flex items-center justify-center gap-1.5"
+                        title="End contest"
+                      >
+                        <Square className="w-3.5 h-3.5 fill-white" />
+                        <span>End</span>
+                      </button>
+                    </>
+                  )}
+
+                  {contest.status === "PAUSED" && (
+                    <>
+                      <button
+                        onClick={() => setContestStatus(contest, "ACTIVE")}
+                        className="px-3 py-2 rounded-xl border-2 border-[#1E1B4B] bg-emerald-500 text-white font-mono font-bold text-xs shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all flex items-center justify-center gap-1.5"
+                        title="Resume contest"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-white" />
+                        <span>Resume</span>
+                      </button>
+                      <button
+                        onClick={() => setContestStatus(contest, "ENDED")}
+                        className="px-3 py-2 rounded-xl border-2 border-[#1E1B4B] bg-rose-500 text-white font-mono font-bold text-xs shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all flex items-center justify-center gap-1.5"
+                        title="End contest"
+                      >
+                        <Square className="w-3.5 h-3.5 fill-white" />
+                        <span>End</span>
+                      </button>
+                    </>
+                  )}
+
+                  {contest.status === "SCHEDULED" && (
                     <button
                       onClick={() => setContestStatus(contest, "ACTIVE")}
                       className="px-3.5 py-2 rounded-xl border-2 border-[#1E1B4B] bg-emerald-500 text-white font-mono font-bold text-xs shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all flex items-center justify-center gap-1.5"
+                      title="Activate contest live now"
                     >
                       <Play className="w-3.5 h-3.5 fill-white" />
                       <span>Publish Live</span>
-                    </button>
-                  )}
-
-                  {contest.status === "ACTIVE" && (
-                    <button
-                      onClick={() => setContestStatus(contest, "ENDED")}
-                      className="px-3.5 py-2 rounded-xl border-2 border-[#1E1B4B] bg-rose-500 text-white font-mono font-bold text-xs shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all flex items-center justify-center gap-1.5"
-                    >
-                      <Square className="w-3.5 h-3.5 fill-white" />
-                      <span>End Contest</span>
                     </button>
                   )}
 

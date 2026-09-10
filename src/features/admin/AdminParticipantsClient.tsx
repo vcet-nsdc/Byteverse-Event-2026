@@ -38,7 +38,26 @@ export default function AdminParticipantsClient() {
       const res = await fetch(`/api/admin/participants?q=${encodeURIComponent(search)}`);
       if (res.ok) {
         const data = await res.json();
-        setParticipants(Array.isArray(data.participants) ? data.participants : []);
+        let list: ParticipantItem[] = Array.isArray(data.participants) ? data.participants : [];
+        if (typeof window !== "undefined") {
+          try {
+            const localDisqual = JSON.parse(localStorage.getItem("bv_disqualified_participants") || "[]");
+            if (localDisqual.length > 0) {
+              list = list.map((p) => {
+                if (
+                  localDisqual.includes(p.id) ||
+                  localDisqual.includes(p.email) ||
+                  (p.teamId && localDisqual.includes(p.teamId)) ||
+                  localDisqual.includes("contestant")
+                ) {
+                  return { ...p, isDisqualified: true, violationCount: Math.max(3, p.violationCount), hasCheated: true };
+                }
+                return p;
+              });
+            }
+          } catch {}
+        }
+        setParticipants(list);
       }
     } finally {
       setLoading(false);
@@ -176,9 +195,19 @@ export default function AdminParticipantsClient() {
                         )}
                       </td>
 
-                      {/* Cheat Detected Column */}
+                      {/* Cheat / Disqualification Status Column */}
                       <td className="p-4 text-center">
-                        {p.hasCheated ? (
+                        {p.isDisqualified ? (
+                          <div className="inline-flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl bg-red-600 text-white font-black shadow-[0_0_15px_rgba(239,68,68,0.7)] border-2 border-red-700 animate-pulse">
+                            <div className="flex items-center gap-1.5 text-[11px]">
+                              <ShieldAlert className="w-3.5 h-3.5 fill-white text-white" />
+                              <span className="tracking-wider uppercase">DISQUALIFIED</span>
+                            </div>
+                            <span className="text-[9px] uppercase tracking-wider text-red-100 font-bold">
+                              0 Hearts (Ejected)
+                            </span>
+                          </div>
+                        ) : p.hasCheated ? (
                           <div className="inline-flex flex-col items-center gap-1 px-2.5 py-1.5 rounded-xl bg-destructive/15 border-2 border-destructive text-destructive font-black">
                             <div className="flex items-center gap-1 text-[11px]">
                               <ShieldAlert className="w-3.5 h-3.5 fill-current" />

@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Play,
   Send,
@@ -18,6 +19,7 @@ import {
   Copy,
   Check,
   Zap,
+  ShieldAlert,
 } from "lucide-react";
 import { FormattedStatement } from "@/components/problem/formatted-statement";
 
@@ -48,6 +50,7 @@ interface ProblemData {
   sampleTestCases: { id: string; input: string; expected: string; sequence: number }[];
   totalTestCasesCount: number;
   isSolved: boolean;
+  readOnly?: boolean;
   userSubmissions: any[];
 }
 
@@ -57,6 +60,32 @@ export default function PracticeWorkspacePage({
   params: Promise<{ problemId: string }>;
 }) {
   const { problemId } = use(params);
+  const router = useRouter();
+
+  // Mandatory Authentication Gate
+  const [sessionUser, setSessionUser] = useState<any>(null);
+  const [authChecking, setAuthChecking] = useState(true);
+
+  useEffect(() => {
+    async function verifyAuth() {
+      try {
+        const res = await fetch("/api/auth/session");
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.user?.id) {
+            setSessionUser(data.user);
+            setAuthChecking(false);
+            return;
+          }
+        }
+      } catch {
+        // ignore
+      }
+      setAuthChecking(false);
+      router.replace(`/login?callbackUrl=${encodeURIComponent(`/practice/${problemId}`)}`);
+    }
+    verifyAuth();
+  }, [problemId, router]);
 
   const [problem, setProblem] = useState<ProblemData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -159,6 +188,11 @@ export default function PracticeWorkspacePage({
     setActiveConsoleTab("output");
     setRunResult(null);
 
+    const inputToSend =
+      customInput !== undefined && customInput !== ""
+        ? customInput
+        : problem?.sampleInput || "";
+
     try {
       const res = await fetch("/api/submissions/run", {
         method: "POST",
@@ -167,10 +201,13 @@ export default function PracticeWorkspacePage({
           problemId,
           language: lang,
           sourceCode: code,
-          customInput,
+          customInput: inputToSend,
         }),
       });
       const data = await res.json();
+      if (!res.ok && !data.status) {
+        data.status = "ERROR";
+      }
       setRunResult(data);
     } catch (err: any) {
       setRunResult({ error: err.message || "Run failed", status: "ERROR" });
@@ -230,9 +267,41 @@ export default function PracticeWorkspacePage({
     }
   };
 
+  if (authChecking) {
+    return (
+      <main className="min-h-screen bg-transparent flex flex-col items-center justify-center font-mono text-sm space-y-3">
+        <div className="w-7 h-7 border-2 border-[#7F45DB] border-t-transparent rounded-full animate-spin" />
+        <div className="text-center space-y-1">
+          <p className="font-bold text-[#0F172A] dark:text-white">Verifying Contestant Authorization...</p>
+          <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">Authenticating session for Practice Arena</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!sessionUser) {
+    return (
+      <main className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 space-y-4 font-sans text-center">
+        <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-500">
+          <ShieldAlert className="w-7 h-7" />
+        </div>
+        <h1 className="text-2xl font-black text-[#0F172A] dark:text-white">Login Required</h1>
+        <p className="text-xs font-mono text-[#6B7280] dark:text-[#9CA3AF] max-w-md">
+          You must be logged in to compile code on Judge0, test algorithmic solutions, and track problem submissions. Redirecting to login...
+        </p>
+        <Link
+          href={`/login?callbackUrl=${encodeURIComponent(`/practice/${problemId}`)}`}
+          className="px-6 py-2.5 rounded-xl bg-[#7F45DB] hover:bg-[#6D34C9] text-white font-mono font-bold text-xs uppercase tracking-wider"
+        >
+          Log In to Practice
+        </Link>
+      </main>
+    );
+  }
+
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F8F9FD] flex items-center justify-center font-mono text-sm text-[#6E6E6E]">
+      <main className="min-h-screen bg-transparent flex items-center justify-center font-mono text-sm text-[#6E6E6E] dark:text-[#94A3B8]">
         Loading problem workspace...
       </main>
     );
@@ -240,8 +309,8 @@ export default function PracticeWorkspacePage({
 
   if (!problem) {
     return (
-      <main className="min-h-screen bg-[#F8F9FD] flex flex-col items-center justify-center p-6 space-y-4">
-        <h1 className="text-2xl font-black text-[#0F172A]">Problem Not Found</h1>
+      <main className="min-h-screen bg-transparent flex flex-col items-center justify-center p-6 space-y-4">
+        <h1 className="text-2xl font-black text-[#0F172A] dark:text-white">Problem Not Found</h1>
         <Link href="/practice" className="px-5 py-2.5 rounded-xl bg-[#7F45DB] text-white font-mono font-bold text-xs uppercase">
           Back to Practice Library
         </Link>
@@ -250,18 +319,18 @@ export default function PracticeWorkspacePage({
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-[#F8F9FD] text-[#0F172A] overflow-hidden font-sans">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-transparent text-[#0F172A] dark:text-[#F8FAFC] overflow-hidden font-sans">
       {/* Top Header Bar */}
-      <div className="h-12 bg-white border-b-2 border-[#1E1B4B] px-4 flex items-center justify-between shrink-0 z-10">
+      <div className="h-12 bg-white dark:bg-[#111726] border-b-2 border-[#1E1B4B] dark:border-[#382F60] px-4 flex items-center justify-between shrink-0 z-10">
         <div className="flex items-center gap-3">
           <Link
             href="/practice"
-            className="p-1.5 rounded-lg border border-[#1E1B4B]/20 text-[#6E6E6E] hover:text-[#0F172A] hover:bg-[#F0F2F8] transition-colors"
+            className="p-1.5 rounded-lg border border-[#1E1B4B]/20 dark:border-[#382F60] text-[#6E6E6E] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white hover:bg-[#F0F2F8] dark:hover:bg-[#1A2035] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div className="flex items-center gap-2">
-            <h1 className="font-mono font-black text-sm text-[#0F172A] max-w-xs sm:max-w-md truncate">
+            <h1 className="font-mono font-black text-sm text-[#0F172A] dark:text-white max-w-xs sm:max-w-md truncate">
               {problem.title}
             </h1>
             <span
@@ -275,6 +344,11 @@ export default function PracticeWorkspacePage({
             >
               {problem.difficulty}
             </span>
+            {problem.readOnly && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700">
+                🔒 Archived / View-Only
+              </span>
+            )}
             {problem.isSolved && (
               <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
                 <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Solved
@@ -306,11 +380,16 @@ export default function PracticeWorkspacePage({
           {/* Submit Solution Button */}
           <button
             onClick={handleSubmitCode}
-            disabled={isSubmitting}
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl border-2 border-[#1E1B4B] bg-[#7F45DB] text-white font-mono font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none disabled:opacity-50 transition-all"
+            disabled={isSubmitting || problem.readOnly}
+            title={problem.readOnly ? "Submissions closed for completed events/contests" : "Submit solution"}
+            className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl border-2 border-[#1E1B4B] font-mono font-black text-xs uppercase tracking-wider transition-all ${
+              problem.readOnly
+                ? "bg-slate-200 dark:bg-slate-800 text-slate-500 border-slate-400 cursor-not-allowed opacity-70"
+                : "bg-[#7F45DB] text-white shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none disabled:opacity-50"
+            }`}
           >
             <Send className="w-3.5 h-3.5" />
-            <span>{isSubmitting ? "Judging..." : "Submit"}</span>
+            <span>{problem.readOnly ? "Submissions Closed" : isSubmitting ? "Judging..." : "Submit"}</span>
           </button>
         </div>
       </div>
@@ -318,15 +397,15 @@ export default function PracticeWorkspacePage({
       {/* Main Split Body: Left Pane (Statement/History) | Right Pane (Editor/Terminal) */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
         {/* LEFT PANE */}
-        <div className="h-full border-r-2 border-[#1E1B4B] bg-white flex flex-col overflow-hidden">
+        <div className="h-full border-r-2 border-[#1E1B4B] dark:border-[#382F60] bg-white dark:bg-[#111726] flex flex-col overflow-hidden">
           {/* Left Tabs */}
-          <div className="h-10 border-b-2 border-[#1E1B4B]/10 px-4 flex items-center gap-3 shrink-0 bg-[#F8F9FD]">
+          <div className="h-10 border-b-2 border-[#1E1B4B]/10 dark:border-[#382F60] px-4 flex items-center gap-3 shrink-0 bg-[#F8F9FD] dark:bg-[#151D30]">
             <button
               onClick={() => setLeftTab("statement")}
               className={`text-xs font-mono font-bold flex items-center gap-1.5 py-2 border-b-2 transition-all ${
                 leftTab === "statement"
-                  ? "text-[#7F45DB] border-[#7F45DB] font-black"
-                  : "text-[#6E6E6E] border-transparent hover:text-[#0F172A]"
+                  ? "text-[#7F45DB] dark:text-[#A472F7] border-[#7F45DB] dark:border-[#A472F7] font-black"
+                  : "text-[#6E6E6E] dark:text-[#94A3B8] border-transparent hover:text-[#0F172A] dark:hover:text-white"
               }`}
             >
               <FileCode className="w-3.5 h-3.5" />
@@ -337,8 +416,8 @@ export default function PracticeWorkspacePage({
               onClick={() => setLeftTab("submissions")}
               className={`text-xs font-mono font-bold flex items-center gap-1.5 py-2 border-b-2 transition-all ${
                 leftTab === "submissions"
-                  ? "text-[#7F45DB] border-[#7F45DB] font-black"
-                  : "text-[#6E6E6E] border-transparent hover:text-[#0F172A]"
+                  ? "text-[#7F45DB] dark:text-[#A472F7] border-[#7F45DB] dark:border-[#A472F7] font-black"
+                  : "text-[#6E6E6E] dark:text-[#94A3B8] border-transparent hover:text-[#0F172A] dark:hover:text-white"
               }`}
             >
               <History className="w-3.5 h-3.5" />
@@ -351,14 +430,14 @@ export default function PracticeWorkspacePage({
             {leftTab === "statement" ? (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-display font-black text-[#0F172A]">
+                  <h2 className="text-xl font-display font-black text-[#0F172A] dark:text-white">
                     {problem.title}
                   </h2>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     {problem.tags.map((t) => (
                       <span
                         key={t}
-                        className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F8F9FD] text-[#6E6E6E] border border-[#1E1B4B]/20"
+                        className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#F1F5F9] dark:bg-[#1A2338] text-[#475569] dark:text-[#94A3B8] border border-[#CBD5E1] dark:border-[#382F60]"
                       >
                         {t}
                       </span>
@@ -367,24 +446,24 @@ export default function PracticeWorkspacePage({
                 </div>
 
                 {/* Formatted Problem Statement */}
-                <div className="prose prose-sm max-w-none text-[#0F172A] font-sans leading-relaxed">
+                <div className="prose prose-sm max-w-none text-[#0F172A] dark:text-[#E2E8F0] font-sans leading-relaxed">
                   <FormattedStatement statement={problem.statement} />
                 </div>
 
                 {/* Input / Output Format */}
                 {problem.inputFormat && (
-                  <div className="space-y-1">
-                    <h3 className="text-xs font-mono uppercase font-black text-[#6E6E6E]">Input Format</h3>
-                    <div className="p-3 rounded-xl bg-[#F8F9FD] border border-[#1E1B4B]/20 text-xs font-mono whitespace-pre-wrap">
+                  <div className="space-y-1.5">
+                    <h3 className="text-xs font-mono uppercase font-black text-[#475569] dark:text-[#94A3B8]">Input Format</h3>
+                    <div className="p-3 rounded-xl bg-[#F1F5F9] dark:bg-[#1A2338] border border-[#CBD5E1] dark:border-[#334155] text-xs font-mono text-[#0F172A] dark:text-[#F8FAFC] whitespace-pre-wrap font-medium">
                       {problem.inputFormat}
                     </div>
                   </div>
                 )}
 
                 {problem.outputFormat && (
-                  <div className="space-y-1">
-                    <h3 className="text-xs font-mono uppercase font-black text-[#6E6E6E]">Output Format</h3>
-                    <div className="p-3 rounded-xl bg-[#F8F9FD] border border-[#1E1B4B]/20 text-xs font-mono whitespace-pre-wrap">
+                  <div className="space-y-1.5">
+                    <h3 className="text-xs font-mono uppercase font-black text-[#475569] dark:text-[#94A3B8]">Output Format</h3>
+                    <div className="p-3 rounded-xl bg-[#F1F5F9] dark:bg-[#1A2338] border border-[#CBD5E1] dark:border-[#334155] text-xs font-mono text-[#0F172A] dark:text-[#F8FAFC] whitespace-pre-wrap font-medium">
                       {problem.outputFormat}
                     </div>
                   </div>
@@ -392,9 +471,9 @@ export default function PracticeWorkspacePage({
 
                 {/* Constraints */}
                 {problem.constraints && (
-                  <div className="space-y-1">
-                    <h3 className="text-xs font-mono uppercase font-black text-[#6E6E6E]">Constraints</h3>
-                    <div className="p-3 rounded-xl bg-[#F8F9FD] border border-[#1E1B4B]/20 text-xs font-mono whitespace-pre-wrap">
+                  <div className="space-y-1.5">
+                    <h3 className="text-xs font-mono uppercase font-black text-[#475569] dark:text-[#94A3B8]">Constraints</h3>
+                    <div className="p-3 rounded-xl bg-[#F1F5F9] dark:bg-[#1A2338] border border-[#CBD5E1] dark:border-[#334155] text-xs font-mono text-[#0F172A] dark:text-[#F8FAFC] whitespace-pre-wrap font-medium">
                       {problem.constraints}
                     </div>
                   </div>
@@ -404,31 +483,31 @@ export default function PracticeWorkspacePage({
                 {problem.sampleInput && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-mono uppercase font-black text-[#6E6E6E]">Sample Case 1</h3>
+                      <h3 className="text-xs font-mono uppercase font-black text-[#475569] dark:text-[#94A3B8]">Sample Case 1</h3>
                       <button
                         onClick={() => {
                           navigator.clipboard.writeText(problem.sampleInput || "");
                           setCopied(true);
                           setTimeout(() => setCopied(false), 1500);
                         }}
-                        className="inline-flex items-center gap-1 text-[10px] font-mono text-[#7F45DB] hover:underline"
+                        className="inline-flex items-center gap-1 text-[10px] font-mono text-[#7F45DB] dark:text-[#A472F7] hover:underline font-bold"
                       >
-                        {copied ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                        {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
                         <span>{copied ? "Copied" : "Copy Input"}</span>
                       </button>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <span className="text-[10px] font-mono text-[#6E6E6E] block mb-1">Input</span>
-                        <pre className="p-3 rounded-xl bg-[#F8F9FD] border border-[#1E1B4B]/20 text-xs font-mono overflow-x-auto">
+                        <span className="text-[10px] font-mono text-[#475569] dark:text-[#94A3B8] block mb-1 font-bold">Input</span>
+                        <pre className="p-3 rounded-xl bg-[#F1F5F9] dark:bg-[#1A2338] border border-[#CBD5E1] dark:border-[#334155] text-xs font-mono text-[#0F172A] dark:text-[#F8FAFC] overflow-x-auto font-medium">
                           {problem.sampleInput}
                         </pre>
                       </div>
                       {problem.sampleOutput && (
                         <div>
-                          <span className="text-[10px] font-mono text-[#6E6E6E] block mb-1">Output</span>
-                          <pre className="p-3 rounded-xl bg-[#F8F9FD] border border-[#1E1B4B]/20 text-xs font-mono overflow-x-auto">
+                          <span className="text-[10px] font-mono text-[#475569] dark:text-[#94A3B8] block mb-1 font-bold">Output</span>
+                          <pre className="p-3 rounded-xl bg-[#F1F5F9] dark:bg-[#1A2338] border border-[#CBD5E1] dark:border-[#334155] text-xs font-mono text-[#0F172A] dark:text-[#F8FAFC] overflow-x-auto font-medium">
                             {problem.sampleOutput}
                           </pre>
                         </div>
@@ -440,7 +519,7 @@ export default function PracticeWorkspacePage({
             ) : (
               /* Submissions History Tab */
               <div className="space-y-4">
-                <h3 className="text-sm font-mono font-bold text-[#0F172A]">
+                <h3 className="text-sm font-mono font-bold text-[#0F172A] dark:text-white">
                   Your Submission History
                 </h3>
                 {submissionsList.length > 0 ? (
@@ -598,46 +677,66 @@ export default function PracticeWorkspacePage({
                 />
               ) : activeConsoleTab === "output" ? (
                 runResult ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-[#888888]">Status:</span>
-                      <span className="text-emerald-400 font-bold">{runResult.status || "OK"}</span>
-                      {runResult.time && <span className="text-[10px] text-[#888888]">({runResult.time}s)</span>}
+                      <span className="text-[11px] font-mono text-[#888888]">Status:</span>
+                      <span
+                        className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${
+                          runResult.status === "ACCEPTED" || runResult.status === "OK"
+                            ? "bg-emerald-950/60 text-emerald-400 border border-emerald-700/50"
+                            : "bg-rose-950/60 text-rose-400 border border-rose-700/50"
+                        }`}
+                      >
+                        {runResult.status || (runResult.error ? "ERROR" : "OK")}
+                      </span>
+                      {runResult.time && (
+                        <span className="text-[11px] font-mono text-[#888888]">
+                          ({runResult.time}s)
+                        </span>
+                      )}
                     </div>
 
-                    {runResult.stdout && (
-                      <div>
-                        <span className="text-[10px] text-[#888888] block">Standard Output:</span>
-                        <pre className="p-2 rounded bg-[#0A0A0A] text-emerald-300 overflow-x-auto whitespace-pre-wrap">
+                    {runResult.stdout !== undefined && runResult.stdout !== "" && (
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-mono text-[#A472F7] font-bold block uppercase tracking-wider">
+                          Standard Output
+                        </span>
+                        <pre className="p-3 rounded-lg bg-[#0A0A0A] border border-[#262626] text-emerald-300 overflow-x-auto whitespace-pre-wrap font-mono text-xs font-medium">
                           {runResult.stdout}
                         </pre>
                       </div>
                     )}
 
                     {runResult.stderr && (
-                      <div>
-                        <span className="text-[10px] text-rose-400 block">Stderr:</span>
-                        <pre className="p-2 rounded bg-[#0A0A0A] text-rose-300 overflow-x-auto whitespace-pre-wrap">
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-mono text-rose-400 font-bold block uppercase tracking-wider">
+                          Stderr
+                        </span>
+                        <pre className="p-3 rounded-lg bg-[#0A0A0A] border border-rose-900/40 text-rose-300 overflow-x-auto whitespace-pre-wrap font-mono text-xs font-medium">
                           {runResult.stderr}
                         </pre>
                       </div>
                     )}
 
                     {runResult.compile_output && (
-                      <div>
-                        <span className="text-[10px] text-amber-400 block">Compilation Output:</span>
-                        <pre className="p-2 rounded bg-[#0A0A0A] text-amber-300 overflow-x-auto whitespace-pre-wrap">
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-mono text-amber-400 font-bold block uppercase tracking-wider">
+                          Compilation Output
+                        </span>
+                        <pre className="p-3 rounded-lg bg-[#0A0A0A] border border-amber-900/40 text-amber-300 overflow-x-auto whitespace-pre-wrap font-mono text-xs font-medium">
                           {runResult.compile_output}
                         </pre>
                       </div>
                     )}
 
                     {runResult.error && (
-                      <div className="text-rose-400">{runResult.error}</div>
+                      <div className="p-3 rounded-lg bg-rose-950/40 border border-rose-800 text-rose-300 text-xs font-mono font-medium">
+                        {runResult.error}
+                      </div>
                     )}
                   </div>
                 ) : (
-                  <div className="text-[#666666] py-6 text-center">
+                  <div className="text-[#666666] py-8 text-center font-mono text-xs">
                     Click &quot;Run&quot; to execute your code with test input.
                   </div>
                 )

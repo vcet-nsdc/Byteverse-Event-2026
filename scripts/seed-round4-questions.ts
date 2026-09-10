@@ -864,29 +864,36 @@ async function seedRound4() {
     throw new Error(`Event '${EVENT_ID}' not found! Please run 'npm run db:seed' first.`);
   }
 
-  const round4 = await db.round.upsert({
+  let round4 = await db.round.findFirst({
     where: {
-      eventId_sequence: {
-        eventId: event.id,
-        sequence: 4,
-      },
-    },
-    update: {
-      name: "Data Structures & Algorithms",
-      type: "TYPE_TRANSFORM",
-      durationMin: 45,
-      maxScore: 100,
-    },
-    create: {
       eventId: event.id,
-      name: "Data Structures & Algorithms",
-      type: "TYPE_TRANSFORM",
       sequence: 4,
-      durationMin: 45,
-      maxScore: 100,
-      status: "DRAFT",
     },
   });
+
+  if (round4) {
+    round4 = await db.round.update({
+      where: { id: round4.id },
+      data: {
+        name: "Data Structures & Algorithms",
+        type: "TYPE_TRANSFORM",
+        durationMin: 45,
+        maxScore: 100,
+      },
+    });
+  } else {
+    round4 = await db.round.create({
+      data: {
+        eventId: event.id,
+        name: "Data Structures & Algorithms",
+        type: "TYPE_TRANSFORM",
+        sequence: 4,
+        durationMin: 45,
+        maxScore: 100,
+        status: "DRAFT",
+      },
+    });
+  }
 
   console.log(`📍 Found/Created Round 4: ${round4.name} (${round4.id})`);
 

@@ -90,7 +90,7 @@ export default function AdminProjectorLeaderboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono font-black uppercase text-[#7F45DB] tracking-widest">
-                BYTECLASH 2026 · GRAND ARENA STAGE
+                BYTEVERSE 2026 · GRAND ARENA STAGE
               </span>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 border border-emerald-400 text-emerald-800 text-[10px] font-mono font-bold">
                 <Radio className="w-3 h-3 text-emerald-600 animate-pulse" />

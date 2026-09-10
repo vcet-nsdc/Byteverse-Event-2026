@@ -17,6 +17,9 @@ import {
   Trophy,
   Loader2,
   RefreshCw,
+  Play,
+  Pause,
+  Square,
 } from "lucide-react";
 
 interface EventItem {
@@ -170,20 +173,40 @@ export default function AdminEventsClient({ userRole }: { userRole: string }) {
     }
   };
 
-  const toggleOngoingStatus = async (event: EventItem) => {
+  const setEventLifecycle = async (
+    event: EventItem,
+    action: "ACTIVATE" | "PAUSE" | "END"
+  ) => {
     try {
-      const newStatus = !event.isActive;
+      let payload: Record<string, any> = {};
+      if (action === "ACTIVATE") {
+        payload = { isActive: true, registrationOpen: true };
+      } else if (action === "PAUSE") {
+        payload = { isActive: false, registrationOpen: false };
+      } else if (action === "END") {
+        payload = { isActive: false, registrationOpen: false, endsAt: new Date().toISOString() };
+      }
+
       const res = await fetch(`/api/admin/events/${event.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: newStatus }),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error("Failed to toggle event status");
+      if (!res.ok) throw new Error("Failed to update event lifecycle status");
+
       setEvents((prev) =>
-        prev.map((e) => (e.id === event.id ? { ...e, isActive: newStatus } : e))
+        prev.map((e) =>
+          e.id === event.id ? { ...e, ...payload } : e
+        )
       );
       setSuccessMsg(
-        `Event "${event.name}" is now marked as ${newStatus ? "ONGOING / ACTIVE" : "INACTIVE"}.`
+        `Event "${event.name}" has been successfully ${
+          action === "ACTIVATE"
+            ? "ACTIVATED & SET TO LIVE"
+            : action === "PAUSE"
+            ? "PAUSED (ON HOLD)"
+            : "CONCLUDED & ENDED"
+        }!`
       );
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
@@ -304,7 +327,7 @@ export default function AdminEventsClient({ userRole }: { userRole: string }) {
           </div>
         ) : events.length === 0 ? (
           <div className="p-12 text-center text-[#6E6E6E] font-mono text-sm border-2 border-dashed border-[#1E1B4B]/20 rounded-2xl bg-white">
-            No events found. Click "ADD NEW EVENT" above to create one!
+            No events found. Click &quot;ADD NEW EVENT&quot; above to create one!
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
@@ -381,24 +404,53 @@ export default function AdminEventsClient({ userRole }: { userRole: string }) {
                   </div>
 
                   {/* Action Controls */}
-                  <div className="flex items-center gap-2.5 flex-wrap lg:flex-nowrap border-t lg:border-t-0 pt-4 lg:pt-0 border-[#1E1B4B]/10">
-                    <button
-                      onClick={() => toggleOngoingStatus(ev)}
-                      className={`px-3.5 py-2 rounded-xl border-2 border-[#1E1B4B] font-mono font-bold text-xs shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all ${
-                        ev.isActive
-                          ? "bg-amber-100 text-amber-900 hover:bg-amber-200"
-                          : "bg-emerald-500 text-white hover:bg-emerald-600"
-                      }`}
-                    >
-                      {ev.isActive ? "Mark Inactive / End" : "Set as Ongoing"}
-                    </button>
+                  <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap border-t lg:border-t-0 pt-4 lg:pt-0 border-[#1E1B4B]/10">
+                    {!ev.isActive ? (
+                      <button
+                        onClick={() => setEventLifecycle(ev, "ACTIVATE")}
+                        className="px-3.5 py-2 rounded-xl border-2 border-[#1E1B4B] bg-emerald-500 text-white font-mono font-black text-xs shadow-[2px_2px_0px_0px_#1E1B4B] hover:bg-emerald-600 hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-1.5"
+                        title="Publish and make this event live"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>ACTIVATE / LIVE</span>
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => setEventLifecycle(ev, "PAUSE")}
+                          className="px-3.5 py-2 rounded-xl border-2 border-[#1E1B4B] bg-amber-400 text-[#1E1B4B] font-mono font-black text-xs shadow-[2px_2px_0px_0px_#1E1B4B] hover:bg-amber-500 hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-1.5"
+                          title="Temporarily hold or pause this event"
+                        >
+                          <Pause className="w-3.5 h-3.5 fill-current" />
+                          <span>PAUSE</span>
+                        </button>
+
+                        <button
+                          onClick={() => setEventLifecycle(ev, "END")}
+                          className="px-3.5 py-2 rounded-xl border-2 border-[#1E1B4B] bg-rose-500 text-white font-mono font-black text-xs shadow-[2px_2px_0px_0px_#1E1B4B] hover:bg-rose-600 hover:translate-x-0.5 hover:translate-y-0.5 transition-all flex items-center gap-1.5"
+                          title="Conclude and mark event as ended"
+                        >
+                          <Square className="w-3.5 h-3.5 fill-current" />
+                          <span>END EVENT</span>
+                        </button>
+                      </>
+                    )}
 
                     <button
                       onClick={() => openEditModal(ev)}
                       className="px-3.5 py-2 rounded-xl border-2 border-[#1E1B4B] bg-white font-mono font-bold text-xs text-[#0F172A] shadow-[2px_2px_0px_0px_#1E1B4B] hover:bg-[#F0F2F8] transition-all"
                     >
-                      Edit Details
+                      Edit
                     </button>
+
+                    <Link
+                      href="/admin/rounds"
+                      className="px-3 py-2 rounded-xl border-2 border-[#1E1B4B] bg-violet-50 text-[#7F45DB] font-mono font-bold text-xs shadow-[2px_2px_0px_0px_#1E1B4B] hover:bg-violet-100 transition-all flex items-center gap-1"
+                      title="Manage event rounds and challenge problems"
+                    >
+                      <Trophy className="w-3.5 h-3.5" />
+                      <span>Rounds</span>
+                    </Link>
 
                     <Link
                       href="/event"

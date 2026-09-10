@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   Trophy,
   Sparkles,
@@ -13,7 +14,9 @@ import {
   LucideIcon,
   Shield,
   ShieldCheck,
+  ShieldAlert,
   UserCheck,
+  LogOut,
 } from "lucide-react";
 import { requireRole } from "@/lib/rbac";
 import type { UserRole } from "@/types";
@@ -33,14 +36,15 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Overview", href: "/admin", exact: true, icon: LayoutDashboard },
+  { label: "SuperAdmin", href: "/admin/superadmin", exact: false, icon: ShieldAlert, minRole: "SUPER_ADMIN" },
   { label: "Contests", href: "/admin/contests", exact: false, icon: Trophy, minRole: "ADMIN" },
-  { label: "Events", href: "/admin/events", exact: false, icon: Calendar, minRole: "ORGANIZER" },
-  { label: "Registered Users", href: "/admin/users", exact: false, icon: Users, minRole: "ORGANIZER" },
-  { label: "Round Control", href: "/admin/rounds", exact: false, icon: Layers, minRole: "ORGANIZER" },
-  { label: "Teams", href: "/admin/teams", exact: false, icon: UserCheck, minRole: "ORGANIZER" },
+  { label: "Events", href: "/admin/events", exact: false, icon: Calendar, minRole: "ADMIN" },
+  { label: "Registered Users", href: "/admin/users", exact: false, icon: Users, minRole: "ADMIN" },
+  { label: "Round Control", href: "/admin/rounds", exact: false, icon: Layers, minRole: "ADMIN" },
+  { label: "Teams", href: "/admin/teams", exact: false, icon: UserCheck, minRole: "ADMIN" },
   { label: "AI Key Pool", href: "/admin/ai", exact: false, icon: Sparkles, minRole: "ADMIN" },
-  { label: "Announcements", href: "/admin/announcements", exact: false, icon: Megaphone, minRole: "ORGANIZER" },
-  { label: "Leaderboard", href: "/admin/leaderboard", exact: false, icon: Trophy, minRole: "ORGANIZER" },
+  { label: "Announcements", href: "/admin/announcements", exact: false, icon: Megaphone, minRole: "ADMIN" },
+  { label: "Leaderboard", href: "/admin/leaderboard", exact: false, icon: Trophy, minRole: "ADMIN" },
 ];
 
 export default function AdminNavbar({ userRole, userEmail }: AdminNavbarProps) {
@@ -57,7 +61,7 @@ export default function AdminNavbar({ userRole, userEmail }: AdminNavbarProps) {
         <Link href="/admin" className="flex items-center gap-2.5 shrink-0">
           <span className="w-3 h-3 rounded-full bg-[#7F45DB] animate-pulse" />
           <span className="font-extrabold font-mono text-base sm:text-lg text-[#0F172A] tracking-tight uppercase">
-            BYTECLASH <span className="text-[#7F45DB]">ADMIN</span>
+            BYTEVERSE <span className="text-[#7F45DB]">ADMIN</span>
           </span>
         </Link>
 
@@ -103,6 +107,17 @@ export default function AdminNavbar({ userRole, userEmail }: AdminNavbarProps) {
         <span className="text-[#6E6E6E] hidden xl:inline font-mono text-xs font-medium max-w-[160px] truncate">
           {userEmail}
         </span>
+        <button
+          type="button"
+          onClick={async () => {
+            await signOut({ callbackUrl: "/admin-login" });
+          }}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border-2 border-rose-500 bg-rose-50 hover:bg-rose-100 text-rose-700 font-mono text-[11px] font-black transition-all shadow-[1px_1px_0px_0px_#EF4444] cursor-pointer"
+          title="Sign out of administrative console"
+        >
+          <LogOut className="w-3 h-3" />
+          <span className="hidden sm:inline">Logout</span>
+        </button>
       </div>
     </nav>
   );

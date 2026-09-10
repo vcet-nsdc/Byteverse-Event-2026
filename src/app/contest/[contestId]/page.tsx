@@ -2,6 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Trophy,
   Clock,
@@ -13,6 +14,9 @@ import {
   CheckCircle2,
   Calendar,
   Zap,
+  ShieldAlert,
+  XCircle,
+  Lock,
 } from "lucide-react";
 
 interface ContestDetail {
@@ -48,10 +52,55 @@ export default function ContestDetailPage({
   params: Promise<{ contestId: string }>;
 }) {
   const { contestId } = use(params);
+  const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [contest, setContest] = useState<ContestDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"problems" | "leaderboard">("problems");
   const [registering, setRegistering] = useState(false);
+  const [isDisqualified, setIsDisqualified] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      return (
+        urlParams.get("disqualified") === "true" ||
+        sessionStorage.getItem(`bv_contest_disqualified_${contestId}`) === "true" ||
+        localStorage.getItem(`bv_contest_disqualified_${contestId}`) === "true" ||
+        sessionStorage.getItem(`bv_contest_lives_${contestId}`) === "0"
+      );
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    async function loadSession() {
+      try {
+        const res = await fetch("/api/auth/session");
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.user?.id) {
+            setCurrentUser(data.user);
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+    loadSession();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isDisqual =
+        urlParams.get("disqualified") === "true" ||
+        sessionStorage.getItem(`bv_contest_disqualified_${contestId}`) === "true" ||
+        localStorage.getItem(`bv_contest_disqualified_${contestId}`) === "true" ||
+        sessionStorage.getItem(`bv_contest_lives_${contestId}`) === "0";
+      if (isDisqual) {
+        setIsDisqualified(true);
+      }
+    }
+  }, [contestId]);
 
   useEffect(() => {
     async function loadContest() {
@@ -71,6 +120,10 @@ export default function ContestDetailPage({
   }, [contestId]);
 
   const handleRegister = async () => {
+    if (!currentUser) {
+      router.push(`/login?callbackUrl=${encodeURIComponent(`/contest/${contestId}`)}`);
+      return;
+    }
     setRegistering(true);
     try {
       const res = await fetch(`/api/contests/${contestId}/register`, {
@@ -88,7 +141,7 @@ export default function ContestDetailPage({
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F8F9FD] flex items-center justify-center font-mono text-sm text-[#6E6E6E]">
+      <main className="min-h-screen bg-transparent flex items-center justify-center font-mono text-sm text-[#6E6E6E] dark:text-[#94A3B8]">
         Loading contest arena...
       </main>
     );
@@ -96,9 +149,9 @@ export default function ContestDetailPage({
 
   if (!contest) {
     return (
-      <main className="min-h-screen bg-[#F8F9FD] flex flex-col items-center justify-center font-sans p-6 text-center space-y-4">
-        <h1 className="text-2xl font-black text-[#0F172A]">Contest Not Found</h1>
-        <p className="text-sm font-mono text-[#6E6E6E]">The requested contest could not be found or has concluded.</p>
+      <main className="min-h-screen bg-transparent flex flex-col items-center justify-center font-sans p-6 text-center space-y-4">
+        <h1 className="text-2xl font-black text-[#0F172A] dark:text-white">Contest Not Found</h1>
+        <p className="text-sm font-mono text-[#6E6E6E] dark:text-[#94A3B8]">The requested contest could not be found or has concluded.</p>
         <Link
           href="/contest"
           className="px-6 py-2.5 rounded-xl bg-[#7F45DB] text-white font-mono font-bold text-xs uppercase"
@@ -112,8 +165,29 @@ export default function ContestDetailPage({
   const isActive = contest.status === "ACTIVE";
 
   return (
-    <main className="min-h-screen bg-[#F8F9FD] text-[#0F172A] py-10 px-4 sm:px-6 lg:px-8 font-sans">
+    <main className="min-h-screen bg-transparent text-[#0F172A] dark:text-[#F8FAFC] py-10 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-500">
       <div className="max-w-5xl mx-auto space-y-8">
+        {/* Red Disqualification Alert Banner */}
+        {isDisqualified && (
+          <div className="bg-red-950/90 border-2 border-red-600 rounded-3xl p-6 sm:p-8 shadow-[0_0_40px_rgba(220,38,38,0.4)] text-white space-y-3 animate-in fade-in duration-200">
+            <div className="flex items-center gap-2.5 text-red-400 font-mono font-black text-sm sm:text-base uppercase tracking-wider">
+              <ShieldAlert className="w-5 h-5 text-red-500 animate-pulse shrink-0" />
+              <span>DISQUALIFIED FROM COMPETITION (0 HEARTS REMAINING)</span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-200 font-mono leading-relaxed">
+              You have been disqualified and removed from this contest for zero-tolerance anti-cheat infractions (all 3 hearts depleted). Workstation arena access has been revoked and all contest problem statements and submissions are locked.
+            </p>
+            <div className="flex items-center gap-2 pt-1">
+              <span className="px-3 py-1 rounded-lg bg-red-600 text-white font-black text-xs font-mono tracking-wider uppercase border border-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]">
+                Status: DISQUALIFIED
+              </span>
+              <span className="px-3 py-1 rounded-lg bg-slate-900 text-slate-400 border border-slate-700 text-xs font-mono font-bold">
+                Lives: 0 / 3 Hearts
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Contest Header Card */}
         <div className="bg-white border-2 border-[#1E1B4B] rounded-3xl p-6 sm:p-8 shadow-[6px_6px_0px_0px_#1E1B4B] space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#1E1B4B]/10 pb-4">
@@ -138,7 +212,20 @@ export default function ContestDetailPage({
             </div>
 
             <div className="flex items-center gap-3">
-              {!contest.isRegistered ? (
+              {isDisqualified ? (
+                <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-600 text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-red-800 shadow-[0_0_12px_rgba(239,68,68,0.6)]">
+                  <XCircle className="w-4 h-4" />
+                  <span>DISQUALIFIED</span>
+                </div>
+              ) : !currentUser ? (
+                <Link
+                  href={`/login?callbackUrl=${encodeURIComponent(`/contest/${contestId}`)}`}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#7F45DB] text-white font-mono font-black text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[4px_4px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+                >
+                  <Lock className="w-4 h-4" />
+                  <span>Log In to Register</span>
+                </Link>
+              ) : !contest.isRegistered ? (
                 <button
                   onClick={handleRegister}
                   disabled={registering}
@@ -170,7 +257,9 @@ export default function ContestDetailPage({
             <div className="p-3 rounded-xl bg-[#F8F9FD] border border-[#1E1B4B]/20">
               <span className="text-[10px] font-mono text-[#6E6E6E] uppercase block">Duration</span>
               <span className="font-mono font-bold text-xs text-[#0F172A] block mt-0.5">
-                90 Minutes
+                {contest.startsAt && contest.endsAt
+                  ? `${Math.max(1, Math.round((new Date(contest.endsAt).getTime() - new Date(contest.startsAt).getTime()) / 60000))} Minutes`
+                  : "90 Minutes"}
               </span>
             </div>
 
@@ -227,13 +316,17 @@ export default function ContestDetailPage({
               >
                 <div className="flex items-center gap-4">
                   <div className="w-9 h-9 rounded-xl bg-[#F0F2F8] border border-[#1E1B4B]/20 flex items-center justify-center font-mono font-black text-sm text-[#0F172A]">
-                    {String.fromCharCode(65 + idx)}
+                    {idx + 1}
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-[#0F172A] hover:text-[#7F45DB] transition-colors">
-                      <Link href={`/practice/${prob.id}?contestId=${contest.id}`}>
-                        {prob.title}
-                      </Link>
+                      {isDisqualified ? (
+                        <span className="text-slate-500 cursor-not-allowed line-through">{prob.title}</span>
+                      ) : (
+                        <Link href={`/contest/${contest.id}/arena/${prob.id}`}>
+                          {prob.title}
+                        </Link>
+                      )}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                       <span
@@ -259,13 +352,28 @@ export default function ContestDetailPage({
                   </div>
                 </div>
 
-                <Link
-                  href={`/practice/${prob.id}?contestId=${contest.id}`}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#7F45DB] text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
-                >
-                  <span>Solve Problem</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                {isDisqualified ? (
+                  <div className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-red-950/80 text-red-400 font-mono font-black text-xs uppercase tracking-wider border border-red-700/60 cursor-not-allowed shadow-sm">
+                    <XCircle className="w-3.5 h-3.5" />
+                    <span>Disqualified</span>
+                  </div>
+                ) : !currentUser ? (
+                  <Link
+                    href={`/login?callbackUrl=${encodeURIComponent(`/contest/${contest.id}/arena/${prob.id}`)}`}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#7F45DB] text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Log In to Solve</span>
+                  </Link>
+                ) : (
+                  <Link
+                    href={`/contest/${contest.id}/arena/${prob.id}`}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#7F45DB] text-white font-mono font-bold text-xs uppercase tracking-wider border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all"
+                  >
+                    <span>Solve Problem</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                )}
               </div>
             ))}
           </div>

@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 import {
   Code2,
   Trophy,
@@ -63,42 +66,40 @@ export default function Navbar() {
     setUserDropdownOpen(false);
   }, [pathname]);
 
-  // Hide Navbar in the full-screen tournament rounds workspace
-  if (pathname.startsWith("/rounds/")) {
-    return null;
-  }
-
-  // Admin layouts already have AdminNavbar
-  if (pathname.startsWith("/admin")) {
+  // Hide Navbar in the full-screen tournament rounds workspace, contest arena, and admin portals
+  if (
+    pathname.startsWith("/rounds/") ||
+    pathname.startsWith("/admin") ||
+    pathname === "/admin-login" ||
+    pathname === "/superadmin-login" ||
+    (pathname.startsWith("/contest/") && pathname.includes("/arena/"))
+  ) {
     return null;
   }
 
   const isAdmin = user?.role && ["ADMIN", "SUPER_ADMIN", "ORGANIZER"].includes(user.role);
 
   return (
-    <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-2 border-[#1E1B4B] shadow-sm">
+    <nav className="sticky top-0 z-40 bg-white/95 dark:bg-[#0C0F1D]/90 backdrop-blur-md border-b-2 border-[#1E1B4B] dark:border-[#2D2755] shadow-sm transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo */}
-          <div className="flex items-center gap-6">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-[#7F45DB] border-2 border-[#1E1B4B] shadow-[2px_2px_0px_0px_#1E1B4B] flex items-center justify-center text-white font-mono font-black text-base group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-none transition-all">
-                BC
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-black text-lg text-[#0F172A] tracking-tight uppercase">
-                    BYTE<span className="text-[#7F45DB]">CLASH</span>
-                  </span>
-                  <span className="px-1.5 py-0.5 text-[9px] font-mono font-black uppercase rounded bg-[#7F45DB]/10 text-[#7F45DB] border border-[#7F45DB]/30">
-                    2026
-                  </span>
-                </div>
+          <div className="flex items-center gap-4 sm:gap-5">
+            <Link href="/" className="flex items-center gap-2 group shrink-0">
+              <div className="relative h-11 w-auto flex items-center">
+                <Image
+                  src="/assets/byteverse-logo.png?v=3"
+                  alt="ByteVerse Logo"
+                  width={150}
+                  height={50}
+                  className="h-10 sm:h-11 w-auto object-contain drop-shadow-sm dark:drop-shadow-[0_0_10px_rgba(164,114,247,0.35)] group-hover:scale-105 group-hover:-translate-y-0.5 transition-all duration-200"
+                  priority
+                />
               </div>
             </Link>
 
             {/* Desktop Navigation Links */}
-            <div className="hidden md:flex items-center gap-1.5 pl-4 border-l-2 border-[#1E1B4B]/10">
+            <div className="hidden md:flex items-center gap-1.5 pl-3.5 border-l-2 border-[#1E1B4B]/15 dark:border-[#A472F7]/20">
               {NAV_LINKS.map((item) => {
                 const isActive = item.exact
                   ? pathname === item.href
@@ -111,8 +112,8 @@ export default function Navbar() {
                     href={item.href}
                     className={`px-3.5 py-1.5 rounded-xl text-xs font-mono tracking-wider transition-all flex items-center gap-1.5 ${
                       isActive
-                        ? "bg-[#7F45DB] text-white border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] font-black"
-                        : "text-[#6E6E6E] hover:text-[#0F172A] hover:bg-[#F0F2F8] border-2 border-transparent font-bold"
+                        ? "bg-[#7F45DB] text-white border-2 border-[#1E1B4B] dark:border-[#A472F7] shadow-[3px_3px_0px_0px_#1E1B4B] dark:shadow-[3px_3px_0px_0px_#A472F7] font-black"
+                        : "text-[#6E6E6E] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white hover:bg-[#F0F2F8] dark:hover:bg-[#1A1830] border-2 border-transparent font-bold"
                     }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
@@ -123,28 +124,30 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Right Controls: Profile / Auth */}
+          {/* Right Controls: Theme Toggle & Profile / Auth */}
           <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
+
             {user ? (
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border-2 border-[#1E1B4B] bg-white shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all"
+                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border-2 border-[#1E1B4B] dark:border-[#A472F7] bg-white dark:bg-[#16122C] shadow-[3px_3px_0px_0px_#1E1B4B] dark:shadow-[3px_3px_0px_0px_#A472F7] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
                 >
                   <div className="w-6 h-6 rounded-lg bg-[#7F45DB]/15 text-[#7F45DB] font-mono font-black text-xs flex items-center justify-center border border-[#7F45DB]/30">
                     {user.name ? user.name[0].toUpperCase() : "U"}
                   </div>
-                  <span className="text-xs font-mono font-black text-[#0F172A] max-w-[120px] truncate">
+                  <span className="text-xs font-mono font-black text-[#0F172A] dark:text-white max-w-[120px] truncate">
                     {user.name || "PROFILE"}
                   </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#6E6E6E]" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[#6E6E6E] dark:text-[#94A3B8]" />
                 </button>
 
                 {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white border-2 border-[#1E1B4B] rounded-2xl shadow-[5px_5px_0px_0px_#1E1B4B] py-2 z-50 animate-in fade-in slide-in-from-top-2">
-                    <div className="px-4 py-2 border-b border-[#1E1B4B]/10">
-                      <p className="text-xs font-bold text-[#0F172A] truncate">{user.name || "User"}</p>
-                      <p className="text-[10px] font-mono text-[#6E6E6E] truncate">{user.email}</p>
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#16122C] border-2 border-[#1E1B4B] dark:border-[#A472F7] rounded-2xl shadow-[5px_5px_0px_0px_#1E1B4B] dark:shadow-[5px_5px_0px_0px_#A472F7] py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                    <div className="px-4 py-2 border-b border-[#1E1B4B]/10 dark:border-[#2D2755]">
+                      <p className="text-xs font-bold text-[#0F172A] dark:text-white truncate">{user.name || "User"}</p>
+                      <p className="text-[10px] font-mono text-[#6E6E6E] dark:text-[#94A3B8] truncate">{user.email}</p>
                       {user.role && (
                         <span className="inline-block mt-1 px-2 py-0.5 text-[9px] font-mono font-bold rounded-md bg-[#7F45DB]/10 text-[#7F45DB] border border-[#7F45DB]/20">
                           {user.role}
@@ -154,7 +157,7 @@ export default function Navbar() {
 
                     <Link
                       href="/profile"
-                      className="flex items-center gap-2 px-4 py-2 text-xs font-mono font-bold text-[#0F172A] hover:bg-[#F0F2F8]"
+                      className="flex items-center gap-2 px-4 py-2 text-xs font-mono font-bold text-[#0F172A] dark:text-white hover:bg-[#F0F2F8] dark:hover:bg-[#201A3F]"
                     >
                       <User className="w-4 h-4 text-[#7F45DB]" />
                       <span>My Profile & Stats</span>
@@ -163,22 +166,26 @@ export default function Navbar() {
                     {isAdmin && (
                       <Link
                         href="/admin"
-                        className="flex items-center gap-2 px-4 py-2 text-xs font-mono font-bold text-amber-700 hover:bg-amber-50"
+                        className="flex items-center gap-2 px-4 py-2 text-xs font-mono font-bold text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30"
                       >
-                        <ShieldAlert className="w-4 h-4 text-amber-600" />
+                        <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                         <span>Admin Console</span>
                       </Link>
                     )}
 
-                    <div className="border-t border-[#1E1B4B]/10 my-1" />
+                    <div className="border-t border-[#1E1B4B]/10 dark:border-[#2D2755] my-1" />
 
-                    <Link
-                      href="/login"
-                      className="flex items-center gap-2 px-4 py-2 text-xs font-mono font-bold text-rose-600 hover:bg-rose-50"
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setUserDropdownOpen(false);
+                        await signOut({ callbackUrl: "/login" });
+                      }}
+                      className="w-full flex items-center gap-2 px-4 py-2 text-xs font-mono font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-left transition-colors cursor-pointer"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>Sign Out / Switch</span>
-                    </Link>
+                    </button>
                   </div>
                 )}
               </div>
@@ -186,25 +193,30 @@ export default function Navbar() {
               <div className="flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="px-4 py-1.5 rounded-xl border-2 border-[#1E1B4B] bg-[#7F45DB] text-white font-mono font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_0px_#1E1B4B] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_#1E1B4B] transition-all"
+                  className="px-3.5 py-1.5 rounded-xl border-2 border-[#1E1B4B] dark:border-[#A472F7] bg-white dark:bg-[#16122C] text-[#0F172A] dark:text-white font-mono font-bold text-xs uppercase tracking-wider shadow-[3px_3px_0px_0px_#1E1B4B] dark:shadow-[3px_3px_0px_0px_#A472F7] hover:bg-[#F0F2F8] dark:hover:bg-[#201A3F] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
                 >
                   Sign In
                 </Link>
                 <Link
-                  href="/team"
-                  className="px-3.5 py-1.5 rounded-xl border-2 border-[#1E1B4B] bg-white text-[#0F172A] font-mono font-bold text-xs uppercase tracking-wider shadow-[3px_3px_0px_0px_#1E1B4B] hover:bg-[#F0F2F8] transition-all"
+                  href="/login?mode=signup"
+                  className="px-4 py-1.5 rounded-xl border-2 border-[#1E1B4B] dark:border-[#A472F7] bg-[#7F45DB] text-white font-mono font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_0px_#1E1B4B] dark:shadow-[3px_3px_0px_0px_#A472F7] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
                 >
-                  Register
+                  Sign Up
                 </Link>
               </div>
             )}
           </div>
 
-          {/* Mobile Hamburger Button */}
+          {/* Mobile Right Controls: Theme Toggle & Hamburger */}
           <div className="flex md:hidden items-center gap-2">
+            <ThemeToggle />
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-xl border-2 border-[#1E1B4B] bg-white text-[#0F172A] shadow-[2px_2px_0px_0px_#1E1B4B]"
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+              title="Toggle navigation menu"
+              className="p-2 rounded-xl border-2 border-[#1E1B4B] dark:border-[#A472F7] bg-white dark:bg-[#16122C] text-[#0F172A] dark:text-white shadow-[2px_2px_0px_0px_#1E1B4B] dark:shadow-[2px_2px_0px_0px_#A472F7] cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -214,7 +226,7 @@ export default function Navbar() {
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t-2 border-[#1E1B4B] bg-[#F8F9FD] px-4 pt-3 pb-6 space-y-2">
+        <div className="md:hidden border-t-2 border-[#1E1B4B] dark:border-[#2D2755] bg-[#F8F9FD] dark:bg-[#0C0F1D] px-4 pt-3 pb-6 space-y-2">
           {NAV_LINKS.map((item) => {
             const isActive = item.exact
               ? pathname === item.href
@@ -256,14 +268,33 @@ export default function Navbar() {
                     <span>Admin Dashboard</span>
                   </Link>
                 )}
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setMobileMenuOpen(false);
+                    await signOut({ callbackUrl: "/login" });
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 text-xs font-mono font-bold transition-all cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out / Switch</span>
+                </button>
               </div>
             ) : (
-              <Link
-                href="/login"
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#7F45DB] text-white border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] text-xs font-mono font-black uppercase"
-              >
-                Sign In
-              </Link>
+              <div className="flex flex-col gap-2">
+                <Link
+                  href="/login"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white text-[#0F172A] border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] text-xs font-mono font-black uppercase"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/login?mode=signup"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#7F45DB] text-white border-2 border-[#1E1B4B] shadow-[3px_3px_0px_0px_#1E1B4B] text-xs font-mono font-black uppercase"
+                >
+                  Sign Up
+                </Link>
+              </div>
             )}
           </div>
         </div>

@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { z } from "zod";
-
-const voteSchema = z.object({
-  value: z.number().int().min(-1).max(1), // 1 or -1
-});
+import * as discussionStore from "@/lib/discussion-store";
 
 export async function POST(
   req: NextRequest,
@@ -14,58 +10,63 @@ export async function POST(
   const { id } = await params;
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized. You must be logged in to upvote." }, { status: 401 });
   }
 
-  const body = await req.json();
-  const parsed = voteSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
-  }
-
-  const { value } = parsed.data;
   const userId = session.user.id;
 
-  const discussion = await db.discussion.findUnique({ where: { id } });
-  if (!discussion) return NextResponse.json({ error: "Discussion not found" }, { status: 404 });
+  try {
+    const discussion = await db.discussion.findUnique({ where: { id } });
+    if (discussion) {
+      const existingVote = await db.discussionVote.findUnique({
+        where: { discussionId_userId: { discussionId: id, userId } },
+      });
 
-  const existingVote = await db.discussionVote.findUnique({
-    where: { discussionId_userId: { discussionId: id, userId } },
-  });
+      let delta = 0;
+      let newVoteValue = 1;
 
-  let delta = 0;
-  let newVoteValue = value;
+      if (!existingVote) {
+        // First upvote
+        delta = 1;
+        await db.discussionVote.create({
+          data: { discussionId: id, userId, value: 1 },
+        });
+      } else if (existingVote.value === 1) {
+        // Toggle off upvote
+        delta = -1;
+        newVoteValue = 0;
+        await db.discussionVote.delete({
+          where: { id: existingVote.id },
+        });
+      } else {
+        // Convert any legacy downvote to an upvote
+        delta = 2;
+        await db.discussionVote.update({
+          where: { id: existingVote.id },
+          data: { value: 1 },
+        });
+      }
 
-  if (!existingVote) {
-    // New vote
-    delta = value;
-    await db.discussionVote.create({
-      data: { discussionId: id, userId, value },
-    });
-  } else if (existingVote.value === value) {
-    // Same vote clicked again: remove vote (toggle off)
-    delta = -value;
-    newVoteValue = 0;
-    await db.discussionVote.delete({
-      where: { id: existingVote.id },
-    });
-  } else {
-    // Changed vote from -1 to 1 or 1 to -1
-    delta = value * 2;
-    await db.discussionVote.update({
-      where: { id: existingVote.id },
-      data: { value },
-    });
+      const updated = await db.discussion.update({
+        where: { id },
+        data: { upvotes: { increment: delta } },
+        select: { id: true, upvotes: true },
+      });
+
+      return NextResponse.json({
+        upvotes: Math.max(0, updated.upvotes),
+        userVote: newVoteValue,
+      });
+    }
+  } catch (err) {
+    console.warn("[DiscussionsVoteAPI] DB vote failed, using fallback store:", err);
   }
 
-  const updated = await db.discussion.update({
-    where: { id },
-    data: { upvotes: { increment: delta } },
-    select: { id: true, upvotes: true },
-  });
+  // Fallback store upvote toggle
+  const result = discussionStore.toggleUpvote(id, userId);
+  if (result) {
+    return NextResponse.json(result);
+  }
 
-  return NextResponse.json({
-    upvotes: updated.upvotes,
-    userVote: newVoteValue,
-  });
+  return NextResponse.json({ error: "Discussion not found" }, { status: 404 });
 }

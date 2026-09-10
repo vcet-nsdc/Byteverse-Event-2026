@@ -93,7 +93,7 @@ export async function calculateTeamScore(
     select: { eventId: true },
   });
 
-  if (event) {
+  if (event && event.eventId) {
     await redisClient.del(CACHE_KEYS.leaderboardTeam(event.eventId));
     await redisClient.del(CACHE_KEYS.leaderboardIndividual(event.eventId));
     await redisClient.publish(
@@ -287,7 +287,7 @@ export async function updateRoundScore(
     select: { eventId: true },
   });
 
-  if (event) {
+  if (event && event.eventId) {
     await redisClient.del(CACHE_KEYS.leaderboardIndividual(event.eventId));
     await redisClient.del(CACHE_KEYS.leaderboardTeam(event.eventId));
     await redisClient.publish(
