@@ -170,65 +170,68 @@ const Starfield: React.FC<StarfieldProps> = ({
     }
   }, [measureViewport, ratio]);
 
-  const update = (dtFactor: number) => {
-    const { w, h, z, x: cx, y: cy, stars } = sd.current;
-    if (stars.length === 0) return;
+  const update = useCallback(
+    (dtFactor: number) => {
+      const { w, h, z, x: cx, y: cy, stars } = sd.current;
+      if (stars.length === 0) return;
 
-    // Only calculate lateral drift if mouseAdjust is explicitly enabled
-    if (mouseAdjust) {
-      const targetMx = (cursor.current.x - cx) / Math.max(1, easing);
-      const targetMy = (cursor.current.y - cy) / Math.max(1, easing);
-      mouse.current.x += (targetMx - mouse.current.x) * 0.1;
-      mouse.current.y += (targetMy - mouse.current.y) * 0.1;
-    } else {
-      mouse.current.x = 0;
-      mouse.current.y = 0;
-    }
-
-    const lateralX = mouseAdjust ? Math.max(-6, Math.min(6, mouse.current.x >> 4)) : 0;
-    const lateralY = mouseAdjust ? Math.max(-6, Math.min(6, mouse.current.y >> 4)) : 0;
-    const moveZ = currentSpeed * dtFactor;
-
-    for (let i = 0; i < stars.length; i++) {
-      const star = stars[i];
-
-      // Save previous screen coords for streak
-      star[5] = star[3];
-      star[6] = star[4];
-
-      // Apply lateral shifts only if mouseAdjust is active
+      // Only calculate lateral drift if mouseAdjust is explicitly enabled
       if (mouseAdjust) {
-        star[0] += lateralX * dtFactor;
-        star[1] += lateralY * dtFactor;
-
-        // Wrap around bounds
-        if (star[0] > w) star[0] -= w * 2;
-        if (star[0] < -w) star[0] += w * 2;
-        if (star[1] > h) star[1] -= h * 2;
-        if (star[1] < -h) star[1] += h * 2;
-      }
-
-      // Move forward along z
-      star[2] -= moveZ;
-
-      // When star passes camera plane (z <= 0), recycle to the far background
-      if (star[2] <= 0) {
-        star[2] += z;
-        // Re-randomize x and y to maintain uniform density across cosmic space
-        star[0] = (Math.random() * 2 - 1) * w;
-        star[1] = (Math.random() * 2 - 1) * h;
-        star[7] = 0; // Disable streak on wrap-around frame
+        const targetMx = (cursor.current.x - cx) / Math.max(1, easing);
+        const targetMy = (cursor.current.y - cy) / Math.max(1, easing);
+        mouse.current.x += (targetMx - mouse.current.x) * 0.1;
+        mouse.current.y += (targetMy - mouse.current.y) * 0.1;
       } else {
-        star[7] = 1; // Enable streak
+        mouse.current.x = 0;
+        mouse.current.y = 0;
       }
 
-      const zSafe = Math.max(1, star[2]);
-      star[3] = cx + (star[0] / zSafe) * ratio;
-      star[4] = cy + (star[1] / zSafe) * ratio;
-    }
-  };
+      const lateralX = mouseAdjust ? Math.max(-6, Math.min(6, mouse.current.x >> 4)) : 0;
+      const lateralY = mouseAdjust ? Math.max(-6, Math.min(6, mouse.current.y >> 4)) : 0;
+      const moveZ = currentSpeed * dtFactor;
 
-  const draw = () => {
+      for (let i = 0; i < stars.length; i++) {
+        const star = stars[i];
+
+        // Save previous screen coords for streak
+        star[5] = star[3];
+        star[6] = star[4];
+
+        // Apply lateral shifts only if mouseAdjust is active
+        if (mouseAdjust) {
+          star[0] += lateralX * dtFactor;
+          star[1] += lateralY * dtFactor;
+
+          // Wrap around bounds
+          if (star[0] > w) star[0] -= w * 2;
+          if (star[0] < -w) star[0] += w * 2;
+          if (star[1] > h) star[1] -= h * 2;
+          if (star[1] < -h) star[1] += h * 2;
+        }
+
+        // Move forward along z
+        star[2] -= moveZ;
+
+        // When star passes camera plane (z <= 0), recycle to the far background
+        if (star[2] <= 0) {
+          star[2] += z;
+          // Re-randomize x and y to maintain uniform density across cosmic space
+          star[0] = (Math.random() * 2 - 1) * w;
+          star[1] = (Math.random() * 2 - 1) * h;
+          star[7] = 0; // Disable streak on wrap-around frame
+        } else {
+          star[7] = 1; // Enable streak
+        }
+
+        const zSafe = Math.max(1, star[2]);
+        star[3] = cx + (star[0] / zSafe) * ratio;
+        star[4] = cy + (star[1] / zSafe) * ratio;
+      }
+    },
+    [mouseAdjust, easing, currentSpeed, ratio]
+  );
+
+  const draw = useCallback(() => {
     const ctx = sd.current.ctx;
     if (!ctx) return;
 
@@ -278,7 +281,7 @@ const Starfield: React.FC<StarfieldProps> = ({
         ctx.fill();
       }
     }
-  };
+  }, [bgColor, isHyperspace, opacity, starColor]);
 
   const stop = useCallback(() => {
     if (animationFrameRef.current !== null) {
@@ -304,7 +307,7 @@ const Starfield: React.FC<StarfieldProps> = ({
 
       animationFrameRef.current = requestAnimationFrame(animate);
     },
-    [mouseAdjust, currentSpeed, isHyperspace, opacity, bgColor, starColor, easing]
+    [update, draw]
   );
 
   const init = useCallback(() => {

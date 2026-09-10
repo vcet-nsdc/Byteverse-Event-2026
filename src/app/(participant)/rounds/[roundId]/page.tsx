@@ -318,6 +318,7 @@ export default function RoundWorkspacePage() {
     if (curr.sampleInput) {
       setCustomInput(curr.sampleInput);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentProblemIdx, lang, problems]);
 
   // Reset terminal and execution results when switching questions
@@ -618,6 +619,7 @@ export default function RoundWorkspacePage() {
     if (timeLeft === 0 && roundState.phase === "ACTIVE" && !hasUserEndedRound) {
       handleConfirmEndRound();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, roundState.phase, hasUserEndedRound]);
 
   // Handle MCQ Option Selection with auto-save (Round 1)

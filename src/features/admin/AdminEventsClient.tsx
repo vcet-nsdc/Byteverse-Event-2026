@@ -327,7 +327,7 @@ export default function AdminEventsClient({ userRole }: { userRole: string }) {
           </div>
         ) : events.length === 0 ? (
           <div className="p-12 text-center text-[#6E6E6E] font-mono text-sm border-2 border-dashed border-[#1E1B4B]/20 rounded-2xl bg-white">
-            No events found. Click "ADD NEW EVENT" above to create one!
+            No events found. Click &quot;ADD NEW EVENT&quot; above to create one!
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">

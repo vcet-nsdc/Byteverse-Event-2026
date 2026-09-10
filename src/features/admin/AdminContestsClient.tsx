@@ -363,7 +363,7 @@ export default function AdminContestsClient({ userRole }: { userRole: string }) 
         </div>
       ) : filteredContests.length === 0 ? (
         <div className="p-12 text-center text-[#6E6E6E] font-mono text-sm border-2 border-dashed border-[#1E1B4B]/20 rounded-2xl bg-white">
-          No contests in this category. Click "CREATE & PUBLISH CONTEST" above!
+          No contests in this category. Click &quot;CREATE &amp; PUBLISH CONTEST&quot; above!
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -73,7 +73,7 @@ export default function AdminUsersClient({
   const [selectedRole, setSelectedRole] = useState("ALL");
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -90,14 +90,14 @@ export default function AdminUsersClient({
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchQuery, selectedRole]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchUsers();
     }, 250);
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedRole]);
+  }, [fetchUsers]);
 
   const exportCSV = () => {
     if (users.length === 0) return;
