@@ -172,6 +172,7 @@ model Round {
   roundScores RoundScore[]
   teamScores  TeamScore[]
 
+  @@unique([eventId, sequence])
   @@index([eventId])
   @@index([contestId])
   @@map("rounds")
