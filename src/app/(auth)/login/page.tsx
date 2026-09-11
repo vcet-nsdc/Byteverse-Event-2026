@@ -16,6 +16,7 @@ import {
   LogOut,
   Sparkles,
   Shield,
+  X,
 } from "lucide-react";
 
 function AuthForm() {
@@ -54,14 +55,53 @@ function AuthForm() {
     }
   }, [searchParams]);
 
+  const [googleModalLoading, setGoogleModalLoading] = useState(false);
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [googleEmailInput, setGoogleEmailInput] = useState("prathammewada7@gmail.com");
+
   const handleGoogleSignIn = async () => {
     setError("");
     setGoogleLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/contest" });
-    } catch {
-      setError("Google authentication failed. Please verify that Google OAuth is configured or use email authentication.");
+      const statusRes = await fetch("/api/auth/google/status").catch(() => null);
+      if (statusRes?.ok) {
+        const data = await statusRes.json();
+        if (data.configured) {
+          await signIn("google", { callbackUrl: "/contest" });
+          return;
+        }
+      }
       setGoogleLoading(false);
+      setShowGoogleModal(true);
+    } catch {
+      setGoogleLoading(false);
+      setShowGoogleModal(true);
+    }
+  };
+
+  const handleGoogleDevSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!googleEmailInput.trim()) return;
+    setGoogleModalLoading(true);
+    setError("");
+
+    try {
+      const res = await signIn("google-dev", {
+        email: googleEmailInput.trim().toLowerCase(),
+        name: googleEmailInput.split("@")[0],
+        redirect: false,
+      });
+
+      if (res?.error) {
+        setError("Google authentication failed. Please try again.");
+        setGoogleModalLoading(false);
+        return;
+      }
+
+      router.push("/contest");
+    } catch {
+      setError("An unexpected error occurred during Google Sign-In.");
+      setGoogleModalLoading(false);
     }
   };
 
@@ -492,6 +532,80 @@ function AuthForm() {
           Staff Login →
         </Link>
       </div>
+
+      {/* Google Local Quick-Sign In Modal */}
+      {showGoogleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white border-2 border-[#1E1B4B] rounded-2xl p-6 shadow-[8px_8px_0px_0px_#1E1B4B] space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b-2 border-[#1E1B4B]/10">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z" />
+                  <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.33 24 12 24z" />
+                  <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z" />
+                  <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" />
+                </svg>
+                <h3 className="font-display font-black text-lg text-[#0F172A] uppercase">
+                  Google Quick Sign-In
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGoogleModal(false)}
+                className="w-8 h-8 rounded-lg border-2 border-[#1E1B4B] bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-[#0F172A] cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3 rounded-xl bg-amber-50 border-2 border-amber-400 text-amber-900 text-xs font-mono">
+              <div className="font-bold flex items-center gap-1 mb-1">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span>Local Google Profile Login</span>
+              </div>
+              <p className="text-[11px] leading-relaxed">
+                OAuth client credentials (<code className="bg-amber-100 px-1 py-0.5 rounded font-bold">GOOGLE_CLIENT_ID</code>) are not configured in your <code className="bg-amber-100 px-1 py-0.5 rounded font-bold">.env.local</code>. You can authenticate directly with your Google account email below:
+              </p>
+            </div>
+
+            <form onSubmit={handleGoogleDevSignIn} className="space-y-4">
+              <div>
+                <label className="text-xs text-[#0F172A] font-extrabold uppercase tracking-wider block mb-1.5 font-mono">
+                  Google Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8A8A8A]" />
+                  <input
+                    type="email"
+                    value={googleEmailInput}
+                    onChange={(e) => setGoogleEmailInput(e.target.value)}
+                    placeholder="prathammewada7@gmail.com"
+                    required
+                    className="w-full bg-[#F8F9FD] text-[#0F172A] rounded-xl pl-10 pr-4 py-3 text-xs font-mono border-2 border-[#1E1B4B] focus:outline-none focus:border-[#7F45DB] transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowGoogleModal(false)}
+                  className="w-1/3 py-2.5 px-3 rounded-xl border-2 border-[#1E1B4B] bg-slate-100 hover:bg-slate-200 text-xs font-mono font-black text-[#0F172A] cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={googleModalLoading}
+                  className="w-2/3 py-2.5 px-3 rounded-xl border-2 border-[#1E1B4B] bg-[#7F45DB] hover:bg-[#6D35C7] text-white text-xs font-mono font-black uppercase tracking-wider shadow-[3px_3px_0px_0px_#1E1B4B] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                >
+                  <span>{googleModalLoading ? "Signing In..." : "Continue to Arena →"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
