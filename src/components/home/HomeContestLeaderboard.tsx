@@ -32,22 +32,32 @@ export default function HomeContestLeaderboard() {
         if (contestRes.ok) {
           const data = await contestRes.json();
           if (Array.isArray(data.leaderboard) && data.leaderboard.length > 0) {
-            setEntries(data.leaderboard.slice(0, 5));
+            const cleanList = data.leaderboard
+              .filter((e: any) => !e.name?.toLowerCase().includes("admin"))
+              .map((e: any, idx: number) => ({
+                rank: idx + 1,
+                participantId: e.participantId,
+                name: e.name || "Competitor",
+                college: e.college || "VCET",
+                score: e.score || 0,
+              }));
+            setEntries(cleanList.slice(0, 50));
           } else {
             // Fallback to event leaderboard if contest is fresh
             const eventRes = await fetch("/api/leaderboard/individual?eventId=byteverse-2026");
             if (eventRes.ok) {
               const evData = await eventRes.json();
               if (Array.isArray(evData)) {
-                setEntries(
-                  evData.slice(0, 5).map((e: any, idx: number) => ({
+                const cleanList = evData
+                  .filter((e: any) => !e.name?.toLowerCase().includes("admin"))
+                  .map((e: any, idx: number) => ({
                     rank: idx + 1,
                     participantId: e.participantId,
-                    name: e.name || "Anonymous",
-                    college: e.college || "NSDC",
+                    name: e.name || "Competitor",
+                    college: e.college || "VCET",
                     score: e.totalScore || 0,
-                  }))
-                );
+                  }));
+                setEntries(cleanList.slice(0, 50));
               }
             }
           }
@@ -69,9 +79,14 @@ export default function HomeContestLeaderboard() {
             <Trophy className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-xs font-mono font-black tracking-widest text-[#7F45DB] dark:text-[#A472F7] uppercase">
-              LIVE ARENA STANDINGS
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-black tracking-widest text-[#7F45DB] dark:text-[#A472F7] uppercase">
+                LIVE ARENA STANDINGS
+              </span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#7F45DB]/10 dark:bg-[#7F45DB]/25 text-[#7F45DB] dark:text-[#A472F7] border border-[#7F45DB]/30">
+                {entries.length > 0 ? `${entries.length} Active Participants` : "Live Arena"}
+              </span>
+            </div>
             <h2 className="text-xl sm:text-2xl font-display font-black text-[#0F172A] dark:text-white">
               Active Contest Leaderboard
             </h2>
@@ -92,9 +107,9 @@ export default function HomeContestLeaderboard() {
           Retrieving live competitor scores...
         </div>
       ) : entries.length > 0 ? (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-h-[500px] overflow-y-auto pr-1">
           <table className="w-full text-left font-mono text-xs">
-            <thead>
+            <thead className="sticky top-0 bg-white dark:bg-[#111726] z-10">
               <tr className="border-b-2 border-[#1E1B4B] dark:border-[#382F60] text-[#6E6E6E] dark:text-[#94A3B8] uppercase tracking-wider text-[10px]">
                 <th className="py-2.5 px-3 font-black">Rank</th>
                 <th className="py-2.5 px-3 font-black">Competitor</th>

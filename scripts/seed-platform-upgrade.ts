@@ -161,27 +161,58 @@ async function seedPlatformUpgrade() {
   });
   console.log("Seeded Contests.");
 
-  // 4. Seed Contest Participants for Active & Past Contests
-  const users = await db.user.findMany({ take: 10, select: { id: true, name: true } });
-  if (users.length > 0) {
-    for (let i = 0; i < Math.min(users.length, 5); i++) {
+  // 4. Seed Contest Participants for Active & Past Contests (Excluding Admin)
+  try {
+    const adminUsers = await db.user.findMany({
+      where: {
+        OR: [
+          { role: "ADMIN" },
+          { role: "SUPER_ADMIN" },
+          { name: { contains: "admin", mode: "insensitive" } },
+        ],
+      },
+      select: { id: true },
+    });
+    if (adminUsers.length > 0) {
+      await db.contestParticipant.deleteMany({
+        where: { userId: { in: adminUsers.map((a) => a.id) } },
+      });
+    }
+  } catch {}
+
+  const participants = await db.user.findMany({
+    where: {
+      role: "PARTICIPANT",
+      NOT: [
+        { name: { contains: "admin", mode: "insensitive" } },
+        { email: { contains: "admin", mode: "insensitive" } },
+      ],
+    },
+    take: 60,
+    select: { id: true, name: true },
+  });
+
+  if (participants.length > 0) {
+    for (let i = 0; i < participants.length; i++) {
+      const activeScore = Math.max(10, 450 - i * 8);
+      const pastScore = Math.max(10, 400 - i * 8);
       await db.contestParticipant.upsert({
-        where: { contestId_userId: { contestId: activeContest.id, userId: users[i].id } },
-        update: { score: (5 - i) * 100 + 50, rank: i + 1 },
+        where: { contestId_userId: { contestId: activeContest.id, userId: participants[i].id } },
+        update: { score: activeScore, rank: i + 1 },
         create: {
           contestId: activeContest.id,
-          userId: users[i].id,
-          score: (5 - i) * 100 + 50,
+          userId: participants[i].id,
+          score: activeScore,
           rank: i + 1,
         },
       });
       await db.contestParticipant.upsert({
-        where: { contestId_userId: { contestId: pastContest.id, userId: users[i].id } },
-        update: { score: (5 - i) * 100, rank: i + 1 },
+        where: { contestId_userId: { contestId: pastContest.id, userId: participants[i].id } },
+        update: { score: pastScore, rank: i + 1 },
         create: {
           contestId: pastContest.id,
-          userId: users[i].id,
-          score: (5 - i) * 100,
+          userId: participants[i].id,
+          score: pastScore,
           rank: i + 1,
         },
       });

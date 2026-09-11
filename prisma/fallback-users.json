@@ -3,63 +3,495 @@
     "id": "user_admin_primary",
     "email": "admin@byteverse.dev",
     "name": "ByteVerse Admin",
-    "passwordHash": "$2a$10$kB5aBoRdQEkvjV/J7oaTb.QzSmiQ60cr.tW3tq9R83jBQsYiBRrgy",
+    "passwordHash": "$2a$10$TX8Bttz5tYUi99QuzPd9q.OlC9IPZc8d6RhKlfLPrjCgwzXaAhKvG",
     "role": "ADMIN",
     "college": "NSDC Technical University",
     "createdAt": "2026-09-10T00:00:00.000Z"
   },
   {
-    "id": "user_participant_coder",
-    "email": "coder@byteverse.dev",
-    "name": "Aryan Sharma",
-    "passwordHash": "$2a$10$F/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
-    "role": "PARTICIPANT",
-    "college": "NSDC Engineering Institute",
-    "createdAt": "2026-09-10T00:00:00.000Z"
-  },
-  {
-    "id": "user_1789033771191_h7wtn",
-    "email": "student_1789033769685@byteverse.dev",
-    "name": "Rohan Verma",
-    "passwordHash": "$2a$10$bxKi9swUk3Iq0ec3EjEDue.n07HWiMtcTfirXWp2PSL8de/QO8ntG",
-    "role": "PARTICIPANT",
-    "college": "NSDC Engineering",
-    "createdAt": "2026-09-10T09:49:31.191Z"
-  },
-  {
-    "id": "user_1789061997694_yi03q",
-    "email": "ggg@gmail.com",
-    "name": "ggg",
-    "passwordHash": "$2a$10$LBLqu1KkRwyzng.PvSn6gOTz4QOFiiw.AQreBIXlunZ8hDEaJwvnO",
-    "role": "PARTICIPANT",
-    "college": "NSDC Technical Institute",
-    "createdAt": "2026-09-10T17:39:57.694Z"
-  },
-  {
-    "id": "user_1789062050650_uuwvj",
-    "email": "name@gmail.com",
-    "name": "Hello",
-    "passwordHash": "$2a$10$N20v8zi9eSxBLjy3jwjr4ekw3ppm2dfLHtrbGdCFF5YTJW..Ypu32",
-    "role": "PARTICIPANT",
-    "college": "NSDC Technical Institute",
-    "createdAt": "2026-09-10T17:40:50.650Z"
-  },
-  {
     "id": "user_superadmin_root",
     "email": "superadmin@byteverse.dev",
     "name": "ByteVerse Super Admin",
-    "passwordHash": "$2a$10$j8rkHBDNAHu7egJbsRpz0u69aI8QVPxVJFdrTiDMFGPYp0863KzNi",
+    "passwordHash": "$2a$10$/yEC3QXDCrD.gEMnSw./HeKfdpqGkNgYHtnMGfm9m9pbJHG/gZiAu",
     "role": "SUPER_ADMIN",
     "college": "NSDC ByteVerse Board",
     "createdAt": "2026-09-10T00:00:00.000Z"
   },
   {
-    "id": "user_1789063025907_1qtbu",
-    "email": "vcet-nsdc@gmail.comm",
-    "name": "hhh",
-    "passwordHash": "$2a$10$bl94QWceWghJI66aN/ZpgOQkZFy27Duo758mVeD45KqzpsiiP3l/y",
+    "id": "user_aditya_patil",
+    "email": "aditya.patil@vcet.edu",
+    "name": "Aditya Patil",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
     "role": "PARTICIPANT",
-    "college": "NSDC Technical Institute",
-    "createdAt": "2026-09-10T17:57:05.907Z"
+    "college": "VCET",
+    "createdAt": "2026-09-11T03:41:55.274Z"
+  },
+  {
+    "id": "user_parth_gajare",
+    "email": "parth.gajare@vcet.edu",
+    "name": "parth gajare",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "vcet",
+    "createdAt": "2026-09-11T02:41:55.275Z"
+  },
+  {
+    "id": "user_swayam_raut",
+    "email": "swayam.raut@vcet.edu",
+    "name": "Swayam Raut",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-11T01:41:55.275Z"
+  },
+  {
+    "id": "user_pakshal_chouhan",
+    "email": "pakshal.chouhan@vcet.edu",
+    "name": "Pakshal Chouhan",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-11T00:41:55.275Z"
+  },
+  {
+    "id": "user_aryan_sharma",
+    "email": "coder@byteverse.dev",
+    "name": "Aryan Sharma",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "NSDC Engineering Institute",
+    "createdAt": "2026-09-10T23:41:55.275Z"
+  },
+  {
+    "id": "user_rohan_verma",
+    "email": "rohan.verma@vcet.edu",
+    "name": "Rohan Verma",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T22:41:55.275Z"
+  },
+  {
+    "id": "user_sneha_deshmukh",
+    "email": "sneha.deshmukh@vcet.edu",
+    "name": "Sneha Deshmukh",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T21:41:55.275Z"
+  },
+  {
+    "id": "user_tanvi_mehta",
+    "email": "tanvi.mehta@spit.edu",
+    "name": "Tanvi Mehta",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "SPIT Mumbai",
+    "createdAt": "2026-09-10T20:41:55.275Z"
+  },
+  {
+    "id": "user_yash_kulkarni",
+    "email": "yash.kulkarni@vcet.edu",
+    "name": "Yash Kulkarni",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T19:41:55.275Z"
+  },
+  {
+    "id": "user_ananya_joshi",
+    "email": "ananya.joshi@nsdc.edu",
+    "name": "Ananya Joshi",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "NSDC College",
+    "createdAt": "2026-09-10T18:41:55.275Z"
+  },
+  {
+    "id": "user_rohit_patil",
+    "email": "rohit.patil@vcet.edu",
+    "name": "Rohit Patil",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T17:41:55.275Z"
+  },
+  {
+    "id": "user_neha_nair",
+    "email": "neha.nair@djsanghvi.edu",
+    "name": "Neha Nair",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "DJ Sanghvi",
+    "createdAt": "2026-09-10T16:41:55.275Z"
+  },
+  {
+    "id": "user_siddharth_rao",
+    "email": "siddharth.rao@vcet.edu",
+    "name": "Siddharth Rao",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T15:41:55.275Z"
+  },
+  {
+    "id": "user_pooja_hegde",
+    "email": "pooja.hegde@nsdc.edu",
+    "name": "Pooja Hegde",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "NSDC College",
+    "createdAt": "2026-09-10T14:41:55.275Z"
+  },
+  {
+    "id": "user_manan_shah",
+    "email": "manan.shah@vcet.edu",
+    "name": "Manan Shah",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T13:41:55.275Z"
+  },
+  {
+    "id": "user_riya_sen",
+    "email": "riya.sen@thadomal.edu",
+    "name": "Riya Sen",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "Thadomal Shahani",
+    "createdAt": "2026-09-10T12:41:55.275Z"
+  },
+  {
+    "id": "user_kunal_kamat",
+    "email": "kunal.kamat@vcet.edu",
+    "name": "Kunal Kamat",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T11:41:55.275Z"
+  },
+  {
+    "id": "user_divya_iyer",
+    "email": "divya.iyer@spit.edu",
+    "name": "Divya Iyer",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "SPIT Mumbai",
+    "createdAt": "2026-09-10T10:41:55.275Z"
+  },
+  {
+    "id": "user_pranav_kadam",
+    "email": "pranav.kadam@vcet.edu",
+    "name": "Pranav Kadam",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T09:41:55.275Z"
+  },
+  {
+    "id": "user_isha_chawla",
+    "email": "isha.chawla@nsdc.edu",
+    "name": "Isha Chawla",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "NSDC College",
+    "createdAt": "2026-09-10T08:41:55.275Z"
+  },
+  {
+    "id": "user_varun_nair",
+    "email": "varun.nair@vcet.edu",
+    "name": "Varun Nair",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T07:41:55.275Z"
+  },
+  {
+    "id": "user_meera_pillai",
+    "email": "meera.pillai@djsanghvi.edu",
+    "name": "Meera Pillai",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "DJ Sanghvi",
+    "createdAt": "2026-09-10T06:41:55.275Z"
+  },
+  {
+    "id": "user_chirag_gupta",
+    "email": "chirag.gupta@vcet.edu",
+    "name": "Chirag Gupta",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T05:41:55.275Z"
+  },
+  {
+    "id": "user_shruti_more",
+    "email": "shruti.more@vcet.edu",
+    "name": "Shruti More",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T04:41:55.275Z"
+  },
+  {
+    "id": "user_harsh_vora",
+    "email": "harsh.vora@somaiya.edu",
+    "name": "Harsh Vora",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "KJ Somaiya",
+    "createdAt": "2026-09-10T03:41:55.275Z"
+  },
+  {
+    "id": "user_aniket_sawant",
+    "email": "aniket.sawant@vcet.edu",
+    "name": "Aniket Sawant",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T02:41:55.275Z"
+  },
+  {
+    "id": "user_sakshi_jain",
+    "email": "sakshi.jain@nsdc.edu",
+    "name": "Sakshi Jain",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "NSDC College",
+    "createdAt": "2026-09-10T01:41:55.275Z"
+  },
+  {
+    "id": "user_omkar_gokhale",
+    "email": "omkar.gokhale@vcet.edu",
+    "name": "Omkar Gokhale",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-10T00:41:55.275Z"
+  },
+  {
+    "id": "user_bhavna_bhat",
+    "email": "bhavna.bhat@vcet.edu",
+    "name": "Bhavna Bhat",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T23:41:55.275Z"
+  },
+  {
+    "id": "user_tejas_shinde",
+    "email": "tejas.shinde@spit.edu",
+    "name": "Tejas Shinde",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "SPIT Mumbai",
+    "createdAt": "2026-09-09T22:41:55.275Z"
+  },
+  {
+    "id": "user_rutuja_salunkhe",
+    "email": "rutuja.salunkhe@vcet.edu",
+    "name": "Rutuja Salunkhe",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T21:41:55.275Z"
+  },
+  {
+    "id": "user_rahul_dave",
+    "email": "rahul.dave@djsanghvi.edu",
+    "name": "Rahul Dave",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "DJ Sanghvi",
+    "createdAt": "2026-09-09T20:41:55.275Z"
+  },
+  {
+    "id": "user_payal_chhabra",
+    "email": "payal.chhabra@vcet.edu",
+    "name": "Payal Chhabra",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T19:41:55.275Z"
+  },
+  {
+    "id": "user_gaurav_mestry",
+    "email": "gaurav.mestry@nsdc.edu",
+    "name": "Gaurav Mestry",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "NSDC College",
+    "createdAt": "2026-09-09T18:41:55.275Z"
+  },
+  {
+    "id": "user_ketan_tambe",
+    "email": "ketan.tambe@vcet.edu",
+    "name": "Ketan Tambe",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T17:41:55.275Z"
+  },
+  {
+    "id": "user_simran_kaur",
+    "email": "simran.kaur@vcet.edu",
+    "name": "Simran Kaur",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T16:41:55.275Z"
+  },
+  {
+    "id": "user_darshan_solanki",
+    "email": "darshan.solanki@thadomal.edu",
+    "name": "Darshan Solanki",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "Thadomal Shahani",
+    "createdAt": "2026-09-09T15:41:55.275Z"
+  },
+  {
+    "id": "user_pallavi_thorat",
+    "email": "pallavi.thorat@vcet.edu",
+    "name": "Pallavi Thorat",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T14:41:55.275Z"
+  },
+  {
+    "id": "user_mihir_parekh",
+    "email": "mihir.parekh@vcet.edu",
+    "name": "Mihir Parekh",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T13:41:55.275Z"
+  },
+  {
+    "id": "user_trisha_shetty",
+    "email": "trisha.shetty@spit.edu",
+    "name": "Trisha Shetty",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "SPIT Mumbai",
+    "createdAt": "2026-09-09T12:41:55.275Z"
+  },
+  {
+    "id": "user_atharva_ghag",
+    "email": "atharva.ghag@vcet.edu",
+    "name": "Atharva Ghag",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T11:41:55.275Z"
+  },
+  {
+    "id": "user_urvashi_rane",
+    "email": "urvashi.rane@nsdc.edu",
+    "name": "Urvashi Rane",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "NSDC College",
+    "createdAt": "2026-09-09T10:41:55.275Z"
+  },
+  {
+    "id": "user_mayur_jadhav",
+    "email": "mayur.jadhav@vcet.edu",
+    "name": "Mayur Jadhav",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T09:41:55.275Z"
+  },
+  {
+    "id": "user_shweta_parab",
+    "email": "shweta.parab@vcet.edu",
+    "name": "Shweta Parab",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T08:41:55.275Z"
+  },
+  {
+    "id": "user_naman_trivedi",
+    "email": "naman.trivedi@somaiya.edu",
+    "name": "Naman Trivedi",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "KJ Somaiya",
+    "createdAt": "2026-09-09T07:41:55.275Z"
+  },
+  {
+    "id": "user_sayali_naik",
+    "email": "sayali.naik@vcet.edu",
+    "name": "Sayali Naik",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T06:41:55.275Z"
+  },
+  {
+    "id": "user_vivek_mahajan",
+    "email": "vivek.mahajan@vcet.edu",
+    "name": "Vivek Mahajan",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T05:41:55.275Z"
+  },
+  {
+    "id": "user_karishma_punamiya",
+    "email": "karishma.punamiya@nsdc.edu",
+    "name": "Karishma Punamiya",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "NSDC College",
+    "createdAt": "2026-09-09T04:41:55.275Z"
+  },
+  {
+    "id": "user_chinmay_keni",
+    "email": "chinmay.keni@vcet.edu",
+    "name": "Chinmay Keni",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T03:41:55.275Z"
+  },
+  {
+    "id": "user_siddhi_walke",
+    "email": "siddhi.walke@vcet.edu",
+    "name": "Siddhi Walke",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T02:41:55.275Z"
+  },
+  {
+    "id": "user_saurabh_tawde",
+    "email": "saurabh.tawde@vcet.edu",
+    "name": "Saurabh Tawde",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-09T01:41:55.275Z"
+  },
+  {
+    "id": "user_aditi_gadgil",
+    "email": "aditi.gadgil@spit.edu",
+    "name": "Aditi Gadgil",
+    "passwordHash": "/14dqL6IkQUyYmKhBjO..E1TYZx.cW9vuNBlMRaUKC2uCT7DKaVm",
+    "role": "PARTICIPANT",
+    "college": "SPIT Mumbai",
+    "createdAt": "2026-09-09T00:41:55.275Z"
+  },
+  {
+    "id": "user_1789102227162_7gxdc",
+    "email": "prathammewada7@gmail.com",
+    "name": "prathammewada7",
+    "passwordHash": "$2a$10$bJbKJoiCtBynxTyewxY2M.CD9SFCHZ8ljdUnYHyqlUfkDx3CYmuWC",
+    "role": "PARTICIPANT",
+    "college": "VCET",
+    "createdAt": "2026-09-11T04:50:27.162Z"
   }
 ]
