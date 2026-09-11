@@ -66,7 +66,7 @@
       "Judge0",
       "Tips"
     ],
-    "upvotes": 89,
+    "upvotes": 90,
     "views": 743,
     "createdAt": "2026-09-10T00:19:46.948Z",
     "updatedAt": "2026-09-10T00:19:46.948Z",
@@ -80,7 +80,8 @@
     },
     "problem": null,
     "upvoterUserIds": [
-      "user_admin_primary"
+      "user_admin_primary",
+      "user_participant_coder"
     ],
     "comments": [
       {
