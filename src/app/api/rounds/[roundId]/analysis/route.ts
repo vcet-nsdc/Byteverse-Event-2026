@@ -122,7 +122,7 @@ export async function POST(
           cpu_time_limit: Math.max(1, Math.min(problem!.timeLimitMs / 1000, 5)),
           memory_limit: problem!.memoryLimitMb * 1024,
         },
-        { headers, timeout: 5000 }
+        { headers, timeout: 15000 }
       );
 
       const statusId = response.data?.status?.id;

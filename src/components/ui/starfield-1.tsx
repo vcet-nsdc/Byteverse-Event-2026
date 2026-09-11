@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import PropTypes from "prop-types";
 
 // Fast RFC4122 v4 compliant UUID generator
 const generateUUID = () => {
@@ -416,20 +415,6 @@ const Starfield: React.FC<StarfieldProps> = ({
       <canvas ref={canvasRef} style={{ display: "block", width: "100%", height: "100%" }} />
     </div>
   );
-};
-
-Starfield.propTypes = {
-  starColor: PropTypes.string,
-  bgColor: PropTypes.string,
-  mouseAdjust: PropTypes.bool,
-  tiltAdjust: PropTypes.bool,
-  easing: PropTypes.number,
-  clickToWarp: PropTypes.bool,
-  hyperspace: PropTypes.bool,
-  warpFactor: PropTypes.number,
-  opacity: PropTypes.number,
-  speed: PropTypes.number,
-  quantity: PropTypes.number,
 };
 
 export { Starfield };

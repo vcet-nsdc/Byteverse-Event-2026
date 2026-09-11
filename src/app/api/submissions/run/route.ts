@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
           cpu_time_limit: 3.0,
           memory_limit: 256 * 1024,
         },
-        { headers: getJudgeHeaders(), timeout: 5000 }
+        { headers: getJudgeHeaders(), timeout: 15000 }
       );
 
       return NextResponse.json({
@@ -104,7 +104,8 @@ export async function POST(req: NextRequest) {
         runsUsed: currentRuns,
         runsLeft: Math.max(0, MAX_RUNS_PER_PROBLEM - currentRuns),
       });
-    } catch {
+    } catch (judgeErr: any) {
+      console.warn("[Submissions/Run] Judge0 execution error, attempting local fallback:", judgeErr.message);
       // Judge0 execution failed mid-flight, immediately fallback to local execution
     }
   }

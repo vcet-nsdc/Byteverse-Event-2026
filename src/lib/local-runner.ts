@@ -69,11 +69,15 @@ export async function runLocally(
           }
         });
 
-        pyProc.on("error", (err) => {
+        pyProc.on("error", (err: any) => {
+          const notFound = err.code === "ENOENT" || (err.message && err.message.includes("ENOENT"));
+          const msg = notFound
+            ? "Remote execution engine (Judge0) could not be reached, and local Python runtime is not installed on this server environment."
+            : err.message;
           resolve({
             stdout: "",
-            stderr: err.message,
-            compile_output: err.message,
+            stderr: msg,
+            compile_output: msg,
             time: "0.00",
             memory: 0,
             status: "RUNTIME_ERROR",
@@ -94,13 +98,24 @@ export async function runLocally(
         ? ["-O2", "-std=c++17", srcPath, "-o", binPath]
         : ["-O2", srcPath, "-o", binPath];
 
-      const compileResult = await new Promise<{ success: boolean; output: string }>((res) => {
+      const compileResult = await new Promise<{ success: boolean; output: string; isMissingBinary?: boolean }>((res) => {
         const compProc = spawn(compiler, compileArgs, { timeout: 8000 });
         let compOut = "";
         compProc.stdout.on("data", (d) => { compOut += d.toString(); });
         compProc.stderr.on("data", (d) => { compOut += d.toString(); });
         compProc.on("close", (code) => res({ success: code === 0, output: compOut }));
-        compProc.on("error", (err) => res({ success: false, output: err.message }));
+        compProc.on("error", (err: any) => {
+          const notFound = err.code === "ENOENT" || (err.message && err.message.includes("ENOENT"));
+          if (notFound) {
+            res({
+              success: false,
+              output: `Remote execution engine (Judge0) could not be reached, and local C/C++ compiler (${compiler}) is not installed on this host environment.`,
+              isMissingBinary: true,
+            });
+          } else {
+            res({ success: false, output: err.message });
+          }
+        });
       });
 
       if (!compileResult.success) {
@@ -110,7 +125,7 @@ export async function runLocally(
           compile_output: compileResult.output,
           time: "0.00",
           memory: 0,
-          status: "COMPILATION_ERROR",
+          status: compileResult.isMissingBinary ? "RUNTIME_ERROR" : "COMPILATION_ERROR",
         };
       }
 
